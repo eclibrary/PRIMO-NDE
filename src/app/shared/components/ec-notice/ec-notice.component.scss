@@ -1,0 +1,13 @@
+// Keep component styles small: angular.json enforces a 4kb hard limit per component style.
+// Anything larger belongs in the view theme (custom.css).
+@use '../../styles/ec-tokens' as ec;
+
+.ec-notice {
+  font: 0.875rem/1.4 ec.$ec-font;
+  color: ec.$ec-blue;
+  padding: 0.5rem 0;
+}
+.ec-notice__state {
+  margin-left: 0.5rem;
+  opacity: 0.7;
+}

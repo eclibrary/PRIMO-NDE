@@ -1,0 +1,19 @@
+// Styles every view's custom.css gets. View theme.scss files @use this.
+//
+// NDE theming is Angular Material M3. Prefer overriding the theme CSS variables
+// (inspect nde-color-theme-*.css in devtools for the list) over targeting DOM
+// selectors, which change between NDE releases.
+@use 'ec-tokens' as ec;
+
+:root {
+  --ec-blue: #{ec.$ec-blue};
+  --ec-yellow: #{ec.$ec-yellow};
+  --ec-grey: #{ec.$ec-grey};
+}
+
+// To apply a generated M3 theme instead of a prebuilt one:
+//   ng generate @angular/material:m3-theme   (answer "yes" to system-level variables)
+// then in the view's theme.scss:
+//   @use '@angular/material' as mat;
+//   @use 'path/to/m3-theme' as m3;
+//   .custom-nde-theme { @include mat.all-component-colors(m3.$light-theme); @include mat.system-level-colors(m3.$light-theme); }

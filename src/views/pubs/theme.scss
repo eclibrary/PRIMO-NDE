@@ -1,0 +1,13 @@
+// Theme entry point for the Publications view (32EUC_INST:PUBS).
+// Compiled to custom.css at the root of the customization package (bundleName "custom").
+//
+// Shared EC look & feel comes from src/app/shared/styles. Put anything that is
+// specific to this view below the @use lines.
+
+@use '../../app/shared/styles/ec-tokens' as ec;
+@use '../../app/shared/styles/shared-theme';
+
+// --- Publications-specific overrides ---------------------------------------------
+// :root {
+//   --ec-accent: #{ec.$ec-yellow};
+// }

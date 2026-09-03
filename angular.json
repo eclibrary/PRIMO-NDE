@@ -1,0 +1,247 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "custom-module": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "custom",
+      "architect": {
+        "build": {
+          "builder": "ngx-build-plus:browser",
+          "options": {
+            "outputPath": "dist/custom-module",
+            "index": "src/index.html",
+            "main": "src/main.ts",
+            "polyfills": [
+              "zone.js"
+            ],
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "src/styles.scss",
+              {
+                "input": "src/app/styles/_customized-theme.scss",
+                "bundleName": "custom",
+                "inject": false
+              }
+            ],
+            "scripts": [],
+            "extraWebpackConfig": "webpack.config.js",
+            "commonChunk": false
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "outputHashing": "all",
+              "extraWebpackConfig": "webpack.prod.config.js"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            },
+            "finder": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/custom1-module/customComponentMappings.ts",
+                  "with": "src/views/finder/mappings.ts"
+                }
+              ],
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                {
+                  "glob": "**/*",
+                  "input": "src/views/finder/assets",
+                  "output": "assets",
+                  "ignore": [
+                    ".gitkeep"
+                  ]
+                }
+              ],
+              "styles": [
+                "src/styles.scss",
+                {
+                  "input": "src/views/finder/theme.scss",
+                  "bundleName": "custom",
+                  "inject": false
+                }
+              ]
+            },
+            "pubs": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/custom1-module/customComponentMappings.ts",
+                  "with": "src/views/pubs/mappings.ts"
+                }
+              ],
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                {
+                  "glob": "**/*",
+                  "input": "src/views/pubs/assets",
+                  "output": "assets",
+                  "ignore": [
+                    ".gitkeep"
+                  ]
+                }
+              ],
+              "styles": [
+                "src/styles.scss",
+                {
+                  "input": "src/views/pubs/theme.scss",
+                  "bundleName": "custom",
+                  "inject": false
+                }
+              ]
+            },
+            "ecdata": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/custom1-module/customComponentMappings.ts",
+                  "with": "src/views/ecdata/mappings.ts"
+                }
+              ],
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                {
+                  "glob": "**/*",
+                  "input": "src/views/ecdata/assets",
+                  "output": "assets",
+                  "ignore": [
+                    ".gitkeep"
+                  ]
+                }
+              ],
+              "styles": [
+                "src/styles.scss",
+                {
+                  "input": "src/views/ecdata/theme.scss",
+                  "bundleName": "custom",
+                  "inject": false
+                }
+              ]
+            },
+            "country": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/custom1-module/customComponentMappings.ts",
+                  "with": "src/views/country/mappings.ts"
+                }
+              ],
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                {
+                  "glob": "**/*",
+                  "input": "src/views/country/assets",
+                  "output": "assets",
+                  "ignore": [
+                    ".gitkeep"
+                  ]
+                }
+              ],
+              "styles": [
+                "src/styles.scss",
+                {
+                  "input": "src/views/country/theme.scss",
+                  "bundleName": "custom",
+                  "inject": false
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "ngx-build-plus:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "custom-module:build:production",
+              "extraWebpackConfig": "webpack.prod.config.js"
+            },
+            "development": {
+              "buildTarget": "custom-module:build:development"
+            },
+            "finder": {
+              "buildTarget": "custom-module:build:development,finder"
+            },
+            "pubs": {
+              "buildTarget": "custom-module:build:development,pubs"
+            },
+            "ecdata": {
+              "buildTarget": "custom-module:build:development,ecdata"
+            },
+            "country": {
+              "buildTarget": "custom-module:build:development,country"
+            }
+          },
+          "defaultConfiguration": "development",
+          "options": {
+            "port": 4201,
+            "publicHost": "http://localhost:4201",
+            "extraWebpackConfig": "webpack.config.js",
+            "disableHostCheck": true
+          }
+        },
+        "extract-i18n": {
+          "builder": "ngx-build-plus:extract-i18n",
+          "options": {
+            "buildTarget": "custom-module:build",
+            "extraWebpackConfig": "webpack.config.js"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
+            "tsConfig": "tsconfig.spec.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "src/styles.scss"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": false
+  }
+}

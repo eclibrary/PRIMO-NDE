@@ -1,0 +1,13 @@
+// Theme entry point for the Find-eR view (32EUC_INST:VU2).
+// Compiled to custom.css at the root of the customization package (bundleName "custom").
+//
+// Shared EC look & feel comes from src/app/shared/styles. Put anything that is
+// specific to this view below the @use lines.
+
+@use '../../app/shared/styles/ec-tokens' as ec;
+@use '../../app/shared/styles/shared-theme';
+
+// --- Find-eR-specific overrides ---------------------------------------------
+// :root {
+//   --ec-accent: #{ec.$ec-yellow};
+// }

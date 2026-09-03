@@ -1,0 +1,7 @@
+// EC brand tokens shared by all views. Import with:
+//   @use '../../app/shared/styles/ec-tokens' as ec;   (from src/views/<view>/theme.scss)
+//   @use '../../styles/ec-tokens' as ec;              (from src/app/shared/components/*)
+$ec-blue:   #004494;
+$ec-yellow: #ffd617;
+$ec-grey:   #404040;
+$ec-font:   Arial, sans-serif;

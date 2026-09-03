@@ -1,0 +1,30 @@
+{
+  "instId": "32EUC_INST",
+  "defaultHost": "https://ec-europa-finder.primo.exlibrisgroup.com",
+  "esbuildBinary": {
+    "win32": "C:\\Program Files\\Esbuild.0.23.0\\esbuild.exe"
+  },
+  "views": {
+    "finder": {
+      "viewId": "VU2",
+      "label": "Find-eR",
+      "dir": "finder"
+    },
+    "pubs": {
+      "viewId": "PUBS",
+      "label": "Publications",
+      "dir": "pubs"
+    },
+    "ecdata": {
+      "viewId": "EC_DATA_NDE",
+      "label": "EC Data",
+      "dir": "ecdata",
+      "host": "https://ec-data-catalogue.primo.exlibrisgroup.com"
+    },
+    "country": {
+      "viewId": "COUNTRY_KNOWLEDGE",
+      "label": "Country Knowledge",
+      "dir": "country"
+    }
+  }
+}
