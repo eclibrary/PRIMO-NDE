@@ -1,18 +1,15 @@
 import { Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { Store } from '@ngrx/store';
-import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { AssetsPublicPathDirective } from '../../../services/assets-public-path.directive';
+import { AuthStateService } from '../../auth-state.service';
 
 /**
- * Example shared component. Demonstrates the three things most custom
- * components need: host component access, NGRX store access, and asset paths.
- * Replace with real shared components (header, Ask-a-Librarian, ...).
+ * Example shared component. Demonstrates the things most custom components
+ * need: host component access, auth state (via AuthStateService, which wraps
+ * the shell's NGRX `user.isLoggedIn`), and asset paths.
+ * Currently NOT mapped (see shared-mappings.ts); kept as a reference.
  */
-const selectUser = createFeatureSelector<{ isLoggedIn: boolean }>('user');
-const selectIsLoggedIn = createSelector(selectUser, (s) => s?.isLoggedIn ?? false);
-
 @Component({
   selector: 'custom-ec-notice',
   standalone: true,
@@ -25,6 +22,6 @@ export class EcNoticeComponent {
   /** Instance of the NDE component this one is hooked to (injected by the shell). */
   @Input() hostComponent: any;
 
-  private store = inject(Store);
-  isLoggedIn = this.store.selectSignal(selectIsLoggedIn);
+  private readonly auth = inject(AuthStateService);
+  isLoggedIn = this.auth.isSignedIn;
 }

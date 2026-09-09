@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<!--
+  Landing page for the EC Library NDE views — ENGLISH.
+  Shown below the search box when "Enable configuration" is UNCHECKED on the
+  view's Landing Page tab. NDE picks the file by UI language: homepage_en.html,
+  homepage_fr.html, ... (falls back to English if a language file is missing).
+
+  RULES OF THIS FILE
+  - Common content is written ONCE. Guest-only / user-only blocks carry
+    data-ec-audience="guest" or "user"; the CSS in custom.css shows the right
+    one (EcSessionComponent flags the audience on <html>). Anything without the
+    attribute is visible to everyone.
+  - <script> is stripped by NDE, so no JS here — behaviour lives in the
+    custom module (src/app/shared/components/ec-session).
+  - Links that must stay inside NDE and keep the current view/language use
+    data-ec-nav="<route>" (+ optional data-ec-query="k=v&k2=v2") instead of a
+    hard-coded href. Ordinary external links are plain <a href="...">.
+  - Keep the structure/classes of the upstream template (main-landing-page,
+    menu, welcome, announcements, about) so NDE's default landing styles apply;
+    homepage.css only adds on top.
+  - Text lives in this file (not in Alma labels). Keep homepage_fr.html in sync.
+-->
+<html lang="en">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>EC Library</title>
+  <link href="./homepage.css" rel="stylesheet">
+</head>
+<body>
+<main class="main-landing-page display-flex flex-column flex-layout-center-center">
+
+  <!-- ===== Quick links — everyone ========================================== -->
+  <div class="menu-container width-100">
+    <ul role="list" class="menu width-100">
+      <li role="listitem">
+        <a id="Opening_hours_link" href="https://ec.europa.eu/libraries/#opening-hours" aria-label="Opening hours" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/clock.svg"></div>
+          <span>Opening hours</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a id="FAQ_link" href="https://ec.europa.eu/libraries/#faq" aria-label="FAQ" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/search.svg"></div>
+          <span>FAQ</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a id="Ask_a_librarian_link" href="https://ec.europa.eu/libraries/pages/askalibrarian/en/" aria-label="Ask a librarian" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/book.svg"></div>
+          <span>Ask a librarian</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a id="Search_tips_link" href="https://ec.europa.eu/libraries/#search-tips" aria-label="Search tips" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/comp_search.svg"></div>
+          <span>Search tips</span>
+        </a>
+      </li>
+      <!-- User-only tile: quick jump to loans. Stays a <li> so the grid keeps its rhythm. -->
+      <li role="listitem" data-ec-audience="user">
+        <a id="My_loans_link" href="#" data-ec-nav="account" data-ec-query="section=loans" aria-label="My loans" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/book.svg"></div>
+          <span>My loans</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="flex-row flex-layout-space-between width-100 welcome-announcements-container">
+
+    <!-- ===== Welcome — differs per audience ================================= -->
+    <!-- GUEST -->
+    <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="guest">
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Welcome to the EC Library</h2>
+      <span class="welcome-content">
+        Sign in with EU Login to request items, renew loans, save searches and manage your favourites.
+      </span>
+      <a id="signInCta" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Sign in with EU Login" role="link">Sign in</a>
+    </div>
+    <!-- USER -->
+    <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="user">
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Welcome back</h2>
+      <span class="welcome-content">
+        You are signed in. Your loans, requests and favourites are one click away.
+      </span>
+      <a id="myLibraryCard" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Go to my library card" role="link">Go to my library card</a>
+    </div>
+
+    <!-- ===== Announcements — everyone ======================================= -->
+    <div class="announcements display-flex flex-column">
+      <header class="flex-column gap-1">
+        <h2 class="mat-title-medium" role="heading" aria-level="2">Announcements</h2>
+        <h3 role="heading" aria-level="3" class="announcements-item-title mat-headline-medium">Find-eR is moving to the new interface</h3>
+      </header>
+      <article>
+        <p class="mat-body-large">
+          We are rolling out the new discovery experience step by step. Tell us what you think via
+          <a href="https://ec.europa.eu/libraries/pages/askalibrarian/en/">Ask a librarian</a>.
+        </p>
+        <!-- Small user-only addendum inside a common block: fine, the attribute works at any depth. -->
+        <p class="mat-body-large" data-ec-audience="user">
+          Your saved searches and favourites from the previous interface have been carried over.
+        </p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== About — everyone, with a guest-only sign-in nudge ================= -->
+  <div class="about display-flex width-100">
+    <div class="about-content flex-row">
+      <div class="about-text flex-column flex-space-between">
+        <h2 role="heading" aria-level="2" class="about-text-title mat-headline-large">About the EC Library</h2>
+        <p class="about-text-description">
+          The European Commission Library gives Commission staff and visitors access to books, e-books,
+          journals, databases and EU publications from all Commission library sites in one search.
+        </p>
+        <div class="help-sign-in-container flex-column gap-05" data-ec-audience="guest">
+          <span>Sign in with EU Login to:</span>
+          <ul role="list">
+            <li role="listitem"><img alt="" src="assets/images/homePageImages/success.svg"><span> Request and renew books</span></li>
+            <li role="listitem"><img alt="" src="assets/images/homePageImages/success.svg"><span> Save searches and favourites</span></li>
+            <li role="listitem"><img alt="" src="assets/images/homePageImages/success.svg"><span> Access licensed e-resources off-site</span></li>
+          </ul>
+        </div>
+        <div class="help-sign-in-container flex-column gap-05" data-ec-audience="user">
+          <span>Shortcuts:</span>
+          <ul role="list">
+            <li role="listitem"><a href="#" data-ec-nav="favorites">My favourites</a></li>
+            <li role="listitem"><a href="#" data-ec-nav="account" data-ec-query="section=requests">My requests</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="about-image flex-layout-center-center">
+        <img alt="" src="assets/images/homePageImages/about_image.svg">
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

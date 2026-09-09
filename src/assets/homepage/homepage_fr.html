@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<!--
+  Page d'accueil des vues NDE de la Bibliothèque de la CE — FRANÇAIS.
+  Traduction de homepage_en.html : même structure, mêmes attributs
+  data-ec-audience / data-ec-nav. Seul le texte change. Voir les commentaires
+  du fichier anglais pour les règles ; garder les deux fichiers synchronisés.
+-->
+<html lang="fr">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Bibliothèque de la CE</title>
+  <link href="./homepage.css" rel="stylesheet">
+</head>
+<body>
+<main class="main-landing-page display-flex flex-column flex-layout-center-center">
+
+  <!-- ===== Liens rapides — tout le monde ==================================== -->
+  <div class="menu-container width-100">
+    <ul role="list" class="menu width-100">
+      <li role="listitem">
+        <a id="Opening_hours_link" href="https://ec.europa.eu/libraries/#opening-hours" aria-label="Heures d'ouverture" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/clock.svg"></div>
+          <span>Heures d'ouverture</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a id="FAQ_link" href="https://ec.europa.eu/libraries/#faq" aria-label="FAQ" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/search.svg"></div>
+          <span>FAQ</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a id="Ask_a_librarian_link" href="https://ec.europa.eu/libraries/pages/askalibrarian/fr/" aria-label="Demander à un bibliothécaire" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/book.svg"></div>
+          <span>Demander à un bibliothécaire</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a id="Search_tips_link" href="https://ec.europa.eu/libraries/#search-tips" aria-label="Conseils de recherche" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/comp_search.svg"></div>
+          <span>Conseils de recherche</span>
+        </a>
+      </li>
+      <!-- Tuile réservée aux utilisateurs connectés -->
+      <li role="listitem" data-ec-audience="user">
+        <a id="My_loans_link" href="#" data-ec-nav="account" data-ec-query="section=loans" aria-label="Mes prêts" role="link">
+          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/book.svg"></div>
+          <span>Mes prêts</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="flex-row flex-layout-space-between width-100 welcome-announcements-container">
+
+    <!-- ===== Bienvenue — varie selon l'audience ============================= -->
+    <!-- VISITEUR -->
+    <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="guest">
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Bienvenue à la Bibliothèque de la CE</h2>
+      <span class="welcome-content">
+        Connectez-vous avec EU Login pour réserver des documents, prolonger vos prêts, enregistrer vos recherches et gérer vos favoris.
+      </span>
+      <a id="signInCta" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Se connecter avec EU Login" role="link">Se connecter</a>
+    </div>
+    <!-- UTILISATEUR CONNECTÉ -->
+    <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="user">
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Bon retour parmi nous</h2>
+      <span class="welcome-content">
+        Vous êtes connecté(e). Vos prêts, demandes et favoris sont à un clic.
+      </span>
+      <a id="myLibraryCard" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Accéder à ma carte de bibliothèque" role="link">Ma carte de bibliothèque</a>
+    </div>
+
+    <!-- ===== Annonces — tout le monde ======================================== -->
+    <div class="announcements display-flex flex-column">
+      <header class="flex-column gap-1">
+        <h2 class="mat-title-medium" role="heading" aria-level="2">Annonces</h2>
+        <h3 role="heading" aria-level="3" class="announcements-item-title mat-headline-medium">Find-eR passe à la nouvelle interface</h3>
+      </header>
+      <article>
+        <p class="mat-body-large">
+          La nouvelle interface de recherche est déployée progressivement. Donnez-nous votre avis via
+          <a href="https://ec.europa.eu/libraries/pages/askalibrarian/fr/">Demander à un bibliothécaire</a>.
+        </p>
+        <p class="mat-body-large" data-ec-audience="user">
+          Vos recherches enregistrées et vos favoris de l'ancienne interface ont été repris.
+        </p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== À propos — tout le monde, avec une incitation à se connecter pour les visiteurs -->
+  <div class="about display-flex width-100">
+    <div class="about-content flex-row">
+      <div class="about-text flex-column flex-space-between">
+        <h2 role="heading" aria-level="2" class="about-text-title mat-headline-large">À propos de la Bibliothèque de la CE</h2>
+        <p class="about-text-description">
+          La Bibliothèque de la Commission européenne donne accès, en une seule recherche, aux livres, livres électroniques,
+          revues, bases de données et publications de l'UE de tous les sites de bibliothèque de la Commission.
+        </p>
+        <div class="help-sign-in-container flex-column gap-05" data-ec-audience="guest">
+          <span>Connectez-vous avec EU Login pour :</span>
+          <ul role="list">
+            <li role="listitem"><img alt="" src="assets/images/homePageImages/success.svg"><span> Réserver et prolonger des livres</span></li>
+            <li role="listitem"><img alt="" src="assets/images/homePageImages/success.svg"><span> Enregistrer vos recherches et favoris</span></li>
+            <li role="listitem"><img alt="" src="assets/images/homePageImages/success.svg"><span> Accéder aux ressources électroniques hors site</span></li>
+          </ul>
+        </div>
+        <div class="help-sign-in-container flex-column gap-05" data-ec-audience="user">
+          <span>Raccourcis :</span>
+          <ul role="list">
+            <li role="listitem"><a href="#" data-ec-nav="favorites">Mes favoris</a></li>
+            <li role="listitem"><a href="#" data-ec-nav="account" data-ec-query="section=requests">Mes demandes</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="about-image flex-layout-center-center">
+        <img alt="" src="assets/images/homePageImages/about_image.svg">
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

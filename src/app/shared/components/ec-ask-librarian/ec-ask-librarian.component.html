@@ -1,0 +1,42 @@
+<!--
+  Native <dialog>. Closed and invisible until EcAskLibrarianComponent.open().
+  Clicking the backdrop closes; the panel itself stops the click.
+  aria-labelledby ties the dialog's accessible name to the visible title.
+
+  The LibAnswers widget renders into a div inside #widgetHost (one div per
+  widget id; the component creates them). Those divs are kept across opens.
+-->
+<dialog #dialog
+        class="ec-ask"
+        aria-labelledby="ec-ask-title"
+        (close)="onClosed()"
+        (click)="onBackdropClick($event)">
+  <div class="ec-ask__panel" (click)="$event.stopPropagation()">
+
+    <header class="ec-ask__bar">
+      <h2 id="ec-ask-title" class="ec-ask__title">{{ title() }}</h2>
+      <button type="button" class="ec-ask__close" (click)="close()" [attr.aria-label]="closeLabel()">
+        <!-- Plain SVG cross: no icon font dependency, inherits currentColor. -->
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="ec-ask__body" [class.ec-ask__body--loading]="state() === 'loading'">
+      @if (state() === 'loading') {
+        <p class="ec-ask__status" role="status">{{ loadingLabel() }}</p>
+      }
+      @if (state() === 'error') {
+        <p class="ec-ask__status ec-ask__status--error" role="alert">
+          {{ errorLabel() }}
+          <a [href]="fallbackHref()" target="_blank" rel="noopener">{{ fallbackHref() }}</a>
+        </p>
+      }
+      <!-- Widget containers live here; hidden (not removed) while loading so the
+           widget script can render into them, and kept for the next open. -->
+      <div #widgetHost class="ec-ask__widget" [hidden]="state() !== 'ready'"></div>
+    </div>
+
+  </div>
+</dialog>

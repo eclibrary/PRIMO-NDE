@@ -1,0 +1,23 @@
+<!--
+  Custom HEADER — default / English. Rendered by NDE at the very top of EVERY
+  page (above NDE's own top menu) when this file exists in the customization
+  package. Language variants: header_fr.html etc. Ex Libris docs name the base
+  file header.html; the upstream customModule README uses header_en.html — if
+  English does not pick this file up on Find-eR, copy it to header_en.html too.
+
+  DUMMY MARKUP: replace with the real EC/ECL banner once you've seen where it lands.
+  - No <script> (stripped by NDE). Inline styles are fine; better: put rules in
+    _shared-theme.scss (they end up in custom.css, which is global).
+  - data-ec-audience works here too (EcSessionComponent flags <html>).
+  - data-ec-nav links are handled by EcSessionComponent (keeps vid/lang).
+-->
+<header class="ec-header" style="background:#004494;color:#fff;padding:.5rem 1rem;font-family:Arial,sans-serif;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;">
+  <span>
+    <strong>European Commission</strong> &nbsp;|&nbsp; EC Library &nbsp;
+    <em style="opacity:.7">(custom header.html — dummy)</em>
+  </span>
+  <span>
+    <span data-ec-audience="guest">Visitor &nbsp;·&nbsp; <a href="#" data-ec-nav="account" data-ec-query="section=overview" style="color:#ffd617">Sign in</a></span>
+    <span data-ec-audience="user">Signed in &nbsp;·&nbsp; <a href="#" data-ec-nav="account" data-ec-query="section=overview" style="color:#ffd617">My account</a></span>
+  </span>
+</header>

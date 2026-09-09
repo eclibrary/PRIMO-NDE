@@ -7,12 +7,21 @@
  *
  * Selector naming follows the NDE convention: <host-selector>-{before|after|top|bottom}
  * or the bare host selector to replace it entirely.
+ *
+ * NOTE: the map holds ONE component per selector. Shared page-level features
+ * therefore hang off EcSharedRootComponent rather than each taking a slot.
  */
-import { EcNoticeComponent } from './components/ec-notice/ec-notice.component';
+import { EcSharedRootComponent } from './components/ec-shared-root/ec-shared-root.component';
+// import { EcNoticeComponent } from './components/ec-notice/ec-notice.component';
 
 export const sharedSelectorMappings: Array<[string, any]> = [
-  // Example: a notice rendered under the search bar on every view.
-  // Remove or replace once real shared components exist.
-  //['nde-search-bar-after', EcNoticeComponent],
-  ['nde-search-bar-container-after', EcNoticeComponent],
+  // Root of the shared always-on features (session bridge, Ask-a-librarian modal).
+  // Lives on a verified slot present on the landing page and on results pages.
+  // If a feature must also work on pages without a search bar (account, full record),
+  // move this to a slot that exists everywhere — `nde-header` is a candidate to verify.
+  ['nde-search-bar-container-after', EcSharedRootComponent],
+
+  // Earlier placeholder that proved the module-federation pipeline. Kept for
+  // reference; re-enable on a different slot if you still want it visible.
+  // ['nde-search-bar-after', EcNoticeComponent],
 ];

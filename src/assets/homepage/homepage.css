@@ -1,0 +1,30 @@
+/*
+  Landing-page-only styles. Loaded by NDE alongside homepage_<lang>.html when the
+  Landing Page tab's "Enable configuration" is unchecked.
+
+  NOTE: the upstream template (homepage.css.tmpl) is written in SCSS syntax
+  (@use, nesting). NDE serves this file to the browser as-is, so it must be
+  PLAIN CSS. Keep it small: NDE's default landing styles already handle layout;
+  we only add EC touches. The audience show/hide rules are NOT here — they are
+  global (custom.css via _shared-theme.scss) so header/footer can use them too.
+*/
+
+/* EC accent on the quick-link tiles */
+.main-landing-page .menu li a {
+  border-color: var(--ec-blue, #004494);
+}
+.main-landing-page .menu li a:hover,
+.main-landing-page .menu li a:focus {
+  background-color: var(--ec-yellow, #ffd617);
+}
+
+/* The welcome CTA ("Sign in" / "Go to my library card") */
+.main-landing-page .welcome a[data-ec-nav] {
+  background-color: var(--ec-blue, #004494);
+}
+
+/* Plain text links inside the user shortcuts list */
+.main-landing-page .help-sign-in-container a[data-ec-nav] {
+  color: var(--ec-blue, #004494);
+  text-decoration: underline;
+}

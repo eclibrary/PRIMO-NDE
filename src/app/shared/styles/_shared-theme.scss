@@ -11,6 +11,19 @@
   --ec-grey: #{ec.$ec-grey};
 }
 
+// --- Audience gating ---------------------------------------------------------
+// Any element with data-ec-audience="guest" or "user" (in homepage HTML,
+// header/footer HTML, or our own components) is shown only for that audience.
+// EcSessionComponent keeps `ec-audience-guest` / `ec-audience-user` on <html>.
+//
+// Default (no class yet, e.g. the custom module has not booted): show the GUEST
+// variant. Guests are the majority and the safe fallback; signed-in users get
+// their variant a few ms later when the class lands. This lives in custom.css
+// (global) rather than homepage.css so header/footer can use it too.
+[data-ec-audience='user'] { display: none; }
+html.ec-audience-user [data-ec-audience='guest'] { display: none; }
+html.ec-audience-user [data-ec-audience='user'] { display: revert; }
+
 // To apply a generated M3 theme instead of a prebuilt one:
 //   ng generate @angular/material:m3-theme   (answer "yes" to system-level variables)
 // then in the view's theme.scss:
