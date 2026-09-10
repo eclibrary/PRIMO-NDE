@@ -73,6 +73,15 @@
       <a id="myLibraryCard" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Accéder à ma carte de bibliothèque" role="link">Ma carte de bibliothèque</a>
     </div>
 
+    <!-- ===== Last search — only when EcLastSearchComponent has one stored ======
+         Shown/hidden by the `ec-has-last-search` class on <html>; the component
+         fills the href and the terms span, and handles the click in-app. -->
+    <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Reprenez là où vous en étiez</h2>
+      <span class="welcome-content">Votre dernière recherche : <strong data-ec-last-search-terms></strong></span>
+      <a href="#" data-ec-last-search-link tabindex="0" role="link">Retour aux résultats</a>
+    </div>
+
     <!-- ===== Annonces — tout le monde ======================================== -->
     <div class="announcements display-flex flex-column">
       <header class="flex-column gap-1">

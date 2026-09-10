@@ -25,6 +25,7 @@
 import { Component, effect, inject, OnDestroy, Renderer2 } from '@angular/core';
 import { AuthStateService } from '../../auth-state.service';
 import { SHELL_ROUTER } from '../../../injection-tokens';
+import { isSandbox } from '../../ec-config';
 
 @Component({
   selector: 'custom-ec-session',
@@ -42,6 +43,13 @@ export class EcSessionComponent implements OnDestroy {
   private readonly onClick = (ev: MouseEvent) => this.handleNavClick(ev);
 
   constructor() {
+
+    // Environment flag: `ec-env-sandbox` on <html> lets CSS mark the sandbox
+    // (banner, tinted header) so nobody mistakes it for production. Set once —
+    // the host cannot change during a page's life.
+    if (isSandbox()) this.renderer.addClass(document.documentElement, 'ec-env-sandbox');
+
+
     // (1) Reflect the audience on <html>. `effect` re-runs whenever the
     //     store's isLoggedIn flips (sign-in / sign-out), so the page updates
     //     live without a reload.

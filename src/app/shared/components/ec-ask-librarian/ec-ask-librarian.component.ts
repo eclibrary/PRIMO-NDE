@@ -28,8 +28,16 @@
 //
 // MOUNT POINT: rendered by EcSharedRootComponent (see shared-mappings.ts).
 import { Component, ElementRef, OnDestroy, ViewChild, inject, signal } from '@angular/core';
-import { EC_CONFIG, EcUserInfo, currentLang, localised } from '../../ec-config';
+import { EC_CONFIG, EcUserInfo, currentLang, currentVid, localised } from '../../ec-config';
 import { UserInfoService } from '../../user-info.service';
+
+/**
+ * Set by webpack/module federation to the URL remoteEntry.js was loaded from —
+ * i.e. the customization package root (…/custom/<INST>-<VIEW>/). Same trick as
+ * AssetsPublicPathDirective; it is what makes package-relative fetches work on
+ * the Primo host, through the dev proxy, and with useLocalCustomPackage alike.
+ */
+declare const __webpack_public_path__: string;
 
 /** Minimal typing of the Europa helper's public API (see libanswers.script.js). */
 interface LibAnswersFormFillApi {
@@ -75,6 +83,8 @@ export class EcAskLibrarianComponent implements OnDestroy {
   private readonly widgetScripts = new Map<string, HTMLScriptElement>();
   /** Single promise for the helper script so concurrent opens share one load. */
   private helperLoaded: Promise<void> | null = null;
+  /** Per-view form CSS, fetched once per page load; '' = none (404) — do not refetch. */
+  private formCss: Promise<string> | null = null;
 
   /** Element that had focus before opening, so we can return it on close. */
   private opener: HTMLElement | null = null;
@@ -153,6 +163,10 @@ export class EcAskLibrarianComponent implements OnDestroy {
       // Hide the status text once the form exists (or the helper gives up → error).
       const form = await ready;
       this.state.set(form ? 'ready' : 'error');
+
+      // View-specific adjustments inside the shadow root. Runs after EVERY
+      // render because resetOnClose rebuilds the form on each open.
+      if (form) await this.applyViewTweaks(widgetId);
     } catch (err) {
       console.warn('[ec] ask-a-librarian: widget failed to load', err);
       this.state.set('error');
@@ -240,6 +254,69 @@ export class EcAskLibrarianComponent implements OnDestroy {
     });
   }
 
+  // ------------------------------------------------------------ view tweaks
+
+  /**
+   * View-specific adjustments applied inside the widget's shadow root once the
+   * form exists:
+   *   1. hide the fields listed in EC_CONFIG.askALibrarian.perView[<view>]
+   *   2. inject the per-view stylesheet (assets overlay) as a <style> element
+   * Both must happen INSIDE the shadow tree — page CSS and page-level
+   * selectors do not cross the shadow boundary.
+   */
+  private async applyViewTweaks(widgetId: string): Promise<void> {
+    const cfg = EC_CONFIG.askALibrarian;
+    const root = this.findShadowRoot(widgetId);
+    if (!root) return;
+
+    // 1. Hide fields: walk up from the input to the row that holds label + input.
+    //    The wrapper class list is a best guess at LibAnswers' markup; extend it
+    //    if a field's label survives (inspect the shadow tree to see the wrapper).
+    const viewKey = currentVid().split(':')[1] ?? '';
+    for (const name of cfg.perView[viewKey]?.hideFields ?? []) {
+      const input = root.querySelector<HTMLElement>(`[name="${CSS.escape(name)}"]`);
+      const row = input?.closest<HTMLElement>('.s-la-askform-field, .form-group, fieldset') ?? input;
+      if (row) row.hidden = true;
+    }
+
+    // 2. Stylesheet: once per render (the root is new after every reset).
+    if (cfg.formCssPath && !root.querySelector('style[data-ec-form-css]')) {
+      const css = await this.loadFormCss(cfg.formCssPath);
+      if (css) {
+        const style = document.createElement('style');
+        style.dataset['ecFormCss'] = '1';
+        style.textContent = css;
+        root.appendChild(style);
+      }
+    }
+  }
+
+  /** The widget's shadow root: LibAnswers attaches it on a child of our container, not the container itself. */
+  private findShadowRoot(widgetId: string): ShadowRoot | null {
+    const container = this.widgetHost.nativeElement.querySelector(`#s-la-widget-${widgetId}`);
+    if (!container) return null;
+    for (const el of Array.from(container.querySelectorAll('*'))) {
+      if (el.shadowRoot) return el.shadowRoot;
+    }
+    return null;
+  }
+
+  /**
+   * Fetch the per-view form CSS from the customization package. Cached for the
+   * page's lifetime, including the "no file" outcome, so a view without an
+   * override costs exactly one 404 per page load.
+   */
+  private loadFormCss(path: string): Promise<string> {
+    if (!this.formCss) {
+      const base = (typeof __webpack_public_path__ === 'string' ? __webpack_public_path__ : '') || '';
+      const url = (base && !base.endsWith('/') ? base + '/' : base) + path.replace(/^\/+/, '');
+      this.formCss = fetch(url)
+        .then((res) => (res.ok ? res.text() : ''))
+        .catch(() => ''); // offline or blocked: keep the widget's default look
+    }
+    return this.formCss;
+  }
+
   // ---------------------------------------------------------------- helpers
 
   /** Ensure `<div id="s-la-widget-<id>">` exists in the modal and is the only visible one. */
@@ -257,6 +334,47 @@ export class EcAskLibrarianComponent implements OnDestroy {
     }
   }
 
+    /**
+   * Compose the context block from the current page:
+   *   - title: read from the DOM on full-display pages (config.titleSelector)
+   *   - id:    the `docid` query param; `alma…` ids are MMS IDs, others
+   *            (e.g. `cdi_…`) are reported as generic record ids
+   *   - search terms: every `query` param, which NDE formats as
+   *            `<field>,<operator>,<terms>` — we keep only the terms part
+   *   - link:  the current URL, minus dev-only params
+   * Returns '' when nothing at all is known (should not happen: the link always is).
+   */
+  private buildContext(): string {
+    const cfg = EC_CONFIG.askALibrarian.context;
+    const lang = currentLang();
+    const labels = localised(cfg.labels, lang);
+    const params = new URLSearchParams(window.location.search);
+    const lines: string[] = [];
+
+    const title = document.querySelector(cfg.titleSelector)?.textContent?.trim();
+    if (title) lines.push(`${labels.title}: ${title}`);
+
+    const docid = params.get('docid');
+    if (docid) {
+      const isAlma = docid.startsWith('alma');
+      lines.push(`${isAlma ? labels.mmsId : labels.recordId}: ${isAlma ? docid.slice(4) : docid}`);
+    }
+
+    const terms = params.getAll('query')
+      // NDE writes `query=europe`; VE-style `query=any,contains,europe` also occurs.
+      .map((q) => (q.includes(',') ? q.split(',').slice(2).join(',') : q).trim())
+      .filter(Boolean);
+    if (terms.length) lines.push(`${labels.searchTerms}: ${terms.join(' ; ')}`);
+
+    const link = new URL(window.location.href);
+    link.searchParams.delete('useLocalCustomPackage');
+    lines.push(`${labels.link}: ${link.toString()}`);
+
+    if (!lines.length) return '';
+    // Two blank lines above the marker: room for the patron to type.
+    return `\n\n${localised(cfg.marker, lang)}\n${lines.join('\n')}`;
+  }
+
   /** Map patron info + static values onto LibAnswers field names per EC_CONFIG. */
   private buildPrefill(user: EcUserInfo | null): Record<string, string> {
     const cfg = EC_CONFIG.askALibrarian;
@@ -267,6 +385,11 @@ export class EcAskLibrarianComponent implements OnDestroy {
         if (v) values[field] = String(v);
       }
     }
+
+    // Page context (record title, id, search terms, link) for the librarian.
+    const context = this.buildContext();
+    if (context) values[cfg.context.field] = context;
+
     return values;
   }
 }

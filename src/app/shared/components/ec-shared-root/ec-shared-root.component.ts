@@ -6,6 +6,7 @@
 //
 //   - EcSessionComponent      guest/user class on <html> + data-ec-nav links
 //   - EcAskLibrarianComponent Ask-a-librarian modal for matching links
+//   - EcLastSearchComponent   remembers the last results URL ("pick up where you left off")
 //
 // Add future shared features (chat widget, cookie notice, ...) here.
 // Each child is headless or renders its own hidden <dialog>, so this root
@@ -13,15 +14,17 @@
 import { Component } from '@angular/core';
 import { EcSessionComponent } from '../ec-session/ec-session.component';
 import { EcAskLibrarianComponent } from '../ec-ask-librarian/ec-ask-librarian.component';
+import { EcLastSearchComponent } from '../ec-last-search/ec-last-search.component';
 
 @Component({
   selector: 'custom-ec-shared-root',
   standalone: true,
-  imports: [EcSessionComponent, EcAskLibrarianComponent],
+  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent],
   host: { 'data-component-id': 'custom-ec-shared-root' },
   template: `
     <custom-ec-session></custom-ec-session>
     <custom-ec-ask-librarian></custom-ec-ask-librarian>
+    <custom-ec-last-search></custom-ec-last-search>
   `,
 })
 export class EcSharedRootComponent {}

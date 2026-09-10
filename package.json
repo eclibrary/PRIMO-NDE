@@ -6,6 +6,8 @@
     "ng": "ng",
     "use": "node scripts/use-view.cjs",
     "views:sync": "node scripts/sync-views.cjs",
+    "views:add": "node scripts/add-view.cjs",
+    "return-labels": "node scripts/return-labels.cjs",
     "start": "node scripts/serve.cjs",
     "start:proxy": "node scripts/serve.cjs --proxy",
     "build": "node scripts/build.cjs",

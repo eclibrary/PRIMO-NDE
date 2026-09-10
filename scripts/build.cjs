@@ -37,6 +37,11 @@ function run(cmd, cmdArgs, env) {
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
+// Regenerate src/assets/data/libraries.js from data/return-labels.json so the package
+// never ships stale return-label data. Fails the build on malformed data — better
+// here than as a blank label for a patron.
+run(process.execPath, ['scripts/return-labels.cjs']);
+
 for (const key of keys) {
   const v = resolveView(key);
   const env = { NDE_VIEW: v.key };

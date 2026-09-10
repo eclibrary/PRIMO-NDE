@@ -24,9 +24,34 @@
 html.ec-audience-user [data-ec-audience='guest'] { display: none; }
 html.ec-audience-user [data-ec-audience='user'] { display: revert; }
 
+// --- "Pick up where you left off" ----------------------------------------------
+// Landing-page block marked data-ec-last-search is shown only when
+// EcLastSearchComponent has a stored search for this view (class on <html>).
+[data-ec-last-search] { display: none; }
+html.ec-has-last-search [data-ec-last-search] { display: revert; }
+
 // To apply a generated M3 theme instead of a prebuilt one:
 //   ng generate @angular/material:m3-theme   (answer "yes" to system-level variables)
 // then in the view's theme.scss:
 //   @use '@angular/material' as mat;
 //   @use 'path/to/m3-theme' as m3;
 //   .custom-nde-theme { @include mat.all-component-colors(m3.$light-theme); @include mat.system-level-colors(m3.$light-theme); }
+
+
+
+// --- Sandbox marker -------------------------------------------------------------
+// EcSessionComponent sets `ec-env-sandbox` on <html> on *-psb hosts.
+html.ec-env-sandbox body::before {
+  content: 'SANDBOX';
+  position: fixed;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  padding: .1rem 1rem;
+  border-radius: 0 0 .5rem .5rem;
+  background: var(--ec-yellow);
+  color: #000;
+  font: 700 .75rem/1.6 sans-serif;
+  letter-spacing: .1em;
+  pointer-events: none;
+}

@@ -1,0 +1,14 @@
+/*
+  Ask-a-librarian form tweaks for the Find-eR view ONLY.
+
+  Injected by EcAskLibrarianComponent as a <style> INSIDE the LibAnswers widget's
+  shadow root after the form renders (see applyViewTweaks). Rules here can only
+  target the widget's own markup; page-level classes are out of scope.
+  Other views: put a file at the same path under src/views/<view>/assets/, or
+  src/assets/ask-librarian/form.css for a rule shared by all views.
+*/
+
+/* Find-eR: no file uploads on questions coming from the catalogue. */
+.has-advanced-upload {
+  display: none !important;
+}

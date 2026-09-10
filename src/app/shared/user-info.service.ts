@@ -56,8 +56,11 @@ export class UserInfoService {
         return null;
       }
       const info = cfg.mapResponse(await res.json());
-      // Primary id from the JWT is a cheap fallback if the endpoint omits it.
-      if (!info.primaryId && jwt) info.primaryId = this.jwtClaim(jwt, 'userName');
+      // Name and primary id are not in personal_settings; take them from the JWT.
+      if (jwt) {
+        info.displayName ??= this.jwtClaim(jwt, cfg.jwtNameClaim);
+        info.primaryId ??= this.jwtClaim(jwt, 'user') ?? this.jwtClaim(jwt, 'userName');
+      }
       return info;
     } catch (err) {
       console.warn('[ec] user info request errored', err);

@@ -1,0 +1,168 @@
+{
+  "_comment": "Return labels, keyed by Alma library code. `returnAddress` = the lines printed on the label, in order. Edit this file, then run `npm run return-labels` (also done automatically by every build). A library without `returnAddress` gets no label.",
+  "BCB": {
+    "name": "EC Library BXL",
+    "returnAddress": [
+      "EC Library BXL",
+      "European Commission",
+      "VM18 01/053",
+      "B-1049 Brussels"
+    ]
+  },
+  "BCENT": {
+    "name": "Library of the Learning Centre Brussels",
+    "returnAddress": [
+      "Library of the Learning Centre Brussels",
+      "European Commission",
+      "PLB3 00/02",
+      "B-1049 Brussels"
+    ]
+  },
+  "BCL": {
+    "name": "EC Library LUX",
+    "returnAddress": [
+      "EC Library LUX",
+      "European Commission",
+      "BECH A3/21",
+      "L-2920 Luxembourg"
+    ]
+  },
+  "BCOMP": {
+    "name": "COMP Library",
+    "returnAddress": [
+      "COMP Library",
+      "European Commission",
+      "MADO 05/102",
+      "B-1049 Brussels"
+    ]
+  },
+  "BDGT": {
+    "name": "DGT Library and Knowledge Services Brussels",
+    "returnAddress": [
+      "DGT Library and Knowledge Services Brussels",
+      "European Commission",
+      "J-59 00/P007",
+      "B-1049 Brussels"
+    ]
+  },
+  "BIIAS": {
+    "name": "Internal Audit Service",
+    "returnAddress": [
+      "Internal Audit Service",
+      "European Commission",
+      "MADO 31/053",
+      "B-1049 Brussels"
+    ]
+  },
+  "BRTDE": {
+    "name": "Research & Innovation",
+    "returnAddress": [
+      "Research & Innovation",
+      "European Commission",
+      "ORBN 00/BIB1",
+      "B-1049 Brussels"
+    ]
+  },
+  "BSCIC": {
+    "name": "Interpretation",
+    "returnAddress": [
+      "Interpretation",
+      "European Commission",
+      "CCAB 04/02",
+      "B-1049 Brussels"
+    ]
+  },
+  "BSERJ": {
+    "name": "Legal Service",
+    "returnAddress": [
+      "Legal Service",
+      "European Commission",
+      "BERL -1/BIB 1",
+      "B-1049 Brussels"
+    ]
+  },
+  "CLSD": {
+    "name": "Closed Libraries",
+    "returnAddress": [
+      "Closed Libraries",
+      "European Commission",
+      "VM18 04/29",
+      "B-1049 Brussels"
+    ]
+  },
+  "EEAS": {
+    "name": "European External Action Service",
+    "returnAddress": [
+      "European External Action Service",
+      "European Commission",
+      "JOYE 3/458",
+      "B-1046 Brussels"
+    ]
+  },
+  "IRMM": {
+    "name": "JRC Geel",
+    "returnAddress": [
+      "JRC Geel",
+      "European Commission",
+      "010 01/012",
+      "B-2440 Geel"
+    ]
+  },
+  "ISPRA": {
+    "name": "JRC Ispra",
+    "returnAddress": [
+      "JRC Ispra",
+      "European Commission",
+      "46D 00/004 T.P. 464",
+      "I-21027 Ispra"
+    ]
+  },
+  "ITU": {
+    "name": "JRC Karlsruhe",
+    "returnAddress": [
+      "JRC Karlsruhe",
+      "European Commission",
+      "KA-T 0G/215",
+      "D-76125 Karlsruhe"
+    ]
+  },
+  "LCENT": {
+    "name": "Library of the Learning Centre Luxembourg",
+    "returnAddress": [
+      "Library of the Learning Centre Luxembourg",
+      "European Commission",
+      "BECH A3/023",
+      "L-1521 Luxembourg"
+    ]
+  },
+  "LDGT": {
+    "name": "DGT Library and Knowledge Services Luxembourg",
+    "returnAddress": [
+      "DGT Library and Knowledge Services Luxembourg",
+      "European Commission",
+      "BECH A3/023",
+      "L-1521 LUXEMBOURG"
+    ]
+  },
+  "OPP": {
+    "name": "OP – Preservation"
+  },
+  "RES_SHARE": {
+    "name": "Brussels Resource Sharing Library",
+    "returnAddress": [
+      "Brussels Resource Sharing Library",
+      "European Commission",
+      "VM18 01/002",
+      "B-1049 Brussels"
+    ]
+  },
+  "RSLUX": {
+    "name": "Luxembourg Resource Sharing Library",
+    "returnAddress": [
+      "Luxembourg Resource Sharing Library",
+      "European Commission",
+      "BECH A3/21",
+      "L-2920 Luxembourg"
+    ]
+  }
+}
