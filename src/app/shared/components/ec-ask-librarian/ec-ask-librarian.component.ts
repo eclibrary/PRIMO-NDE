@@ -28,7 +28,7 @@
 //
 // MOUNT POINT: rendered by EcSharedRootComponent (see shared-mappings.ts).
 import { Component, ElementRef, OnDestroy, ViewChild, inject, signal } from '@angular/core';
-import { EC_CONFIG, EcUserInfo, currentLang, currentVid, localised } from '../../ec-config';
+import { EC_CONFIG, EcUserInfo, currentLang, localised } from '../../ec-config';
 import { UserInfoService } from '../../user-info.service';
 
 /**
@@ -259,7 +259,7 @@ export class EcAskLibrarianComponent implements OnDestroy {
   /**
    * View-specific adjustments applied inside the widget's shadow root once the
    * form exists:
-   *   1. hide the fields listed in EC_CONFIG.askALibrarian.perView[<view>]
+   *   1. hide the fields listed in EC_CONFIG.askALibrarian.hideFields (set per view in config/views/<view>.json)
    *   2. inject the per-view stylesheet (assets overlay) as a <style> element
    * Both must happen INSIDE the shadow tree — page CSS and page-level
    * selectors do not cross the shadow boundary.
@@ -272,8 +272,7 @@ export class EcAskLibrarianComponent implements OnDestroy {
     // 1. Hide fields: walk up from the input to the row that holds label + input.
     //    The wrapper class list is a best guess at LibAnswers' markup; extend it
     //    if a field's label survives (inspect the shadow tree to see the wrapper).
-    const viewKey = currentVid().split(':')[1] ?? '';
-    for (const name of cfg.perView[viewKey]?.hideFields ?? []) {
+    for (const name of cfg.hideFields) {
       const input = root.querySelector<HTMLElement>(`[name="${CSS.escape(name)}"]`);
       const row = input?.closest<HTMLElement>('.s-la-askform-field, .form-group, fieldset') ?? input;
       if (row) row.hidden = true;

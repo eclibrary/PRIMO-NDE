@@ -1,0 +1,325 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ec-nde-views-config",
+  "title": "EC Library NDE customization settings",
+  "description": "Every value in config/global.json (all views) and config/views/<view>.json (overrides for one view). Per-view files may contain any subset of the same keys; they are deep-merged over global.json at build time (objects merge, arrays and scalars replace). Descriptions double as help text in the settings UI.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "defaultLang": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr"
+      ],
+      "default": "en",
+      "title": "Default language",
+      "description": "Used when the current UI language has no entry in a localised value."
+    },
+    "userInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Signed-in user details",
+      "description": "How the module reads the patron's details from Primo (used to prefill forms and the chat).",
+      "properties": {
+        "jwtStorageKey": {
+          "type": "string",
+          "title": "JWT storage key",
+          "description": "sessionStorage key where Primo keeps the session JWT. Do not change unless Ex Libris renames it."
+        },
+        "jwtNameClaim": {
+          "type": "string",
+          "title": "JWT name claim",
+          "description": "Claim in the JWT payload that holds the display name (EC: displayName)."
+        },
+        "endpoint": {
+          "type": "string",
+          "title": "Personal details endpoint",
+          "description": "Private Primo REST path returning the patron's contact details. {vid} and {lang} are substituted at call time."
+        }
+      }
+    },
+    "lastSearch": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Pick up where you left off",
+      "description": "Remembers the last results page per view and shows a link on the landing page.",
+      "properties": {
+        "storageKeyPrefix": {
+          "type": "string",
+          "title": "localStorage key prefix",
+          "description": "The view id is appended, so each view remembers its own search."
+        },
+        "resultsPath": {
+          "type": "string",
+          "title": "Results route",
+          "description": "Router path of the results page, relative to /nde."
+        },
+        "homePath": {
+          "type": "string",
+          "title": "Landing route",
+          "description": "Router path of the landing page, where the link is rendered."
+        },
+        "stripParams": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Parameters not to store",
+          "description": "Query parameters removed before saving (dev switches, cache-busters)."
+        },
+        "maxAgeDays": {
+          "type": "integer",
+          "minimum": 1,
+          "title": "Forget after (days)",
+          "description": "A stored search older than this is discarded."
+        }
+      }
+    },
+    "askALibrarian": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Ask a librarian",
+      "description": "The modal that opens the LibAnswers question form instead of leaving the page.",
+      "properties": {
+        "triggerUrlPrefixes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": "Trigger link prefixes",
+          "description": "Any link whose href starts with one of these opens the modal. Prefix match (language variants and query strings included)."
+        },
+        "formfillScriptUrl": {
+          "type": "string",
+          "format": "uri",
+          "title": "Prefill helper script",
+          "description": "URL of libanswers.script.js on Europa. Loaded before the widget; its CSS is resolved relative to it."
+        },
+        "libanswersHost": {
+          "type": "string",
+          "format": "uri",
+          "title": "LibAnswers host",
+          "description": "Widget scripts are loaded from <host>/1.0/widgets/<id>."
+        },
+        "widgetId": {
+          "$ref": "#/definitions/localised",
+          "title": "Widget id per language",
+          "description": "LibAnswers question-form widget id. Empty en = modal disabled (links behave normally)."
+        },
+        "prefillFromUser": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "displayName",
+              "firstName",
+              "lastName",
+              "email",
+              "primaryId",
+              "unit",
+              "city"
+            ]
+          },
+          "title": "Prefill from user",
+          "description": "LibAnswers form field name → patron property. Field names come from the rendered form (pname, pemail, custom5, …)."
+        },
+        "prefillStatic": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Static prefill",
+          "description": "Field name → fixed value, always applied (e.g. a hidden 'source' field)."
+        },
+        "context": {
+          "type": "object",
+          "additionalProperties": false,
+          "title": "Context block",
+          "description": "Text appended to the question with what the patron was looking at.",
+          "properties": {
+            "field": {
+              "type": "string",
+              "title": "Target field",
+              "description": "Form textarea that receives the block."
+            },
+            "titleSelector": {
+              "type": "string",
+              "title": "Record title selector",
+              "description": "CSS selector of the record title on the full-display page."
+            },
+            "marker": {
+              "$ref": "#/definitions/localised",
+              "title": "Marker line",
+              "description": "Written first; the patron types above it."
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "Line labels",
+              "properties": {
+                "en": {
+                  "$ref": "#/definitions/contextLabels"
+                },
+                "fr": {
+                  "$ref": "#/definitions/contextLabels"
+                }
+              },
+              "required": [
+                "en"
+              ]
+            }
+          }
+        },
+        "title": {
+          "$ref": "#/definitions/localised",
+          "title": "Modal title"
+        },
+        "closeLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Close button label"
+        },
+        "loadingLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Loading text"
+        },
+        "errorLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Error text",
+          "description": "Shown when the widget could not be loaded; followed by a link to the real page."
+        },
+        "resetOnClose": {
+          "type": "boolean",
+          "title": "Reset form on close",
+          "description": "Discard the form when the modal closes so every open starts empty."
+        },
+        "hideFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Hidden form fields",
+          "description": "Form field names whose row is hidden (typically set per view). A hidden required field must be filled via static prefill instead."
+        },
+        "formCssPath": {
+          "type": "string",
+          "title": "Form stylesheet path",
+          "description": "Package-relative CSS injected into the widget's shadow root; per-view assets overlay applies. Missing file = ignored."
+        }
+      }
+    },
+    "libchat": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "LibChat",
+      "description": "The floating LibAnswers chat button.",
+      "properties": {
+        "libanswersHost": {
+          "type": "string",
+          "format": "uri",
+          "title": "LibAnswers host"
+        },
+        "hash": {
+          "type": "string",
+          "title": "Widget hash",
+          "description": "From the LibChat embed code (hash= parameter). Empty = no chat on this view."
+        },
+        "floatButtonSelector": {
+          "type": "string",
+          "title": "Floating button selector",
+          "description": "CSS selector of LibChat's button; only change if LibAnswers changes its markup."
+        },
+        "iframeSelector": {
+          "type": "string",
+          "title": "Chat iframe selector"
+        }
+      },
+      "required": [
+        "libanswersHost",
+        "hash"
+      ]
+    },
+    "printReturnLabel": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Print return label",
+      "description": "Link under each active loan (only on views whose mappings mount the component).",
+      "properties": {
+        "labelPagePath": {
+          "type": "string",
+          "title": "Label page path",
+          "description": "Package-relative path of the label page."
+        },
+        "codePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Library code property paths",
+          "description": "Dot paths tried on the loan host component to find the library code, in order."
+        },
+        "returnedMarker": {
+          "type": "string",
+          "title": "Returned-loan marker",
+          "description": "CSS selector present only on returned (history) loan rows; those get no label."
+        },
+        "label": {
+          "$ref": "#/definitions/localised",
+          "title": "Link text"
+        }
+      },
+      "required": [
+        "labelPagePath",
+        "codePaths",
+        "returnedMarker",
+        "label"
+      ]
+    }
+  },
+  "definitions": {
+    "localised": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "en": {
+          "type": "string"
+        },
+        "fr": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "en"
+      ]
+    },
+    "contextLabels": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "mmsId": {
+          "type": "string"
+        },
+        "recordId": {
+          "type": "string"
+        },
+        "searchTerms": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "mmsId",
+        "recordId",
+        "searchTerms",
+        "link"
+      ]
+    }
+  }
+}

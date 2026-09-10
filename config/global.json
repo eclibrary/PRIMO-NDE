@@ -1,0 +1,49 @@
+{
+  "$schema": "./schema.json",
+  "defaultLang": "en",
+  "userInfo": {
+    "jwtStorageKey": "primoExploreJwt",
+    "jwtNameClaim": "displayName",
+    "endpoint": "/primaws/rest/priv/myaccount/personal_settings?vid={vid}"
+  },
+  "lastSearch": {
+    "storageKeyPrefix": "ec:lastSearch:",
+    "resultsPath": "/search",
+    "homePath": "/home",
+    "stripParams": ["useLocalCustomPackage", "_customAssetCheck"],
+    "maxAgeDays": 30
+  },
+  "askALibrarian": {
+    "triggerUrlPrefixes": ["https://ec.europa.eu/libraries/pages/askalibrarian/"],
+    "formfillScriptUrl": "https://ec.europa.eu/libraries/libanswers/libanswers.script.js",
+    "libanswersHost": "https://ec-europa-eu.libanswers.com",
+    "widgetId": { "en": "8158", "fr": "8158" },
+    "prefillFromUser": { "pname": "displayName", "pemail": "email" },
+    "prefillStatic": {},
+    "context": {
+      "field": "pdetails",
+      "titleSelector": "nde-record-title h3",
+      "marker": { "en": "**TYPE ABOVE THIS LINE**", "fr": "**ÉCRIVEZ AU-DESSUS DE CETTE LIGNE**" },
+      "labels": {
+        "en": { "title": "Item title", "mmsId": "MMS ID", "recordId": "Record ID", "searchTerms": "Search terms", "link": "Link" },
+        "fr": { "title": "Titre", "mmsId": "MMS ID", "recordId": "ID de la notice", "searchTerms": "Termes de recherche", "link": "Lien" }
+      }
+    },
+    "title": { "en": "Ask a librarian", "fr": "Demander à un bibliothécaire" },
+    "closeLabel": { "en": "Close", "fr": "Fermer" },
+    "loadingLabel": { "en": "Loading the form…", "fr": "Chargement du formulaire…" },
+    "errorLabel": {
+      "en": "The form could not be loaded. Please try again or open the page directly:",
+      "fr": "Le formulaire n’a pas pu être chargé. Réessayez ou ouvrez la page directement :"
+    },
+    "resetOnClose": true,
+    "hideFields": [],
+    "formCssPath": "assets/ask-librarian/form.css"
+  },
+  "libchat": {
+    "libanswersHost": "https://ec-europa-eu.libanswers.com",
+    "hash": "c78ee6cc0e28c62ba3c16869ef1d7fc75036cf356cda6bfbab938f6251e74017",
+    "floatButtonSelector": ".s-lch-widget-float-btn",
+    "iframeSelector": "[id^=\"s-lch-widget\"] iframe"
+  }
+}

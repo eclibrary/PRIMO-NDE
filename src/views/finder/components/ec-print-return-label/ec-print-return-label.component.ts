@@ -11,7 +11,7 @@
 // LIBRARY CODE: not in the DOM (the row shows display names only), so it is read
 // from the host component NDE injects into this slot (`hostComponent` = the
 // nde-loan-item instance). The property path is undocumented and may move
-// between NDE releases, so the candidates are listed in CONFIG.codePaths and
+// between NDE releases, so the candidates are listed in config (codePaths) and
 // tried in order. When none matches, nothing is rendered and the host object is
 // logged ONCE so the right path can be read off the console.
 //
@@ -21,34 +21,17 @@
 // MOUNT POINT: `nde-loan-item-after` in src/views/finder/mappings.ts.
 import { Component, ElementRef, Input, OnInit, inject, signal } from '@angular/core';
 import { UserInfoService } from '../../../../app/shared/user-info.service';
-import { Localised, currentLang, localised } from '../../../../app/shared/ec-config';
+import { EC_CONFIG, currentLang, localised } from '../../../../app/shared/ec-config';
 
 /** Package root at runtime (…/custom/<INST>-<VIEW>/) — same trick as AssetsPublicPathDirective. */
 declare const __webpack_public_path__: string;
 
-/** View-local config: this feature exists only on Find-eR, so it does not live in EC_CONFIG. */
-const CONFIG = {
-  /** Label page inside this package (see src/views/finder/assets/return-label/). */
-  labelPagePath: 'assets/return-label/index.html',
-  /**
-   * Where to look for the loan's library (main location) code on the host
-   * component, most likely first. Dot paths, evaluated against hostComponent.
-   * VE exposed it as `item.mainlocationcode` on prm-loan; NDE's loan object comes
-   * from the same Alma loans payload, so the field name should survive.
-   */
-  codePaths: [
-    'loan.mainlocationcode',
-    'item.mainlocationcode',
-    'loanItem.mainlocationcode',
-    'loan.mainLocationCode',
-    'item.mainLocationCode',
-    'loan.libraryCode',
-    'loan.library.code',
-  ],
-  /** Selector that marks a returned (history) loan row. */
-  returnedMarker: '[translate="loans.return_date"]',
-  label: { en: 'Print return label', fr: "Imprimer l'étiquette de retour" } as Localised,
-};
+/**
+ * Settings come from config/views/finder.json (section `printReturnLabel`), merged
+ * into EC_CONFIG at build time. The section is optional in the schema because
+ * only views that mount this component need it; a view without it renders nothing.
+ */
+const CONFIG = EC_CONFIG.printReturnLabel;
 
 /** Logged once per page load so a wrong path is diagnosed from the console, not by trial builds. */
 let probeLogged = false;
@@ -76,11 +59,13 @@ export class EcPrintReturnLabelComponent implements OnInit {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly userInfo = inject(UserInfoService);
 
-  readonly label = localised(CONFIG.label, currentLang());
+  readonly label = CONFIG ? localised(CONFIG.label, currentLang()) : '';
   /** Fully built link, or '' when no label should be offered. */
   readonly href = signal('');
 
   async ngOnInit(): Promise<void> {
+    if (!CONFIG) return; // section missing from this view's config → feature off
+
     // History rows: no label.
     const row = this.el.nativeElement.closest('nde-account-section-item-container, li');
     if (row?.querySelector(CONFIG.returnedMarker)) return;
@@ -104,7 +89,7 @@ export class EcPrintReturnLabelComponent implements OnInit {
 
   /** First candidate path on hostComponent that yields a non-empty string. */
   private libraryCode(): string {
-    for (const path of CONFIG.codePaths) {
+    for (const path of CONFIG?.codePaths ?? []) {
       const value = path.split('.').reduce<any>((o, k) => (o == null ? undefined : o[k]), this.hostComponent);
       if (typeof value === 'string' && value.trim()) return value.trim();
     }
@@ -118,7 +103,7 @@ export class EcPrintReturnLabelComponent implements OnInit {
     const hc = this.hostComponent ?? {};
     console.warn(
       '[ec] print-return-label: no library code found on hostComponent. ' +
-      'Inspect the object below, then update CONFIG.codePaths.',
+      'Inspect the object below, then update printReturnLabel.codePaths in config/views/finder.json.',
       { keys: Object.keys(hc), hostComponent: hc },
     );
   }

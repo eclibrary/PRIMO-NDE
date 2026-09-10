@@ -1,16 +1,25 @@
 // src/app/shared/ec-config.ts
 //
-// Shared, non-secret configuration for the EC custom module. Everything that is
-// a "value" rather than "code" — URLs, IDs, labels, field mappings — lives here
-// so it can be changed in one place and, when the repo is shared with another
-// institution, adapted without touching components.
+// Configuration entry point for the EC custom module.
 //
-// Per-view overrides: this file is shared by all four views. If a view needs a
-// different value, add a fileReplacement for this file in that view's
-// angular.json configuration (same mechanism as mappings.ts) rather than
-// branching on vid inside components.
+// WHERE VALUES LIVE: NOT here. Every setting (URLs, widget ids, labels, field
+// mappings, per-view tweaks) is data in config/global.json and
+// config/views/<view>.json, described by config/schema.json. prebuild.js merges
+// global + view and writes src/app/shared/ec-config.generated.ts, which this
+// file re-exports as EC_CONFIG. Edit the JSON (or run `npm run settings`) and
+// rebuild; never edit the generated file.
+//
+// WHAT STAYS HERE: the TypeScript shape of the settings (EcConfigValues — keep
+// it in sync with schema.json), the code-shaped bits that cannot be data
+// (mapResponse), and small helpers (currentLang, localised, isSandbox, …).
+//
+// PER-VIEW VALUES: because each view is a separate build, EC_CONFIG already
+// contains the merged values for the view being built. Components therefore
+// read e.g. EC_CONFIG.askALibrarian.hideFields directly — there is no runtime
+// "which view am I" lookup for settings.
+import { EC_CONFIG_VALUES, EC_CONFIG_VIEW } from './ec-config.generated';
 
-/** UI languages the views are served in. Add a code here when a new language is enabled in Alma. */
+/** UI languages the views are served in. Add a code here AND in schema.json when a new language is enabled in Alma. */
 export type EcLang = 'en' | 'fr';
 
 /** Lookup by language with an English fallback — used for every localised string/URL. */
@@ -30,43 +39,75 @@ export interface EcUserInfo {
   city?: string;
 }
 
-export const EC_CONFIG = {
-  /** Language to fall back to when the current UI language is not in a Localised map. */
-  defaultLang: 'en' as EcLang,
-
-  // ---------------------------------------------------------------------------
-  // Signed-in user details (used to prefill forms). See UserInfoService.
-  // ---------------------------------------------------------------------------
+/**
+ * Shape of the settings — the TypeScript twin of config/schema.json.
+ * Every property here must exist in the schema and vice versa; the generated
+ * file is typed against this, so a mismatch fails the build (that is the point).
+ * Optional sections are features a view may not enable (e.g. printReturnLabel).
+ */
+export interface EcConfigValues {
+  defaultLang: EcLang;
   userInfo: {
-    /**
-     * sessionStorage key under which Primo keeps the session JWT. Primo VE used
-     * `primoExploreJwt`; NDE reuses it. Sent as `Authorization: Bearer …` to the
-     * private Primo REST endpoints, exactly as the NDE shell does.
-     * VERIFY on Find-eR: DevTools > Application > Session Storage.
-     */
-    jwtStorageKey: 'primoExploreJwt',
+    jwtStorageKey: string;
+    jwtNameClaim: string;
+    endpoint: string;
+  };
+  lastSearch: {
+    storageKeyPrefix: string;
+    resultsPath: string;
+    homePath: string;
+    stripParams: string[];
+    maxAgeDays: number;
+  };
+  askALibrarian: {
+    triggerUrlPrefixes: string[];
+    formfillScriptUrl: string;
+    libanswersHost: string;
+    widgetId: Localised;
+    prefillFromUser: Record<string, keyof EcUserInfo>;
+    prefillStatic: Record<string, string>;
+    context: {
+      field: string;
+      titleSelector: string;
+      marker: Localised;
+      labels: Localised<Record<'title' | 'mmsId' | 'recordId' | 'searchTerms' | 'link', string>>;
+    };
+    title: Localised;
+    closeLabel: Localised;
+    loadingLabel: Localised;
+    errorLabel: Localised;
+    resetOnClose: boolean;
+    hideFields: string[];
+    formCssPath: string;
+  };
+  libchat: {
+    libanswersHost: string;
+    hash: string;
+    floatButtonSelector: string;
+    iframeSelector: string;
+  };
+  printReturnLabel?: {
+    labelPagePath: string;
+    codePaths: string[];
+    returnedMarker: string;
+    label: Localised;
+  };
+}
 
-    /**
-     * JWT claim holding the user's display name. Primo VE / NDE put it in
-     * `userName`. VERIFY once: decode sessionStorage.primoExploreJwt (jwt.io)
-     * and check which claim shows your name rather than your login id.
-     */
-    jwtNameClaim: 'displayName',
-
-    /**
-     * Endpoint returning the patron's personal details for the current session.
-     * `{vid}` and `{lang}` are substituted at call time.
-     * VERIFY on Find-eR: open My Account > Personal details with DevTools >
-     * Network open and copy the request the shell makes; adjust `mapResponse`
-     * below to its response shape.
-     */
-    endpoint: `/primaws/rest/priv/myaccount/personal_settings?vid={vid}`,
-
+/**
+ * The settings for THIS build (global + view, merged at build time) plus the
+ * code-shaped members that cannot live in JSON.
+ */
+export const EC_CONFIG = {
+  ...EC_CONFIG_VALUES,
+  userInfo: {
+    ...EC_CONFIG_VALUES.userInfo,
     /**
      * Turn the personal_settings JSON into EcUserInfo. Every field there is an
      * object `{ value, maxlen, usage, … }`, hence the `val()` unwrapping.
      * `mailattachement.value` is the same address in a second place — used as
-     * fallback if `email` is empty.
+     * fallback if `email` is empty. Code, not data: the response shape is
+     * Ex Libris' to change.
      */
     mapResponse(json: any): EcUserInfo {
       const d = json?.data ?? {};
@@ -80,151 +121,10 @@ export const EC_CONFIG = {
       };
     },
   },
+};
 
-  // ---------------------------------------------------------------------------
-  // "Pick up where you left off" — last results page, kept in localStorage.
-  // See EcLastSearchComponent.
-  // ---------------------------------------------------------------------------
-  lastSearch: {
-    /** localStorage key = prefix + vid, so each view remembers its own search. */
-    storageKeyPrefix: 'ec:lastSearch:',
-    /** Router path of the results page (relative to the /nde base). */
-    resultsPath: '/search',
-    /** Router path of the landing page, where the link is rendered. */
-    homePath: '/home',
-    /** Query params never worth persisting (dev switches, cache-busters). */
-    stripParams: ['useLocalCustomPackage', '_customAssetCheck'],
-    /** Forget a search older than this. */
-    maxAgeDays: 30,
-  },
-
-  // ---------------------------------------------------------------------------
-  // Ask a librarian modal (LibAnswers widget + Europa prefill helper)
-  // ---------------------------------------------------------------------------
-  askALibrarian: {
-    /**
-     * Any <a href> that starts with one of these prefixes opens the modal instead
-     * of navigating. Prefix match, so language variants (/en/, /fr/) and query
-     * strings are covered. Keep the real page as the href: it stays the fallback
-     * for middle-click, "open in new tab", no-JS, and when the module is absent.
-     */
-    triggerUrlPrefixes: [
-      'https://ec.europa.eu/libraries/pages/askalibrarian/',
-    ],
-
-    /**
-     * The prefill helper hosted on Europa (libanswers.script.js). It MUST execute
-     * before the LibAnswers widget script (it patches attachShadow to keep the
-     * widget's shadow root reachable), so the modal loads it first and waits.
-     * Its stylesheet (libanswers.style.css) is resolved relative to this URL by
-     * the script itself.
-     */
-    formfillScriptUrl: 'https://ec.europa.eu/libraries/libanswers/libanswers.script.js',
-
-    /** LibAnswers site; widget scripts are `${libanswersHost}/1.0/widgets/${id}`. */
-    libanswersHost: 'https://ec-europa-eu.libanswers.com',
-
-    /**
-     * LibAnswers question-form widget ID per language. The widget renders into a
-     * div whose id LibAnswers derives from the widget id: `s-la-widget-${id}`.
-     * Use the same id for both languages if you only have one form.
-     * Set `en` to '' to disable the modal entirely (links then behave normally).
-     */
-    widgetId: {
-      en: '8158',
-      fr: '8158',
-    } as Localised,
-
-    /**
-     * Prefill mapping: LibAnswers form field `name` → EcUserInfo property.
-     * Only signed-in users have info; guests get an empty form.
-     * Field names are what the LibAnswers form uses (inspect the rendered form);
-     * custom question fields look like `custom_198012`.
-     */
-    prefillFromUser: {
-      pname: 'displayName',
-      pemail: 'email',
-    } as Record<string, keyof EcUserInfo>,
-
-    /**
-     * Static values always applied, e.g. a hidden "source" field telling the
-     * librarians the question came from Find-eR rather than Europa.
-     * (Hidden inputs are only filled if the helper's `fillHidden` allows it.)
-     */
-    prefillStatic: {
-      // custom_XXXXXX: 'Find-eR',
-    } as Record<string, string>,
-
-    /**
-     * Context block appended to the question so the librarian sees what the
-     * patron was looking at. Rendered into the form field named `field`;
-     * lines whose value is unknown on the current page are simply omitted.
-     */
-    context: {
-      /** LibAnswers field (a textarea) that receives the block. */
-      field: 'pdetails',
-      /** Where NDE shows the record title on the full-display page. */
-      titleSelector: 'nde-record-title h3',
-      /** Written first; the patron types above it, we append below it. */
-      marker: {
-        en: '**TYPE ABOVE THIS LINE**',
-        fr: '**ÉCRIVEZ AU-DESSUS DE CETTE LIGNE**',
-      } as Localised,
-      labels: {
-        en: { title: 'Item title', mmsId: 'MMS ID', recordId: 'Record ID', searchTerms: 'Search terms', link: 'Link' },
-        fr: { title: 'Titre', mmsId: 'MMS ID', recordId: 'ID de la notice', searchTerms: 'Termes de recherche', link: 'Lien' },
-      } as Localised<Record<'title' | 'mmsId' | 'recordId' | 'searchTerms' | 'link', string>>,
-    },
-
-    /** Modal title. */
-    title: {
-      en: 'Ask a librarian',
-      fr: 'Demander à un bibliothécaire',
-    } as Localised,
-
-    /** Accessible label for the close button. */
-    closeLabel: {
-      en: 'Close',
-      fr: 'Fermer',
-    } as Localised,
-
-    /** Shown while the widget loads. */
-    loadingLabel: {
-      en: 'Loading the form…',
-      fr: 'Chargement du formulaire…',
-    } as Localised,
-
-    /** Shown when the widget script could not be loaded (offline, CSP, LibAnswers down). */
-    errorLabel: {
-      en: 'The form could not be loaded. Please try again or open the page directly:',
-      fr: 'Le formulaire n’a pas pu être chargé. Réessayez ou ouvrez la page directement :',
-    } as Localised,
-
-    /** Discard the form on close so every open starts empty (see resetWidget()). */
-    resetOnClose: true,
-
-    /**
-     * Per-view tweaks, keyed by the view part of the vid (`32EUC_INST:VU2` → 'VU2').
-     * hideFields: form field `name`s whose whole row is hidden inside the widget.
-     * A hidden field is still submitted (empty) — if LibAnswers marks it required,
-     * fill it via prefillStatic instead of hiding it.
-     * Views not listed get no tweaks.
-     */
-    perView: {
-      // VU2: { hideFields: ['custom5'] },
-    } as Record<string, { hideFields?: string[] }>,
-
-    /**
-     * Optional stylesheet injected INTO the widget's shadow root once the form
-     * has rendered (page CSS cannot reach into shadow trees). Resolved against
-     * the customization package, so the per-view assets overlay applies:
-     *   src/assets/ask-librarian/form.css            → all views (optional)
-     *   src/views/<view>/assets/ask-librarian/form.css → that view only
-     * A missing file (404) is silently ignored.
-     */
-    formCssPath: 'assets/ask-librarian/form.css',
-  },
-} as const;
+/** Key of the view this bundle was built for ('' for a plain `ng build`). Informational. */
+export const EC_BUILD_VIEW = EC_CONFIG_VIEW;
 
 /**
  * Current UI language, from the `lang` query parameter NDE always carries

@@ -1,0 +1,17 @@
+{
+  "$schema": "../schema.json",
+  "printReturnLabel": {
+    "labelPagePath": "assets/return-label/index.html",
+    "codePaths": [
+      "loan.mainlocationcode",
+      "item.mainlocationcode",
+      "loanItem.mainlocationcode",
+      "loan.mainLocationCode",
+      "item.mainLocationCode",
+      "loan.libraryCode",
+      "loan.library.code"
+    ],
+    "returnedMarker": "[translate=\"loans.return_date\"]",
+    "label": { "en": "Print return label", "fr": "Imprimer l'étiquette de retour" }
+  }
+}
