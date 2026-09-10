@@ -7,6 +7,7 @@
     "use": "node scripts/use-view.cjs",
     "views:sync": "node scripts/sync-views.cjs",
     "views:add": "node scripts/add-view.cjs",
+    "views:remove": "node scripts/remove-view.cjs",
     "return-labels": "node scripts/return-labels.cjs",
     "config:generate": "node scripts/config-generate.cjs",
     "settings": "node scripts/settings-ui/server.cjs",
