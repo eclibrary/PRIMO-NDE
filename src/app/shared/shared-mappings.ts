@@ -12,6 +12,7 @@
  * therefore hang off EcSharedRootComponent rather than each taking a slot.
  */
 import { EcSharedRootComponent } from './components/ec-shared-root/ec-shared-root.component';
+import { EcResourceSharingFormatComponent } from './components/ec-resource-sharing-format/ec-resource-sharing-format.component';
 // import { EcNoticeComponent } from './components/ec-notice/ec-notice.component';
 
 export const sharedSelectorMappings: Array<[string, any]> = [
@@ -21,5 +22,11 @@ export const sharedSelectorMappings: Array<[string, any]> = [
   // move this to a slot that exists everywhere — `nde-header` is a candidate to verify.
   ['nde-search-bar-container-after', EcSharedRootComponent],
 
+  // Resource-sharing request dialog: force the Format per view (config resourceSharing.*).
+  // Renders inside the request dialog; hostComponent is the Formly-driven form.
+  ['nde-base-request-form-after', EcResourceSharingFormatComponent],
 
+  // Earlier placeholder that proved the module-federation pipeline. Kept for
+  // reference; re-enable on a different slot if you still want it visible.
+  // ['nde-search-bar-after', EcNoticeComponent],
 ];

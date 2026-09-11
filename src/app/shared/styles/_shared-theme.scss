@@ -66,4 +66,13 @@ img.record-thumbnail[src*="assets/images/icon_"]{
   height:15rem !important;
 }
 
+// Hidden only on production hosts: on the sandbox (html.ec-env-sandbox, set by
+// EcSessionComponent) the field stays visible so the forcing can be tested.
+html:not(.ec-env-sandbox) .ec-rs-format-locked {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
 

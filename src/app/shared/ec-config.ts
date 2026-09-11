@@ -86,6 +86,14 @@ export interface EcConfigValues {
     floatButtonSelector: string;
     iframeSelector: string;
   };
+  resourceSharing: {
+    forceFormat: '' | 'digital' | 'physical' | 'photocopy';
+    hideFormatField: boolean;
+    autoCheckAvailability: boolean;
+    formatFieldSelector: string;
+    checkAvailabilitySelector: string;
+    formatValues: Record<'digital' | 'physical' | 'photocopy', { values: string[]; labels: string[]; position: number }>;
+  };
   printReturnLabel?: {
     labelPagePath: string;
     codePaths: string[];

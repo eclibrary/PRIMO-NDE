@@ -275,6 +275,155 @@
         "returnedMarker",
         "label"
       ]
+    },
+    "resourceSharing": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Resource sharing request",
+      "description": "Force the request format per view and hide the choice (EC views: digital; EU union catalogue: physical).",
+      "properties": {
+        "forceFormat": {
+          "type": "string",
+          "enum": [
+            "",
+            "digital",
+            "physical",
+            "photocopy"
+          ],
+          "title": "Force format",
+          "description": "Format applied when the resource-sharing form opens. Empty = leave the choice to the patron."
+        },
+        "hideFormatField": {
+          "type": "boolean",
+          "title": "Hide the Format field",
+          "description": "Move the field off screen once forced, so it cannot be changed (it is still submitted)."
+        },
+        "autoCheckAvailability": {
+          "type": "boolean",
+          "title": "Re-check availability",
+          "description": "Click 'Check availability' after forcing the format, as the VE script did."
+        },
+        "formatFieldSelector": {
+          "type": "string",
+          "title": "Format field selector",
+          "description": "CSS selector of the Format field inside the dialog. Only change if NDE changes its markup."
+        },
+        "checkAvailabilitySelector": {
+          "type": "string",
+          "title": "Check-availability button selector"
+        },
+        "formatValues": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "digital",
+            "physical",
+            "photocopy"
+          ],
+          "title": "How to recognise each format",
+          "properties": {
+            "digital": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "values",
+                "labels",
+                "position"
+              ],
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Candidate values",
+                  "description": "Values Alma may use for this format in the form definition (matched case-insensitively)."
+                },
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Candidate labels",
+                  "description": "Displayed labels in any language, as a secondary match."
+                },
+                "position": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "title": "Position in the option list",
+                  "description": "0-based index in Alma's fixed order (Physical, Digital, Photocopy) — the last-resort match."
+                }
+              }
+            },
+            "physical": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "values",
+                "labels",
+                "position"
+              ],
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Candidate values",
+                  "description": "Values Alma may use for this format in the form definition (matched case-insensitively)."
+                },
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Candidate labels",
+                  "description": "Displayed labels in any language, as a secondary match."
+                },
+                "position": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "title": "Position in the option list",
+                  "description": "0-based index in Alma's fixed order (Physical, Digital, Photocopy) — the last-resort match."
+                }
+              }
+            },
+            "photocopy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "values",
+                "labels",
+                "position"
+              ],
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Candidate values",
+                  "description": "Values Alma may use for this format in the form definition (matched case-insensitively)."
+                },
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Candidate labels",
+                  "description": "Displayed labels in any language, as a secondary match."
+                },
+                "position": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "title": "Position in the option list",
+                  "description": "0-based index in Alma's fixed order (Physical, Digital, Photocopy) — the last-resort match."
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {

@@ -10,28 +10,63 @@
     "storageKeyPrefix": "ec:lastSearch:",
     "resultsPath": "/search",
     "homePath": "/home",
-    "stripParams": ["useLocalCustomPackage", "_customAssetCheck"],
+    "stripParams": [
+      "useLocalCustomPackage",
+      "_customAssetCheck"
+    ],
     "maxAgeDays": 30
   },
   "askALibrarian": {
-    "triggerUrlPrefixes": ["https://ec.europa.eu/libraries/pages/askalibrarian/"],
+    "triggerUrlPrefixes": [
+      "https://ec.europa.eu/libraries/pages/askalibrarian/"
+    ],
     "formfillScriptUrl": "https://ec.europa.eu/libraries/libanswers/libanswers.script.js",
     "libanswersHost": "https://ec-europa-eu.libanswers.com",
-    "widgetId": { "en": "8158", "fr": "8158" },
-    "prefillFromUser": { "pname": "displayName", "pemail": "email" },
+    "widgetId": {
+      "en": "8158",
+      "fr": "8158"
+    },
+    "prefillFromUser": {
+      "pname": "displayName",
+      "pemail": "email"
+    },
     "prefillStatic": {},
     "context": {
       "field": "pdetails",
       "titleSelector": "nde-record-title h3",
-      "marker": { "en": "**TYPE ABOVE THIS LINE**", "fr": "**ÉCRIVEZ AU-DESSUS DE CETTE LIGNE**" },
+      "marker": {
+        "en": "**TYPE ABOVE THIS LINE**",
+        "fr": "**ÉCRIVEZ AU-DESSUS DE CETTE LIGNE**"
+      },
       "labels": {
-        "en": { "title": "Item title", "mmsId": "MMS ID", "recordId": "Record ID", "searchTerms": "Search terms", "link": "Link" },
-        "fr": { "title": "Titre", "mmsId": "MMS ID", "recordId": "ID de la notice", "searchTerms": "Termes de recherche", "link": "Lien" }
+        "en": {
+          "title": "Item title",
+          "mmsId": "MMS ID",
+          "recordId": "Record ID",
+          "searchTerms": "Search terms",
+          "link": "Link"
+        },
+        "fr": {
+          "title": "Titre",
+          "mmsId": "MMS ID",
+          "recordId": "ID de la notice",
+          "searchTerms": "Termes de recherche",
+          "link": "Lien"
+        }
       }
     },
-    "title": { "en": "Ask a librarian", "fr": "Demander à un bibliothécaire" },
-    "closeLabel": { "en": "Close", "fr": "Fermer" },
-    "loadingLabel": { "en": "Loading the form…", "fr": "Chargement du formulaire…" },
+    "title": {
+      "en": "Ask a librarian",
+      "fr": "Demander à un bibliothécaire"
+    },
+    "closeLabel": {
+      "en": "Close",
+      "fr": "Fermer"
+    },
+    "loadingLabel": {
+      "en": "Loading the form…",
+      "fr": "Chargement du formulaire…"
+    },
     "errorLabel": {
       "en": "The form could not be loaded. Please try again or open the page directly:",
       "fr": "Le formulaire n’a pas pu être chargé. Réessayez ou ouvrez la page directement :"
@@ -45,5 +80,51 @@
     "hash": "c78ee6cc0e28c62ba3c16869ef1d7fc75036cf356cda6bfbab938f6251e74017",
     "floatButtonSelector": ".s-lch-widget-float-btn",
     "iframeSelector": "[id^=\"s-lch-widget\"] iframe"
+  },
+  "resourceSharing": {
+    "forceFormat": "digital",
+    "hideFormatField": true,
+    "autoCheckAvailability": true,
+    "formatFieldSelector": "[data-qa=\"almaResourceSharing.format\"]",
+    "checkAvailabilitySelector": "nde-formly-check-availability-button button",
+    "formatValues": {
+      "physical": {
+        "values": [
+          "PHYSICAL",
+          "physical",
+          "PHYSICAL_NON_RETURNABLE"
+        ],
+        "labels": [
+          "Physical",
+          "Physique"
+        ],
+        "position": 0
+      },
+      "digital": {
+        "values": [
+          "DIGITAL",
+          "digital",
+          "ELECTRONIC"
+        ],
+        "labels": [
+          "Digital",
+          "Numérique",
+          "Électronique"
+        ],
+        "position": 1
+      },
+      "photocopy": {
+        "values": [
+          "PHOTOCOPY",
+          "photocopy",
+          "COPY"
+        ],
+        "labels": [
+          "Photocopy",
+          "Photocopie"
+        ],
+        "position": 2
+      }
+    }
   }
 }
