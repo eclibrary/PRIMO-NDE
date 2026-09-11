@@ -12,3 +12,9 @@ $theme: mat.m2-define-light-theme((
 ));
 
 @include mat.all-component-themes($theme);
+
+//remove border around default thumbnails icons*/
+img.record-thumbnail[src*="assets/images/icon_"]{
+  outline: none !important;
+}
+

@@ -1,0 +1,77 @@
+/* Settings UI. Plain CSS, system font, EC blue for actions only. */
+:root {
+  --blue: #004494; --blue-dark: #003375; --yellow: #ffd617;
+  --ink: #1b1b1b; --muted: #6b6b6b; --line: #d9d9d9; --bg: #f6f7f9; --card: #fff;
+  --ok: #1a7f37; --err: #b3261e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); padding-bottom: 5rem; }
+button { font: inherit; cursor: pointer; }
+input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { margin: 0; font-weight: 600; }
+
+.top { display: flex; align-items: baseline; gap: 1.5rem; padding: 1rem 2rem; background: var(--card); border-bottom: 1px solid var(--line); }
+.top h1 { font-size: 1.25rem; }
+.top h1 span { color: var(--muted); font-weight: 400; }
+.root { margin: 0; color: var(--muted); font-size: .85rem; }
+
+.tabs { display: flex; gap: .25rem; padding: .75rem 2rem 0; flex-wrap: wrap; }
+.tabs button { padding: .5rem 1rem; border: 1px solid var(--line); border-bottom: 0; border-radius: .5rem .5rem 0 0; background: #eceef2; }
+.tabs button[aria-selected="true"] { background: var(--card); font-weight: 600; }
+.tabs .group { color: var(--muted); align-self: center; padding: 0 .5rem; font-size: .8rem; }
+
+main { padding: 1.5rem 2rem; }
+.muted { color: var(--muted); }
+.intro { margin: 0 0 1.25rem; color: var(--muted); max-width: 70ch; }
+
+section.card { background: var(--card); border: 1px solid var(--line); border-radius: .75rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+section.card > h2 { font-size: 1.05rem; margin-bottom: .25rem; }
+section.card > .desc { margin: 0 0 1rem; color: var(--muted); font-size: .9rem; max-width: 80ch; }
+fieldset { border: 1px solid var(--line); border-radius: .5rem; margin: .75rem 0; padding: .5rem 1rem 1rem; }
+legend { font-weight: 600; padding: 0 .25rem; }
+fieldset > .desc { margin: 0 0 .75rem; color: var(--muted); font-size: .85rem; }
+
+.field { display: grid; grid-template-columns: 16rem 1fr auto; gap: .5rem 1rem; align-items: start; padding: .5rem 0; border-top: 1px solid #eee; }
+.field:first-of-type { border-top: 0; }
+.field > label { font-weight: 500; padding-top: .35rem; }
+.field > label small { display: block; font-weight: 400; color: var(--muted); font-size: .8rem; line-height: 1.35; }
+.field .control input[type="text"], .field .control input[type="number"], .field .control input[type="url"],
+.field .control select, .field .control textarea { width: 100%; padding: .4rem .6rem; border: 1px solid var(--line); border-radius: .375rem; background: #fff; }
+.field .control textarea { min-height: 4.5rem; font-family: ui-monospace, Consolas, monospace; font-size: .9rem; }
+.field .control .row { display: grid; grid-template-columns: 2.5rem 1fr; gap: .5rem; align-items: center; margin-bottom: .35rem; }
+.field .control .row .lang { color: var(--muted); font-size: .8rem; text-transform: uppercase; }
+.field .control table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.field .control td { padding: .15rem .25rem 0 0; }
+.field .control td input { width: 100%; }
+.field .control .add { margin-top: .35rem; }
+.field .control .hint { font-size: .8rem; color: var(--muted); margin: .25rem 0 0; }
+
+/* inherited (view tab, not overridden) */
+.field.inherited .control { opacity: .55; pointer-events: none; }
+.override { justify-self: end; white-space: nowrap; }
+.override button { padding: .3rem .6rem; border: 1px solid var(--line); border-radius: .375rem; background: #fff; font-size: .8rem; }
+.field:not(.inherited) .override button { border-color: var(--blue); color: var(--blue); }
+
+.bar { position: fixed; inset: auto 0 0 0; display: flex; align-items: center; gap: 1rem; padding: .75rem 2rem; background: var(--card); border-top: 1px solid var(--line); }
+.bar .status { flex: 1; font-size: .9rem; }
+.bar .status.ok { color: var(--ok); }
+.bar .status.err { color: var(--err); white-space: pre-line; }
+.bar button, .actions button, dialog button { padding: .5rem 1.1rem; border-radius: .5rem; border: 1px solid var(--blue); background: var(--blue); color: #fff; }
+.bar button.secondary, .actions button.secondary { background: #fff; color: var(--blue); }
+button:disabled { opacity: .5; cursor: default; }
+
+.actions { display: flex; gap: .75rem; margin-top: 1rem; flex-wrap: wrap; }
+
+table.labels { width: 100%; border-collapse: collapse; }
+table.labels th, table.labels td { text-align: left; padding: .4rem .5rem; border-top: 1px solid #eee; vertical-align: top; }
+table.labels input, table.labels textarea { width: 100%; padding: .3rem .5rem; border: 1px solid var(--line); border-radius: .375rem; }
+table.labels textarea { min-height: 5.5rem; font-family: inherit; }
+table.labels .del { color: var(--err); background: none; border: 0; }
+
+table.views { width: 100%; border-collapse: collapse; }
+table.views th, table.views td { text-align: left; padding: .4rem .5rem; border-top: 1px solid #eee; }
+table.views input { width: 100%; padding: .3rem .5rem; border: 1px solid var(--line); border-radius: .375rem; }
+
+dialog { width: min(60rem, 95vw); border: 0; border-radius: .75rem; padding: 1.25rem; }
+dialog::backdrop { background: rgba(0,0,0,.4); }
+dialog pre { max-height: 60vh; overflow: auto; background: #111; color: #eee; padding: 1rem; border-radius: .5rem; font-size: .8rem; }

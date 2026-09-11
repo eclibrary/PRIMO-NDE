@@ -61,6 +61,16 @@ console.log('Extracted ASSET_BASE_URL:', assetBaseUrl);
 
 fs.writeFileSync(assetBaseOutPath, `export const assetBaseUrl = '${assetBaseUrl}';\n`);
 console.log(`✔ Written to ${assetBaseOutPath}:\nexport const assetBaseUrl = '${assetBaseUrl}';`);
+// --- Settings (config/*.json → ec-config.generated.ts) ---
+// NDE_VIEW is set by scripts/build.cjs and scripts/serve.cjs; a plain `ng build`
+// gets the global settings only. A validation error aborts the build on purpose.
+{
+    const { spawnSync } = require('child_process');
+    const viewArg = process.env.NDE_VIEW ? [process.env.NDE_VIEW] : ['--global'];
+    const r = spawnSync(process.execPath, [path.resolve(__dirname, 'scripts/config-generate.cjs'), ...viewArg], { stdio: 'inherit' });
+    if (r.status !== 0) process.exit(r.status ?? 1);
+}
+
 console.log('Prebuild complemeted successfully!');
 /*
 

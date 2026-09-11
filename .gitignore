@@ -46,3 +46,6 @@ Thumbs.db
 src/app/state/asset-base.generated.ts
 
 .env
+
+# Generated from config/*.json by scripts/config-generate.cjs (prebuild)
+src/app/shared/ec-config.generated.ts

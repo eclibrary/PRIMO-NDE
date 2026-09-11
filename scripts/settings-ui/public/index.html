@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NDE views — settings</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>NDE views <span>settings</span></h1>
+    <p class="root" id="root"></p>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+
+  <main id="main" aria-live="polite">
+    <p class="muted">Loading…</p>
+  </main>
+
+  <footer class="bar" id="bar" hidden>
+    <span id="status" class="status"></span>
+    <button id="reload" type="button" class="secondary">Discard changes</button>
+    <button id="save" type="button">Save</button>
+  </footer>
+
+  <dialog id="buildDialog">
+    <h2 id="buildTitle">Build</h2>
+    <pre id="buildLog"></pre>
+    <p id="buildResult"></p>
+    <form method="dialog"><button type="submit">Close</button></form>
+  </dialog>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

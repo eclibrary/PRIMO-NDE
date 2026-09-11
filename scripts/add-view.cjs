@@ -12,7 +12,8 @@
  *   1. validates the answers (key format, uniqueness of key / viewId / dir)
  *   2. appends the view to views.config.json (the single source of truth)
  *   3. runs scripts/sync-views.cjs, which scaffolds src/views/<dir>/{mappings.ts,theme.scss,README.md,assets/}
- *      and regenerates the per-view build/serve configurations in angular.json
+ *      and regenerates the per-view build/serve configurations in angular.json,
+ *      then creates config/views/<key>.json (empty settings overrides)
  *   4. optionally (--overlay) copies the shared landing-page/header/footer HTML into the new
  *      view's assets/ so it starts with editable copies instead of inheriting the shared files
  *   5. prints the next steps (build, serve, Alma upload)
@@ -130,6 +131,15 @@ async function main() {
   // 3. Scaffold + angular.json via the existing, idempotent sync script.
   const sync = spawnSync(process.execPath, ['scripts/sync-views.cjs'], { cwd: ROOT, stdio: 'inherit' });
   if (sync.status !== 0) process.exit(sync.status ?? 1);
+
+  // 3b. Settings overrides file, so the view shows up in `npm run settings` and
+  //     prebuild finds a file to merge (an empty override set is valid).
+  const settingsFile = path.join(ROOT, 'config', 'views', `${answers.key}.json`);
+  if (!fs.existsSync(settingsFile)) {
+    fs.mkdirSync(path.dirname(settingsFile), { recursive: true });
+    fs.writeFileSync(settingsFile, JSON.stringify({ $schema: '../schema.json' }, null, 2) + '\n');
+    console.log(`  created config/views/${answers.key}.json`);
+  }
 
   // 4. Optional overlay: give the view its own copies of the librarian-facing HTML.
   if (answers.overlay) {
