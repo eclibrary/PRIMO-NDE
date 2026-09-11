@@ -19,8 +19,8 @@
 // "which view am I" lookup for settings.
 import { EC_CONFIG_VALUES, EC_CONFIG_VIEW } from './ec-config.generated';
 
-/** UI languages the views are served in. Add a code here AND in schema.json when a new language is enabled in Alma. */
-export type EcLang = 'en' | 'fr';
+/** UI languages the views are served in (EN, FR, DE). Add a code here, in currentLang() AND in schema.json when a new language is enabled in Alma. */
+export type EcLang = 'en' | 'fr' | 'de';
 
 /** Lookup by language with an English fallback — used for every localised string/URL. */
 export type Localised<T = string> = Partial<Record<EcLang, T>> & { en: T };
@@ -143,7 +143,7 @@ export function currentLang(): EcLang {
   const fromQuery = new URLSearchParams(window.location.search).get('lang');
   const fromHtml = document.documentElement.lang;
   const candidate = (fromQuery || fromHtml || EC_CONFIG.defaultLang).slice(0, 2).toLowerCase();
-  return candidate === 'fr' ? 'fr' : 'en';
+  return candidate === 'fr' || candidate === 'de' ? candidate : 'en';
 }
 
 /** Current view id (`vid` query parameter), e.g. `32EUC_INST:VU2`. */

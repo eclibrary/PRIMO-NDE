@@ -4,7 +4,8 @@
 */
 (async () => {
   const params = new URLSearchParams(window.location.search);
-  const lang = (params.get('lang') || 'en').slice(0, 2).toLowerCase() === 'fr' ? 'fr' : 'en';
+  const code = (params.get('lang') || 'en').slice(0, 2).toLowerCase();
+  const lang = code === 'fr' || code === 'de' ? code : 'en';
 
   // On-screen text (never printed). Add languages here if the views gain one.
   const TEXT = {
@@ -19,6 +20,12 @@
       print: 'Imprimer',
       thanks: 'Merci !',
       error: 'Désolé, aucune adresse de retour n’a été trouvée pour ce prêt. Veuillez contacter la bibliothèque.',
+    },
+    de: {
+      instructions: 'Drucken Sie dieses Etikett aus und kleben Sie es auf einen Umschlag mit dem zurückzugebenden Medium. Die Hauspost erledigt den Rest.',
+      print: 'Drucken',
+      thanks: 'Vielen Dank!',
+      error: 'Leider wurde für diese Ausleihe keine Rücksendeadresse gefunden. Bitte wenden Sie sich an die Bibliothek.',
     },
   }[lang];
 

@@ -44,8 +44,10 @@ function resolve(schema) {
 }
 // A "localised" unit is an object whose keys are only languages AND whose values
 // are strings; {en: {...}, fr: {...}} (e.g. the context line labels) is a nested object.
+/** Languages come from the schema's `localised` definition (en, fr, de, …) — never hard-code them here. */
+const languages = () => Object.keys(state.schema.definitions.localised.properties);
 const isLocalised = (s) => s?.properties && 'en' in s.properties
-  && Object.keys(s.properties).every((k) => ['en', 'fr'].includes(k))
+  && Object.keys(s.properties).every((k) => languages().includes(k))
   && resolve(s.properties.en).type === 'string';
 const kindOf = (s) => {
   s = resolve(s);
@@ -121,7 +123,7 @@ function renderField(key, schema, path, ctx) {
       );
       break;
     case 'localised':
-      for (const lang of ['en', 'fr']) {
+      for (const lang of languages()) {
         control.append(el('div', { class: 'row' }, el('span', { class: 'lang' }, lang),
           el('input', { type: 'text', value: value?.[lang] ?? '', oninput: (e) => {
             const next = { ...(getPath(ctx.data, path) ?? {}) };

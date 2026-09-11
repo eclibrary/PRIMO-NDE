@@ -24,7 +24,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
-const { ROOT, CONFIG_PATH, loadConfig } = require('../view-context.cjs');
+const { ROOT, CONFIG_PATH, loadConfig, readActiveKey } = require('../view-context.cjs');
 const { loadMergedConfig, validate, deepMerge, SCHEMA_FILE, GLOBAL_FILE, VIEWS_DIR } = require('../config-generate.cjs');
 
 const PORT = Number(process.argv[2]) || 4300;
@@ -92,6 +92,20 @@ function validateReturnLabels(obj) {
   return errors;
 }
 
+/**
+ * After a settings save, regenerate src/app/shared/ec-config.generated.ts for the
+ * ACTIVE view (or the one just edited). Builds do this themselves via prebuild, but
+ * a running `ng serve` only recompiles on file changes — without this step a saved
+ * setting would not reach the dev server until the next restart.
+ * Best-effort: a failure is reported in the response, never blocks the save.
+ */
+function regenerateConfig(preferredKey) {
+  const key = preferredKey || readActiveKey() || Object.keys(loadConfig().views)[0];
+  if (!key) return '';
+  const r = spawnSync(process.execPath, ['scripts/config-generate.cjs', key], { cwd: ROOT, encoding: 'utf8' });
+  return (r.stdout || '') + (r.stderr || '');
+}
+
 // -------------------------------------------------------------------- routes
 
 async function handleApi(req, res, url) {
@@ -108,7 +122,7 @@ async function handleApi(req, res, url) {
     const errors = validateGlobal(schema, body);
     if (errors.length) return send(res, 400, { errors });
     writeJson(GLOBAL_FILE, { $schema: './schema.json', ...body });
-    return send(res, 200, { ok: true });
+    return send(res, 200, { ok: true, output: regenerateConfig() });
   }
 
   // PUT /api/views/<key>   body = overrides only
@@ -119,7 +133,7 @@ async function handleApi(req, res, url) {
     const errors = validate(schema, deepMerge(globalRaw, body));
     if (errors.length) return send(res, 400, { errors });
     writeJson(path.join(VIEWS_DIR, `${key}.json`), { $schema: '../schema.json', ...body });
-    return send(res, 200, { ok: true });
+    return send(res, 200, { ok: true, output: regenerateConfig(key) });
   }
 
   // PUT /api/return-labels

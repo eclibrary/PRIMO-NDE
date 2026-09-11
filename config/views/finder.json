@@ -12,6 +12,10 @@
       "loan.library.code"
     ],
     "returnedMarker": "[translate=\"loans.return_date\"]",
-    "label": { "en": "Print return label", "fr": "Imprimer l'étiquette de retour" }
+    "label": {
+      "en": "Print return label",
+      "fr": "Imprimer l'étiquette de retour",
+      "de": "Rücksendeetikett drucken"
+    }
   }
 }

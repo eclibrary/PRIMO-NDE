@@ -10,7 +10,8 @@
       "type": "string",
       "enum": [
         "en",
-        "fr"
+        "fr",
+        "de"
       ],
       "default": "en",
       "title": "Default language",
@@ -163,6 +164,9 @@
                   "$ref": "#/definitions/contextLabels"
                 },
                 "fr": {
+                  "$ref": "#/definitions/contextLabels"
+                },
+                "de": {
                   "$ref": "#/definitions/contextLabels"
                 }
               },
@@ -435,6 +439,9 @@
           "type": "string"
         },
         "fr": {
+          "type": "string"
+        },
+        "de": {
           "type": "string"
         }
       },

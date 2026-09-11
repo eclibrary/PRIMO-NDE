@@ -24,7 +24,8 @@
     "libanswersHost": "https://ec-europa-eu.libanswers.com",
     "widgetId": {
       "en": "8158",
-      "fr": "8158"
+      "fr": "8158",
+      "de": "8158"
     },
     "prefillFromUser": {
       "pname": "displayName",
@@ -36,7 +37,8 @@
       "titleSelector": "nde-record-title h3",
       "marker": {
         "en": "**TYPE ABOVE THIS LINE**",
-        "fr": "**ÉCRIVEZ AU-DESSUS DE CETTE LIGNE**"
+        "fr": "**ÉCRIVEZ AU-DESSUS DE CETTE LIGNE**",
+        "de": "**BITTE OBERHALB DIESER ZEILE SCHREIBEN**"
       },
       "labels": {
         "en": {
@@ -52,24 +54,35 @@
           "recordId": "ID de la notice",
           "searchTerms": "Termes de recherche",
           "link": "Lien"
+        },
+        "de": {
+          "title": "Titel",
+          "mmsId": "MMS-ID",
+          "recordId": "Datensatz-ID",
+          "searchTerms": "Suchbegriffe",
+          "link": "Link"
         }
       }
     },
     "title": {
       "en": "Ask a librarian",
-      "fr": "Demander à un bibliothécaire"
+      "fr": "Demander à un bibliothécaire",
+      "de": "Fragen Sie die Bibliothek"
     },
     "closeLabel": {
       "en": "Close",
-      "fr": "Fermer"
+      "fr": "Fermer",
+      "de": "Schließen"
     },
     "loadingLabel": {
       "en": "Loading the form…",
-      "fr": "Chargement du formulaire…"
+      "fr": "Chargement du formulaire…",
+      "de": "Formular wird geladen…"
     },
     "errorLabel": {
       "en": "The form could not be loaded. Please try again or open the page directly:",
-      "fr": "Le formulaire n’a pas pu être chargé. Réessayez ou ouvrez la page directement :"
+      "fr": "Le formulaire n’a pas pu être chargé. Réessayez ou ouvrez la page directement :",
+      "de": "Das Formular konnte nicht geladen werden. Bitte versuchen Sie es erneut oder öffnen Sie die Seite direkt:"
     },
     "resetOnClose": true,
     "hideFields": [],
@@ -96,7 +109,8 @@
         ],
         "labels": [
           "Physical",
-          "Physique"
+          "Physique",
+          "Physisch"
         ],
         "position": 0
       },
@@ -108,6 +122,7 @@
         ],
         "labels": [
           "Digital",
+          "Elektronisch",
           "Numérique",
           "Électronique"
         ],
@@ -120,8 +135,10 @@
           "COPY"
         ],
         "labels": [
-          "Photocopy",
-          "Photocopie"
+          "Fotokopie",
+          "Kopie",
+          "Photocopie",
+          "Photocopy"
         ],
         "position": 2
       }
