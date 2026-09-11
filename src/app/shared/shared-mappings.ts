@@ -21,7 +21,5 @@ export const sharedSelectorMappings: Array<[string, any]> = [
   // move this to a slot that exists everywhere — `nde-header` is a candidate to verify.
   ['nde-search-bar-container-after', EcSharedRootComponent],
 
-  // Earlier placeholder that proved the module-federation pipeline. Kept for
-  // reference; re-enable on a different slot if you still want it visible.
-  // ['nde-search-bar-after', EcNoticeComponent],
+
 ];

@@ -4,7 +4,7 @@
   consumers read window.EC_LIBRARIES.
 */
 window.EC_LIBRARIES = {
-  "generatedAt": "2026-09-10T13:23:16.754Z",
+  "generatedAt": "2026-09-11T07:54:00.992Z",
   "source": "data/return-labels.json",
   "libraries": {
     "BCB": {

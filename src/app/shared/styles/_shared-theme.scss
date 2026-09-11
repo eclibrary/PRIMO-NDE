@@ -55,3 +55,15 @@ html.ec-env-sandbox body::before {
   letter-spacing: .1em;
   pointer-events: none;
 }
+
+//remove border around default thumbnails icons*/
+img.record-thumbnail[src*="assets/images/icon_"]{
+  outline: none !important;
+}
+
+//reduce height of the search seaction on the homepage
+.custom-search-bar-container{
+  height:15rem !important;
+}
+
+
