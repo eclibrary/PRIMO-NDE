@@ -5,6 +5,12 @@
 // selectors, which change between NDE releases.
 @use 'ec-tokens' as ec;
 
+// Material Symbols icon font from the Google Fonts CDN, for the static HTML
+// (landing page, header, footer) and components alike. The stylesheet defines
+// .material-symbols-outlined; the query pins the variable-font axes so every
+// icon renders identically. <span class="material-symbols-outlined">mail</span>
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block');
+
 :root {
   --ec-blue: #{ec.$ec-blue};
   --ec-yellow: #{ec.$ec-yellow};
@@ -76,3 +82,9 @@ html:not(.ec-env-sandbox) .ec-rs-format-locked {
   overflow: hidden !important;
 }
 
+
+/* Size and colour inside the tile circle; colour follows NDE's theme variable. */
+.material-symbols-outlined {
+  font-size: 28px;
+  color: var(--sys-primary, #004494);
+}
