@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<!--
+  Country Knowledge Find-eR — NDE landing page (English)
+  =======================================================
+  Location in repo : src/views/country/assets/homepage/homepage_en.html
+                     (view overlay: replaces the shared src/assets/homepage/homepage_en.html
+                     for COUNTRY_KNOWLEDGE only)
+  Served from      : /nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/homepage/homepage_en.html
+  Styles           : src/views/country/_ck-homepage.scss, compiled into the view's custom.css.
+                     Every selector is scoped under .ec-ck so nothing leaks into NDE.
+
+  DOCUMENT STRUCTURE — keep it
+  - Same skeleton as the working shared page (doctype, html/head/body, and a
+    main.main-landing-page wrapper). NDE expects a full document here.
+
+  REGION INDEX (no JS)
+  - Plain links to the section ids. They must spell out the FULL page URL before the
+    fragment: NDE runs under base href /nde/, so a bare "#ec-ck-africa" would resolve
+    to /nde/#ec-ck-africa and reload the app without vid/lang.
+  - When the link URL equals the address bar (vid first, then lang) the browser only
+    scrolls. If a visitor arrived with other parameters it is a full page load instead.
+  - Each target section has tabindex="-1" so keyboard focus follows the jump.
+
+  COUNTS (filled in by EcSessionComponent — do not type numbers here)
+  - <span data-ec-count="CSS selector"> gets the number of elements matching the selector.
+  - data-ec-count-label="singular|plural" adds a word: "1 country" / "27 countries".
+  - So adding or removing a country <li> updates the index and the heading on its own.
+
+  COUNTRY TILES
+  - a href="#" data-ec-nav="search" data-ec-query="query=...&mfacet=..."
+    EcSessionComponent intercepts the click, adds the current vid + lang and navigates
+    with the shell router. data-ec-query is a URL query string (repeated keys allowed;
+    write & as &amp; in the attribute).
+  - Facets use NDE's URL syntax, NOT Primo VE's (verified Oct 2026, same counts as VE):
+      mfacet=topic,include,<Subject>
+      mfacet=creationdate,include,[2020 TO {currentYear}]   (URL-encoded in the attribute)
+    VE's facet=topic,...  and  facet=searchcreationdate,include,2020|,|9999  are not
+    understood the same way by NDE and returned far fewer results.
+  - {currentYear} is replaced by EcSessionComponent at click time, so the date range
+    always runs up to and including the current year without editing this file.
+  - data-ec-scope="topic,include,<Subject>" keeps that subject on EVERY following
+    search until the user removes it (chip x or the filter's x) or goes back home
+    (SubjectScopeService). It must equal the topic mfacet in data-ec-query, decoded
+    (plain spaces, ü, ô ...). Primo VE did this with a ",lk" suffix; NDE has no URL
+    form for a locked facet, and ",lk" there returns zero results.
+    The date facet is deliberately not kept: it only shapes the first result list.
+  - data-ec-scope-label is the name shown on the search-bar chip.
+
+  ADDING A COUNTRY
+  - Copy a list item in the right region; change the flag file name (ISO 3166-1 alpha-2,
+    lowercase; files live in assets/images/flags/), the visible name, the two
+    occurrences of the country name in data-ec-query (query= and the topic mfacet),
+    and data-ec-scope + data-ec-scope-label.
+
+  ADDING A REGION
+  - Copy a whole section, give it a new id, and add a matching index entry whose href
+    ends in #that-id and whose data-ec-count selector starts with #that-id.
+
+  FLAGS
+  - Decorative (empty alt) because the country name is right next to them.
+  - Root-relative path: relative paths would resolve against the page (/nde/home),
+    not against this file.
+-->
+<html lang="en">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Country Knowledge Find-eR</title>
+  <link href="./homepage.css" rel="stylesheet">
+</head>
+<body>
+<!-- NDE's own landing wrapper; .ec-ck inside it carries all the custom layout. -->
+<main class="main-landing-page display-flex flex-column flex-layout-center-center">
+
+<div class="ec-ck width-100">
+
+  <!-- ===== Intro ===================================================== -->
+  <section class="ec-ck-intro" aria-labelledby="ec-ck-title">
+    <h2 id="ec-ck-title">Country Knowledge Find-eR</h2>
+    <p>
+      One place to find up-to-date, reliable country information from the
+      Commission's Directorates-General and beyond.
+    </p>
+    <p>
+      Open to all Commission staff, it covers the EU Member States and countries
+      worldwide, with thematic knowledge to support your briefings and speeches.
+      Pick a country below to see resources published since 2020, or use the
+      search bar above.
+    </p>
+  </section>
+
+  <div class="ec-ck-layout">
+
+    <!-- ===== Region index ============================================
+         Sticky column on wide screens, horizontal scroller on narrow ones.
+         Counts must match the section headings below. -->
+    <nav class="ec-ck-index" aria-label="Regions">
+      <ul>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-european-union"><span>European Union</span><span class="ec-ck-count" data-ec-count="#ec-ck-european-union .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-candidate-countries"><span>Candidate countries</span><span class="ec-ck-count" data-ec-count="#ec-ck-candidate-countries .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-africa"><span>Africa</span><span class="ec-ck-count" data-ec-count="#ec-ck-africa .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-asia"><span>Asia</span><span class="ec-ck-count" data-ec-count="#ec-ck-asia .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-central-asia"><span>Central Asia</span><span class="ec-ck-count" data-ec-count="#ec-ck-central-asia .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-eastern-europe"><span>Eastern Europe</span><span class="ec-ck-count" data-ec-count="#ec-ck-eastern-europe .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-latin-america"><span>Latin America and the Caribbean</span><span class="ec-ck-count" data-ec-count="#ec-ck-latin-america .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-mena"><span>Middle East and North Africa</span><span class="ec-ck-count" data-ec-count="#ec-ck-mena .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-oct"><span>Overseas Countries and Territories</span><span class="ec-ck-count" data-ec-count="#ec-ck-oct .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-north-america"><span>North America</span><span class="ec-ck-count" data-ec-count="#ec-ck-north-america .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-pacific"><span>Pacific</span><span class="ec-ck-count" data-ec-count="#ec-ck-pacific .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-western-balkans"><span>Western Balkans</span><span class="ec-ck-count" data-ec-count="#ec-ck-western-balkans .ec-ck-grid &gt; li"></span></a></li>
+        <li><a href="/nde/home?vid=32EUC_INST:COUNTRY_KNOWLEDGE&amp;lang=en#ec-ck-western-europe"><span>Western Europe</span><span class="ec-ck-count" data-ec-count="#ec-ck-western-europe .ec-ck-grid &gt; li"></span></a></li>
+      </ul>
+    </nav>
+
+    <!-- ===== Regions ================================================= -->
+    <div class="ec-ck-regions">
+
+      <!-- European Union -->
+      <section class="ec-ck-region" id="ec-ck-european-union" tabindex="-1" aria-labelledby="ec-ck-european-union-h">
+        <h3 id="ec-ck-european-union-h">European Union <span class="ec-ck-count" data-ec-count="#ec-ck-european-union .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Austria" data-ec-scope-label="Austria"
+               data-ec-query="query=Austria&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Austria&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/at.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Austria</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Belgium" data-ec-scope-label="Belgium"
+               data-ec-query="query=Belgium&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Belgium&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/be.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Belgium</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Bulgaria" data-ec-scope-label="Bulgaria"
+               data-ec-query="query=Bulgaria&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Bulgaria&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/bg.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Bulgaria</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Croatia" data-ec-scope-label="Croatia"
+               data-ec-query="query=Croatia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Croatia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/hr.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Croatia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Cyprus" data-ec-scope-label="Cyprus"
+               data-ec-query="query=Cyprus&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Cyprus&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/cy.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Cyprus</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Czechia" data-ec-scope-label="Czechia"
+               data-ec-query="query=Czechia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Czechia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/cz.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Czechia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Denmark" data-ec-scope-label="Denmark"
+               data-ec-query="query=Denmark&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Denmark&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/dk.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Denmark</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Estonia" data-ec-scope-label="Estonia"
+               data-ec-query="query=Estonia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Estonia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ee.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Estonia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Finland" data-ec-scope-label="Finland"
+               data-ec-query="query=Finland&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Finland&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/fi.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Finland</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,France" data-ec-scope-label="France"
+               data-ec-query="query=France&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,France&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/fr.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">France</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Germany" data-ec-scope-label="Germany"
+               data-ec-query="query=Germany&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Germany&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/de.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Germany</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Greece" data-ec-scope-label="Greece"
+               data-ec-query="query=Greece&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Greece&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/gr.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Greece</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Hungary" data-ec-scope-label="Hungary"
+               data-ec-query="query=Hungary&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Hungary&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/hu.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Hungary</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Ireland" data-ec-scope-label="Ireland"
+               data-ec-query="query=Ireland&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Ireland&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ie.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Ireland</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Italy" data-ec-scope-label="Italy"
+               data-ec-query="query=Italy&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Italy&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/it.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Italy</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Latvia" data-ec-scope-label="Latvia"
+               data-ec-query="query=Latvia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Latvia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/lv.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Latvia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Lithuania" data-ec-scope-label="Lithuania"
+               data-ec-query="query=Lithuania&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Lithuania&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/lt.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Lithuania</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Luxembourg" data-ec-scope-label="Luxembourg"
+               data-ec-query="query=Luxembourg&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Luxembourg&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/lu.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Luxembourg</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Malta" data-ec-scope-label="Malta"
+               data-ec-query="query=Malta&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Malta&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/mt.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Malta</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Netherlands" data-ec-scope-label="Netherlands"
+               data-ec-query="query=Netherlands&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Netherlands&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/nl.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Netherlands</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Poland" data-ec-scope-label="Poland"
+               data-ec-query="query=Poland&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Poland&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/pl.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Poland</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Portugal" data-ec-scope-label="Portugal"
+               data-ec-query="query=Portugal&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Portugal&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/pt.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Portugal</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Romania" data-ec-scope-label="Romania"
+               data-ec-query="query=Romania&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Romania&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ro.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Romania</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Slovakia" data-ec-scope-label="Slovakia"
+               data-ec-query="query=Slovakia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Slovakia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/sk.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Slovakia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Slovenia" data-ec-scope-label="Slovenia"
+               data-ec-query="query=Slovenia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Slovenia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/si.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Slovenia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Spain" data-ec-scope-label="Spain"
+               data-ec-query="query=Spain&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Spain&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/es.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Spain</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Sweden" data-ec-scope-label="Sweden"
+               data-ec-query="query=Sweden&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Sweden&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/se.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Sweden</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Candidate countries -->
+      <section class="ec-ck-region" id="ec-ck-candidate-countries" tabindex="-1" aria-labelledby="ec-ck-candidate-countries-h">
+        <h3 id="ec-ck-candidate-countries-h">Candidate countries <span class="ec-ck-count" data-ec-count="#ec-ck-candidate-countries .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Albania" data-ec-scope-label="Albania"
+               data-ec-query="query=Albania&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Albania&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/al.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Albania</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Bosnia and Herzegovina" data-ec-scope-label="Bosnia and Herzegovina"
+               data-ec-query="query=Bosnia%20and%20Herzegovina&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Bosnia%20and%20Herzegovina&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ba.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Bosnia and Herzegovina</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Georgia" data-ec-scope-label="Georgia"
+               data-ec-query="query=Georgia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Georgia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ge.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Georgia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Moldova" data-ec-scope-label="Moldova"
+               data-ec-query="query=Moldova&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Moldova&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/md.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Moldova</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Montenegro" data-ec-scope-label="Montenegro"
+               data-ec-query="query=Montenegro&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Montenegro&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/me.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Montenegro</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,North Macedonia" data-ec-scope-label="North Macedonia"
+               data-ec-query="query=North%20Macedonia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,North%20Macedonia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/mk.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">North Macedonia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Serbia" data-ec-scope-label="Serbia"
+               data-ec-query="query=Serbia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Serbia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/rs.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Serbia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Türkiye" data-ec-scope-label="Türkiye"
+               data-ec-query="query=T%C3%BCrkiye&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,T%C3%BCrkiye&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/tr.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Türkiye</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Ukraine" data-ec-scope-label="Ukraine"
+               data-ec-query="query=Ukraine&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Ukraine&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ua.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Ukraine</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Africa -->
+      <section class="ec-ck-region" id="ec-ck-africa" tabindex="-1" aria-labelledby="ec-ck-africa-h">
+        <h3 id="ec-ck-africa-h">Africa <span class="ec-ck-count" data-ec-count="#ec-ck-africa .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Burundi" data-ec-scope-label="Burundi"
+               data-ec-query="query=Burundi&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Burundi&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/bi.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Burundi</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Cameroon" data-ec-scope-label="Cameroon"
+               data-ec-query="query=Cameroon&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Cameroon&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/cm.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Cameroon</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Ivory Coast" data-ec-scope-label="Côte d&#x27;Ivoire"
+               data-ec-query="query=C%C3%B4te%20d%27Ivoire%20OR%20Ivory%20Coast&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Ivory%20Coast&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ci.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Côte d&#x27;Ivoire</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Democratic Republic of the Congo" data-ec-scope-label="Democratic Republic of the Congo"
+               data-ec-query="query=Democratic%20Republic%20of%20the%20Congo&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Democratic%20Republic%20of%20the%20Congo&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/cd.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Democratic Republic of the Congo</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Ghana" data-ec-scope-label="Ghana"
+               data-ec-query="query=Ghana&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Ghana&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/gh.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Ghana</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Kenya" data-ec-scope-label="Kenya"
+               data-ec-query="query=Kenya&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Kenya&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ke.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Kenya</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Libya" data-ec-scope-label="Libya"
+               data-ec-query="query=Libya&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Libya&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ly.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Libya</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Malawi" data-ec-scope-label="Malawi"
+               data-ec-query="query=Malawi&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Malawi&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/mw.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Malawi</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Namibia" data-ec-scope-label="Namibia"
+               data-ec-query="query=Namibia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Namibia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/na.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Namibia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,South Africa" data-ec-scope-label="South Africa"
+               data-ec-query="query=South%20Africa&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,South%20Africa&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/za.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">South Africa</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Uganda" data-ec-scope-label="Uganda"
+               data-ec-query="query=Uganda&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Uganda&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ug.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Uganda</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Zambia" data-ec-scope-label="Zambia"
+               data-ec-query="query=Zambia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Zambia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/zm.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Zambia</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Asia -->
+      <section class="ec-ck-region" id="ec-ck-asia" tabindex="-1" aria-labelledby="ec-ck-asia-h">
+        <h3 id="ec-ck-asia-h">Asia <span class="ec-ck-count" data-ec-count="#ec-ck-asia .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,China" data-ec-scope-label="China"
+               data-ec-query="query=China&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,China&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/cn.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">China</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,India" data-ec-scope-label="India"
+               data-ec-query="query=India&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,India&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/in.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">India</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Indonesia" data-ec-scope-label="Indonesia"
+               data-ec-query="query=Indonesia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Indonesia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/id.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Indonesia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Japan" data-ec-scope-label="Japan"
+               data-ec-query="query=Japan&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Japan&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/jp.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Japan</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Republic of Korea" data-ec-scope-label="Republic of Korea"
+               data-ec-query="query=Republic%20of%20Korea&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Republic%20of%20Korea&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/kr.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Republic of Korea</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Central Asia -->
+      <section class="ec-ck-region" id="ec-ck-central-asia" tabindex="-1" aria-labelledby="ec-ck-central-asia-h">
+        <h3 id="ec-ck-central-asia-h">Central Asia <span class="ec-ck-count" data-ec-count="#ec-ck-central-asia .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Kazakhstan" data-ec-scope-label="Kazakhstan"
+               data-ec-query="query=Kazakhstan&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Kazakhstan&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/kz.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Kazakhstan</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Kyrgyzstan" data-ec-scope-label="Kyrgyzstan"
+               data-ec-query="query=Kyrgyzstan&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Kyrgyzstan&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/kg.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Kyrgyzstan</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Pakistan" data-ec-scope-label="Pakistan"
+               data-ec-query="query=Pakistan&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Pakistan&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/pk.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Pakistan</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Tajikistan" data-ec-scope-label="Tajikistan"
+               data-ec-query="query=Tajikistan&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Tajikistan&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/tj.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Tajikistan</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Turkmenistan" data-ec-scope-label="Turkmenistan"
+               data-ec-query="query=Turkmenistan&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Turkmenistan&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/tm.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Turkmenistan</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Uzbekistan" data-ec-scope-label="Uzbekistan"
+               data-ec-query="query=Uzbekistan&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Uzbekistan&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/uz.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Uzbekistan</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Eastern Europe -->
+      <section class="ec-ck-region" id="ec-ck-eastern-europe" tabindex="-1" aria-labelledby="ec-ck-eastern-europe-h">
+        <h3 id="ec-ck-eastern-europe-h">Eastern Europe <span class="ec-ck-count" data-ec-count="#ec-ck-eastern-europe .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Armenia" data-ec-scope-label="Armenia"
+               data-ec-query="query=Armenia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Armenia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/am.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Armenia</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Azerbaijan" data-ec-scope-label="Azerbaijan"
+               data-ec-query="query=Azerbaijan&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Azerbaijan&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/az.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Azerbaijan</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Russia" data-ec-scope-label="Russia"
+               data-ec-query="query=Russia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Russia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ru.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Russia</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Latin America and the Caribbean -->
+      <section class="ec-ck-region" id="ec-ck-latin-america" tabindex="-1" aria-labelledby="ec-ck-latin-america-h">
+        <h3 id="ec-ck-latin-america-h">Latin America and the Caribbean <span class="ec-ck-count" data-ec-count="#ec-ck-latin-america .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Brazil" data-ec-scope-label="Brazil"
+               data-ec-query="query=Brazil&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Brazil&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/br.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Brazil</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Chile" data-ec-scope-label="Chile"
+               data-ec-query="query=Chile&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Chile&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/cl.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Chile</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Mexico" data-ec-scope-label="Mexico"
+               data-ec-query="query=Mexico&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Mexico&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/mx.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Mexico</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Middle East and North Africa -->
+      <section class="ec-ck-region" id="ec-ck-mena" tabindex="-1" aria-labelledby="ec-ck-mena-h">
+        <h3 id="ec-ck-mena-h">Middle East and North Africa <span class="ec-ck-count" data-ec-count="#ec-ck-mena .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Algeria" data-ec-scope-label="Algeria"
+               data-ec-query="query=Algeria&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Algeria&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/dz.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Algeria</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Egypt" data-ec-scope-label="Egypt"
+               data-ec-query="query=Egypt&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Egypt&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/eg.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Egypt</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Iran" data-ec-scope-label="Iran"
+               data-ec-query="query=Iran&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Iran&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ir.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Iran</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Jordan" data-ec-scope-label="Jordan"
+               data-ec-query="query=Jordan&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Jordan&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/jo.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Jordan</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Lebanon" data-ec-scope-label="Lebanon"
+               data-ec-query="query=Lebanon&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Lebanon&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/lb.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Lebanon</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Morocco" data-ec-scope-label="Morocco"
+               data-ec-query="query=Morocco&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Morocco&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ma.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Morocco</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Syria" data-ec-scope-label="Syria"
+               data-ec-query="query=Syria&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Syria&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/sy.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Syria</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Tunisia" data-ec-scope-label="Tunisia"
+               data-ec-query="query=Tunisia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Tunisia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/tn.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Tunisia</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Overseas Countries and Territories -->
+      <section class="ec-ck-region" id="ec-ck-oct" tabindex="-1" aria-labelledby="ec-ck-oct-h">
+        <h3 id="ec-ck-oct-h">Overseas Countries and Territories <span class="ec-ck-count" data-ec-count="#ec-ck-oct .ec-ck-grid &gt; li" data-ec-count-label="territory|territories"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Greenland" data-ec-scope-label="Greenland"
+               data-ec-query="query=Greenland&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Greenland&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/gl.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Greenland</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- North America -->
+      <section class="ec-ck-region" id="ec-ck-north-america" tabindex="-1" aria-labelledby="ec-ck-north-america-h">
+        <h3 id="ec-ck-north-america-h">North America <span class="ec-ck-count" data-ec-count="#ec-ck-north-america .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Canada" data-ec-scope-label="Canada"
+               data-ec-query="query=Canada&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Canada&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ca.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Canada</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,United States" data-ec-scope-label="United States"
+               data-ec-query="query=United%20States&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,United%20States&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/us.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">United States</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Pacific -->
+      <section class="ec-ck-region" id="ec-ck-pacific" tabindex="-1" aria-labelledby="ec-ck-pacific-h">
+        <h3 id="ec-ck-pacific-h">Pacific <span class="ec-ck-count" data-ec-count="#ec-ck-pacific .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Australia" data-ec-scope-label="Australia"
+               data-ec-query="query=Australia&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Australia&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/au.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Australia</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Western Balkans -->
+      <section class="ec-ck-region" id="ec-ck-western-balkans" tabindex="-1" aria-labelledby="ec-ck-western-balkans-h">
+        <h3 id="ec-ck-western-balkans-h">Western Balkans <span class="ec-ck-count" data-ec-count="#ec-ck-western-balkans .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Kosovo" data-ec-scope-label="Kosovo"
+               data-ec-query="query=Kosovo&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Kosovo&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/xk.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Kosovo*</span>
+            </a>
+          </li>
+        </ul>
+        <!-- Standard EU footnote; required wherever Kosovo is listed. -->
+        <p class="ec-ck-note">
+          *This designation is without prejudice to positions on status, and is in line with
+          <a href="https://digitallibrary.un.org/record/274488" target="_blank" rel="noopener">UNSCR 1244/1999</a>
+          and the <a href="https://www.icj-cij.org/sites/default/files/case-related/141/141-20100722-ADV-01-00-EN.pdf" target="_blank" rel="noopener">ICJ Opinion</a>
+          on the Kosovo declaration of independence.
+        </p>
+      </section>
+
+      <!-- Western Europe -->
+      <section class="ec-ck-region" id="ec-ck-western-europe" tabindex="-1" aria-labelledby="ec-ck-western-europe-h">
+        <h3 id="ec-ck-western-europe-h">Western Europe <span class="ec-ck-count" data-ec-count="#ec-ck-western-europe .ec-ck-grid &gt; li" data-ec-count-label="country|countries"></span></h3>
+        <ul class="ec-ck-grid">
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Iceland" data-ec-scope-label="Iceland"
+               data-ec-query="query=Iceland&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Iceland&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/is.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Iceland</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Norway" data-ec-scope-label="Norway"
+               data-ec-query="query=Norway&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Norway&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/no.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Norway</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,Switzerland" data-ec-scope-label="Switzerland"
+               data-ec-query="query=Switzerland&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,Switzerland&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/ch.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">Switzerland</span>
+            </a>
+          </li>
+          <li>
+            <a class="ec-ck-country" href="#" data-ec-nav="search"
+               data-ec-scope="topic,include,United Kingdom" data-ec-scope-label="United Kingdom"
+               data-ec-query="query=United%20Kingdom&amp;tab=E_RESOURCES&amp;search_scope=E_RESOURCES&amp;sortby=rank&amp;mfacet=topic,include,United%20Kingdom&amp;mfacet=creationdate,include,%5B2020%20TO%20{currentYear}%5D">
+              <span class="ec-ck-flag"><img src="/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags/gb.svg" alt="" loading="lazy"></span>
+              <span class="ec-ck-name">United Kingdom</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+</main>
+</body>
+</html>

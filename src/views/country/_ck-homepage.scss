@@ -1,0 +1,223 @@
+// =============================================================================
+// Country Knowledge Find-eR — landing page styles
+// -----------------------------------------------------------------------------
+// Location : src/views/country/_ck-homepage.scss
+// Loaded by: src/views/country/theme.scss  →  @use 'ck-homepage';
+//            (theme.scss compiles to the view's custom.css, which NDE loads on
+//            every page — more reliable than a <link> inside the static HTML,
+//            whose relative URLs resolve against /nde/home.)
+// Markup   : src/views/country/assets/homepage/homepage_en.html
+//
+// Everything is scoped under .ec-ck so none of it can affect NDE itself.
+// Colours fall back to EC values when NDE's theme variables are absent.
+// =============================================================================
+
+.ec-ck {
+  // --- Design tokens ---------------------------------------------------------
+  --ck-blue: var(--sys-primary, #004494);   // EC blue; follows the NDE theme
+  --ck-ink: var(--sys-on-surface, #1d2433); // body text
+  --ck-muted: #5a6475;                      // counts, footnote
+  --ck-rule: #d5dbe5;                       // hairlines between regions
+  --ck-tint: #eef3fa;                       // hover background of tiles/index
+  --ck-gold: #ffd617;                       // EC yellow: focus ring + active marker only
+  --ck-flag-h: 2.75rem;                     // every flag shares this height (native ratios vary)
+  --ck-sticky-top: 5rem;                    // clearance under NDE's header when sticky/scrolling
+
+  // NDE's main.main-landing-page is a centring flex column, which would shrink
+  // this block to its content; force full width, capped by max-width.
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+  color: var(--ck-ink);
+  line-height: 1.5;
+
+  ul { list-style: none; margin: 0; padding: 0; }
+
+  // One focus style for every interactive element on the page:
+  // gold ring with a blue inner edge, visible on white and on the blue tint.
+  a:focus-visible {
+    outline: 3px solid var(--ck-gold);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--ck-blue);
+    border-radius: 4px;
+  }
+}
+
+// --- Intro -------------------------------------------------------------------
+.ec-ck-intro {
+  max-width: 44rem;            // ~70 characters per line
+  padding: 2rem 0 1.5rem;
+
+  h2 {
+    margin: 0 0 .75rem;
+    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+    font-weight: 700;
+    color: var(--ck-blue);
+    letter-spacing: -.01em;
+  }
+  p { margin: 0 0 .75rem; font-size: 1.0625rem; }
+}
+
+// --- Two-column layout: index | regions --------------------------------------
+.ec-ck-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+
+  @media (min-width: 64rem) {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+}
+
+// --- Region index ------------------------------------------------------------
+// Narrow screens: one horizontally scrolling row of region chips.
+// Wide screens  : a sticky list, like the index of an atlas (name ... count).
+.ec-ck-index {
+  ul {
+    display: flex;
+    gap: .5rem;
+    overflow-x: auto;
+    padding-bottom: .5rem;
+    scrollbar-width: thin;
+  }
+
+  a {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    white-space: nowrap;
+    padding: .375rem .75rem;
+    border: 1px solid var(--ck-rule);
+    border-radius: 999px;
+    color: var(--ck-ink);
+    text-decoration: none;
+    font-size: .9375rem;
+
+    &:hover { background: var(--ck-tint); border-color: var(--ck-blue); }
+  }
+
+  @media (min-width: 64rem) {
+    position: sticky;
+    top: var(--ck-sticky-top);
+
+    ul { flex-direction: column; gap: 0; overflow: visible; padding: 0; }
+
+    a {
+      justify-content: space-between;
+      white-space: normal;
+      border: 0;
+      border-left: 3px solid transparent;   // becomes the gold marker on hover
+      border-radius: 0;
+      padding: .4rem .75rem;
+
+      &:hover { border-left-color: var(--ck-gold); background: var(--ck-tint); }
+    }
+  }
+}
+
+// Count shown in the index and after region headings. The number is filled in
+// by EcSessionComponent from [data-ec-count]; until then (or without JS) the span
+// is empty and hidden so it leaves no gap.
+.ec-ck-count {
+  &:empty { display: none; }
+
+  color: var(--ck-muted);
+  font-size: .8125rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+// --- Regions -----------------------------------------------------------------
+.ec-ck-region {
+  padding: 1.5rem 0 1rem;
+  border-top: 1px solid var(--ck-rule);
+  scroll-margin-top: var(--ck-sticky-top); // keeps the heading clear of NDE's header
+
+  &:first-child { border-top: 0; padding-top: 0; }
+  &:focus { outline: none; }               // focus is moved here programmatically only
+
+  h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .75rem;
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+}
+
+// --- Country tiles -----------------------------------------------------------
+.ec-ck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: .25rem .5rem;
+}
+
+.ec-ck-country {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .5rem;
+  height: 100%;
+  padding: .625rem;
+  border-radius: 6px;
+  color: var(--ck-ink);
+  text-decoration: none;
+
+  &:hover { background: var(--ck-tint); }
+  &:hover .ec-ck-name { color: var(--ck-blue); text-decoration: underline; text-underline-offset: 3px; }
+}
+
+// Flags keep their real proportions (Switzerland square, Nepal a pennant, Qatar
+// long); a fixed-height box aligned to the bottom puts them all on one baseline.
+.ec-ck-flag {
+  display: flex;
+  align-items: flex-end;
+  height: var(--ck-flag-h);
+
+  img {
+    height: 100%;
+    width: auto;
+    max-width: 6rem;               // stops very long flags dominating the row
+    object-fit: contain;
+    object-position: left bottom;
+    // Hairline so white-field flags (Japan, Cyprus…) still read as flags.
+    box-shadow: 0 0 0 1px rgba(29, 36, 51, .18);
+    border-radius: 2px;
+  }
+}
+
+.ec-ck-name {
+  font-size: .9375rem;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow-wrap: anywhere;          // "Democratic Republic of the Congo" on narrow tiles
+}
+
+// --- Kosovo footnote ---------------------------------------------------------
+.ec-ck-note {
+  max-width: 44rem;
+  margin: 1rem 0 0;
+  font-size: .8125rem;
+  color: var(--ck-muted);
+
+  a { color: var(--ck-blue); }
+}
+
+// --- Motion ------------------------------------------------------------------
+// The region index uses plain #fragment links (no JS). Smooth-scroll the page
+// while this landing page is on screen, unless the user asked for less motion.
+// :has() keeps the rule from affecting any other NDE page.
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.ec-ck) { scroll-behavior: smooth; }
+}
+
+/*search bar background*/
+.top-bar-background-image{
+  background-image: url('/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags_background.jpg') !important;
+}
