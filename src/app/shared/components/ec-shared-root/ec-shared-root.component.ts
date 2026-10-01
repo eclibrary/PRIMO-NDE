@@ -21,17 +21,26 @@ import { EcSessionComponent } from '../ec-session/ec-session.component';
 import { EcAskLibrarianComponent } from '../ec-ask-librarian/ec-ask-librarian.component';
 import { EcLastSearchComponent } from '../ec-last-search/ec-last-search.component';
 import { EcLibChatComponent } from '../ec-libchat/ec-libchat.component';
+import { EcScopeChipComponent } from '../ec-scope-chip/ec-scope-chip.component';
+import { EcScopeLinksComponent } from '../ec-scope-links/ec-scope-links.component';
+import { EcMenuLinksComponent } from '../ec-menu-links/ec-menu-links.component';
 
 @Component({
   selector: 'custom-ec-shared-root',
   standalone: true,
-  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent],
+  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent, EcScopeChipComponent, EcScopeLinksComponent, EcMenuLinksComponent],
   host: { 'data-component-id': 'custom-ec-shared-root' },
   template: `
     <custom-ec-session></custom-ec-session>
     <custom-ec-ask-librarian></custom-ec-ask-librarian>
     <custom-ec-last-search></custom-ec-last-search>
     <custom-ec-libchat></custom-ec-libchat>
+    <!-- Country chip in NDE's search box while a subject scope is active (headless). -->
+    <custom-ec-scope-chip></custom-ec-scope-chip>
+    <!-- Country links strip above result #1 while a subject scope is active (headless). -->
+    <custom-ec-scope-links></custom-ec-scope-links>
+    <!-- Main-menu links without http(s) open in the same window (headless, all views). -->
+    <custom-ec-menu-links></custom-ec-menu-links>
   `,
 })
 export class EcSharedRootComponent {}
