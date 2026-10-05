@@ -1,7 +1,8 @@
 // src/views/finder/components/ec-print-return-label/ec-print-return-label.component.ts
 //
 // Find-eR only: adds a "Print return label" link under each ACTIVE loan in the
-// library card. The link opens, in a new tab, the label page that ships in this
+// library card (and under past loans too when printReturnLabel.showOnPastLoans
+// is on — see ACTIVE vs RETURNED below). The link opens, in a new tab, the label page that ships in this
 // package (assets/return-label/index.html) with the loan's library code and the
 // patron's work city:
 //   <package>/assets/return-label/index.html?librarycode=BCB&userlocation=BRU&lang=en
@@ -16,7 +17,16 @@
 // logged ONCE so the right path can be read off the console.
 //
 // ACTIVE vs RETURNED: the same nde-loan-item renders loan history; those rows
-// show a "Return Date" line (translate key loans.return_date) and get no label.
+// show a "Return Date" line (translate key loans.return_date, setting
+// `returnedMarker`). By default they get no label. With the setting
+// `showOnPastLoans` ticked they get one as well — added so the feature can be
+// tested without having an active loan. Links on returned rows carry the extra
+// class `ec-print-return-label--returned`, so they can be hidden again with CSS
+// alone, e.g. in the view's theme.scss:
+//     .ec-print-return-label--returned { display: none; }
+// CAVEAT: the library code is read from the host component (see above). If a
+// history row keeps it under another property than an active loan, no link
+// appears there and the probe logs the object — add the path to `codePaths`.
 //
 // MOUNT POINT: `nde-loan-item-after` in src/views/finder/mappings.ts.
 import { Component, ElementRef, Input, OnInit, inject, signal } from '@angular/core';
@@ -42,7 +52,8 @@ let probeLogged = false;
   host: { 'data-component-id': 'custom-ec-print-return-label' },
   template: `
     @if (href()) {
-      <p class="ec-print-return-label margin-top-medium">
+      <!-- --returned: only on past loans (showOnPastLoans); a CSS hook to hide/style them. -->
+      <p class="ec-print-return-label margin-top-medium" [class.ec-print-return-label--returned]="returned()">
         <a [href]="href()" target="_blank" rel="noopener">{{ label }}</a>
       </p>
     }
@@ -62,13 +73,19 @@ export class EcPrintReturnLabelComponent implements OnInit {
   readonly label = CONFIG ? localised(CONFIG.label, currentLang()) : '';
   /** Fully built link, or '' when no label should be offered. */
   readonly href = signal('');
+  /** True when this row is a returned (history) loan — drives the --returned CSS class. */
+  readonly returned = signal(false);
 
   async ngOnInit(): Promise<void> {
     if (!CONFIG) return; // section missing from this view's config → feature off
 
-    // History rows: no label.
+    // History rows are recognised by the "Return Date" line (returnedMarker).
+    // They get a label only when showOnPastLoans is on; flagged either way so
+    // the template can mark the link with the --returned class.
     const row = this.el.nativeElement.closest('nde-account-section-item-container, li');
-    if (row?.querySelector(CONFIG.returnedMarker)) return;
+    const isReturned = !!row?.querySelector(CONFIG.returnedMarker);
+    if (isReturned && !CONFIG.showOnPastLoans) return;
+    this.returned.set(isReturned);
 
     const code = this.libraryCode();
     if (!code) {

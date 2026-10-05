@@ -294,7 +294,7 @@
       "type": "object",
       "additionalProperties": false,
       "title": "Print return label",
-      "description": "Link under each active loan (only on views whose mappings mount the component).",
+      "description": "Link under each active loan — and, when switched on below, under past (returned) loans too. Only on views whose mappings mount the component.",
       "properties": {
         "labelPagePath": {
           "type": "string",
@@ -312,7 +312,12 @@
         "returnedMarker": {
           "type": "string",
           "title": "Returned-loan marker",
-          "description": "CSS selector present only on returned (history) loan rows; those get no label."
+          "description": "CSS selector present only on returned (history) loan rows. Those rows get no label unless 'Also show on past loans' is ticked."
+        },
+        "showOnPastLoans": {
+          "type": "boolean",
+          "title": "Also show on past loans",
+          "description": "Tick to show the link on returned (history) loans as well — handy for testing without an active loan. Those links carry the CSS class ec-print-return-label--returned, so they can still be hidden or styled separately."
         },
         "label": {
           "$ref": "#/definitions/localised",

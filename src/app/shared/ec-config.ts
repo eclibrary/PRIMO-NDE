@@ -110,6 +110,8 @@ export interface EcConfigValues {
     labelPagePath: string;
     codePaths: string[];
     returnedMarker: string;
+    /** true = also render the link on returned (history) loans; absent/false = active loans only. */
+    showOnPastLoans?: boolean;
     label: Localised;
   };
 }
