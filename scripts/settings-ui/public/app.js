@@ -15,8 +15,10 @@
 
   Field kinds (from the schema): scalar (string/number/boolean/enum), list
   (array of strings — one per line), map (object with additionalProperties —
-  key/value table), localised (object with en/fr), and nested objects with
-  `properties`, rendered as fieldsets.
+  key/value table), localised (object with en/fr/de — one input per language,
+  or one large textarea per language when the schema says `"format": "html"`,
+  e.g. the welcome message), and nested objects with `properties`, rendered as
+  fieldsets.
 */
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -38,9 +40,18 @@ let dirty = false;
 
 // ---------------------------------------------------------------- schema utils
 
+/**
+ * Follow a `$ref` to its definition. Keys written NEXT TO the $ref in the schema
+ * (title, description, format) are kept and win over the definition's own, so
+ * e.g. `{ "$ref": "#/definitions/localised", "title": "Modal title" }` shows its
+ * title here instead of the bare key. (The build validator ignores those extra
+ * keys, as JSON Schema draft-07 prescribes — they are presentation only.)
+ */
 function resolve(schema) {
   if (!schema?.$ref) return schema;
-  return schema.$ref.replace('#/', '').split('/').reduce((o, k) => o?.[k], state.schema);
+  const { $ref, ...own } = schema;
+  const target = $ref.replace('#/', '').split('/').reduce((o, k) => o?.[k], state.schema);
+  return { ...target, ...own };
 }
 // A "localised" unit is an object whose keys are only languages AND whose values
 // are strings; {en: {...}, fr: {...}} (e.g. the context line labels) is a nested object.
@@ -122,16 +133,27 @@ function renderField(key, schema, path, ctx) {
         el('p', { class: 'hint' }, 'One entry per line.'),
       );
       break;
-    case 'localised':
+    case 'localised': {
+      // `"format": "html"` on the schema entry (e.g. welcomeMessage.html) = long
+      // HTML markup: a large textarea per language instead of a one-line input.
+      const isHtml = schema.format === 'html';
       for (const lang of languages()) {
-        control.append(el('div', { class: 'row' }, el('span', { class: 'lang' }, lang),
-          el('input', { type: 'text', value: value?.[lang] ?? '', oninput: (e) => {
-            const next = { ...(getPath(ctx.data, path) ?? {}) };
-            if (e.target.value === '' && lang !== 'en') delete next[lang]; else next[lang] = e.target.value;
-            onChange(next);
-          } })));
+        // Same handler for both widgets: an emptied non-English entry is removed
+        // from the JSON (so the English fallback applies); `en` is required and stays.
+        const oninput = (e) => {
+          const next = { ...(getPath(ctx.data, path) ?? {}) };
+          if (e.target.value === '' && lang !== 'en') delete next[lang]; else next[lang] = e.target.value;
+          onChange(next);
+        };
+        const input = isHtml
+          // The text goes in as a child text node, so markup in it is shown, not interpreted.
+          ? el('textarea', { class: 'html', spellcheck: 'false', oninput }, value?.[lang] ?? '')
+          : el('input', { type: 'text', value: value?.[lang] ?? '', oninput });
+        control.append(el('div', { class: `row${isHtml ? ' top' : ''}` }, el('span', { class: 'lang' }, lang), input));
       }
+      if (isHtml) control.append(el('p', { class: 'hint' }, 'HTML markup. Leave FR/DE empty to fall back to English.'));
       break;
+    }
     case 'map': {
       const entries = Object.entries(value ?? {});
       const valSchema = resolve(schema.additionalProperties);

@@ -1,0 +1,108 @@
+// Welcome-message modal. Same look as the Ask-a-librarian modal (EC-blue title
+// bar, NDE Material system tokens --sys-* for the rest) so the two feel related.
+//
+// ViewEncapsulation.None (see the .ts): these rules are GLOBAL, so every
+// selector starts with .ec-welcome. Keep it that way when adding rules.
+//
+// STYLING THE MESSAGE ITSELF: the body HTML comes from the settings and inline
+// `style=""` is stripped by Angular's sanitiser. Give elements a class in the
+// message and add the rule under `&__body` below.
+@use '../../styles/ec-tokens' as ec;
+
+.ec-welcome {
+  // <dialog> defaults: centred by the UA; we only size and strip chrome.
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 0;
+  border-radius: .75rem;
+  background: var(--sys-surface, #fff);
+  color: var(--sys-on-surface, #1b1b1b);
+  box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, .28);
+  overflow: hidden; // clip to the rounded corners; the body scrolls instead
+
+  &::backdrop {
+    background: rgba(0, 0, 0, .45);
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 2rem);
+  }
+
+  &__bar {
+    padding: .9rem 1.25rem;
+    background: var(--ec-blue, #{ec.$ec-blue});
+    color: #fff;
+  }
+
+  &__title {
+    margin: 0;
+    font: 600 1.125rem/1.3 #{ec.$ec-font};
+  }
+
+  // ---- the message from the settings ------------------------------------
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto; // long messages scroll inside the modal
+    padding: 1.25rem;
+    font: 1rem/1.5 #{ec.$ec-font};
+    overflow-wrap: anywhere; // long URLs must not widen the panel
+
+    // Tidy outer spacing whatever the first/last element is.
+    > :first-child { margin-top: 0; }
+    > :last-child { margin-bottom: 0; }
+
+    p, ul, ol { margin: 0 0 .75rem; }
+    ul, ol { padding-left: 1.25rem; }
+    h3, h4 { margin: 1rem 0 .5rem; font-weight: 600; line-height: 1.3; }
+    h3 { font-size: 1.05rem; }
+    h4 { font-size: 1rem; }
+    a { color: var(--ec-blue, #{ec.$ec-blue}); text-decoration: underline; }
+    img { max-width: 100%; height: auto; }
+  }
+
+  // ---- checkbox + close button ------------------------------------------
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap; // narrow screens: button drops below the checkbox
+    gap: .75rem 1rem;
+    padding: .75rem 1.25rem;
+    border-top: 1px solid var(--sys-outline-variant, #d9d9d9);
+  }
+
+  &__remember {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font: .9rem/1.3 #{ec.$ec-font};
+    cursor: pointer;
+
+    input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--ec-blue, #{ec.$ec-blue}); }
+  }
+
+  &__close {
+    margin-left: auto; // stays right-aligned when the footer wraps
+    padding: .5rem 1.25rem;
+    border: 0;
+    border-radius: 1.25rem;
+    background: var(--ec-blue, #{ec.$ec-blue});
+    color: #fff;
+    font: 600 .95rem/1.3 #{ec.$ec-font};
+    cursor: pointer;
+
+    &:hover { filter: brightness(1.15); }
+  }
+
+  // Visible keyboard focus on both controls. Dark, not EC yellow as in the
+  // Ask-a-librarian title bar: these sit on a white footer where yellow vanishes.
+  &__close:focus-visible,
+  &__remember input:focus-visible {
+    outline: 3px solid var(--sys-on-surface, #1b1b1b);
+    outline-offset: 2px;
+  }
+}

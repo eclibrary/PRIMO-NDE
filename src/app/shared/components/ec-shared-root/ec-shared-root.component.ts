@@ -8,6 +8,7 @@
 //   - EcAskLibrarianComponent Ask-a-librarian modal for matching links
 //   - EcLastSearchComponent   remembers the last results URL ("pick up where you left off")
 //   - EcLibChatComponent      LibChat floating widget with patron prefill
+//   - EcWelcomeMessageComponent welcome modal on opening the view (settings: welcomeMessage)
 //
 // Add future shared features (cookie notice, ...) here.
 // Each child is headless or renders its own hidden <dialog>, so this root
@@ -24,11 +25,12 @@ import { EcLibChatComponent } from '../ec-libchat/ec-libchat.component';
 import { EcScopeChipComponent } from '../ec-scope-chip/ec-scope-chip.component';
 import { EcScopeLinksComponent } from '../ec-scope-links/ec-scope-links.component';
 import { EcMenuLinksComponent } from '../ec-menu-links/ec-menu-links.component';
+import { EcWelcomeMessageComponent } from '../ec-welcome-message/ec-welcome-message.component';
 
 @Component({
   selector: 'custom-ec-shared-root',
   standalone: true,
-  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent, EcScopeChipComponent, EcScopeLinksComponent, EcMenuLinksComponent],
+  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent, EcScopeChipComponent, EcScopeLinksComponent, EcMenuLinksComponent, EcWelcomeMessageComponent],
   host: { 'data-component-id': 'custom-ec-shared-root' },
   template: `
     <custom-ec-session></custom-ec-session>
@@ -41,6 +43,8 @@ import { EcMenuLinksComponent } from '../ec-menu-links/ec-menu-links.component';
     <custom-ec-scope-links></custom-ec-scope-links>
     <!-- Main-menu links without http(s) open in the same window (headless, all views). -->
     <custom-ec-menu-links></custom-ec-menu-links>
+    <!-- Welcome message modal on opening the view; renders nothing when switched off or dismissed. -->
+    <custom-ec-welcome-message></custom-ec-welcome-message>
   `,
 })
 export class EcSharedRootComponent {}

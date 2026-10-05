@@ -1,0 +1,34 @@
+<!--
+  Native <dialog>, closed and invisible until EcWelcomeMessageComponent.open().
+  Three ways to close — the button, a click on the backdrop, Esc — all fire the
+  native `close` event, where the component records the dismissal.
+  aria-labelledby ties the dialog's accessible name to the visible title.
+-->
+<dialog #dialog
+        class="ec-welcome"
+        aria-labelledby="ec-welcome-title"
+        (close)="onClosed()"
+        (click)="onBackdropClick($event)">
+  <div class="ec-welcome__panel">
+
+    <header class="ec-welcome__bar">
+      <h2 id="ec-welcome-title" class="ec-welcome__title">{{ title() }}</h2>
+    </header>
+
+    <!-- The message from the settings. [innerHTML] = sanitised by Angular:
+         scripts, inline styles and data-* attributes are dropped (see the .ts header). -->
+    <div class="ec-welcome__body" [innerHTML]="html()"></div>
+
+    <footer class="ec-welcome__footer">
+      <!-- Unticked by default: closing without it only hides the message for
+           this browser tab; ticked, it stays away for `rememberDays`. -->
+      <label class="ec-welcome__remember">
+        <input #dontShow type="checkbox">
+        <span>{{ dontShowAgainLabel() }}</span>
+      </label>
+      <!-- autofocus: showModal() focuses this instead of the first link in the body. -->
+      <button type="button" class="ec-welcome__close" autofocus (click)="close()">{{ closeLabel() }}</button>
+    </footer>
+
+  </div>
+</dialog>

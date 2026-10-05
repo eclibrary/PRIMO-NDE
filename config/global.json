@@ -94,6 +94,28 @@
     "floatButtonSelector": ".s-lch-widget-float-btn",
     "iframeSelector": "[id^=\"s-lch-widget\"] iframe"
   },
+  "welcomeMessage": {
+    "enabled": false,
+    "title": {
+      "en": "Welcome",
+      "fr": "Bienvenue",
+      "de": "Willkommen"
+    },
+    "html": {
+      "en": "<p>Welcome to the new EC Library search interface.</p>"
+    },
+    "rememberDays": 180,
+    "dontShowAgainLabel": {
+      "en": "Don't show this message again",
+      "fr": "Ne plus afficher ce message",
+      "de": "Diese Nachricht nicht mehr anzeigen"
+    },
+    "closeLabel": {
+      "en": "Close",
+      "fr": "Fermer",
+      "de": "Schließen"
+    }
+  },
   "resourceSharing": {
     "forceFormat": "digital",
     "hideFormatField": true,

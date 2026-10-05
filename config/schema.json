@@ -244,6 +244,52 @@
         "hash"
       ]
     },
+    "welcomeMessage": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Welcome message",
+      "description": "Modal shown when a patron opens the view. Global = the shared message for all views; a view can override the text (its own message) or 'Show the message' (switch it off). Any change to the title or text counts as a new message and is shown to everyone again, including patrons who ticked 'don't show again'.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Show the message",
+          "description": "Untick to switch the welcome message off (here: for all views; on a view tab: for that view only)."
+        },
+        "title": {
+          "$ref": "#/definitions/localised",
+          "title": "Title",
+          "description": "Heading in the blue bar of the modal."
+        },
+        "html": {
+          "$ref": "#/definitions/localised",
+          "format": "html",
+          "title": "Message (HTML)",
+          "description": "Body of the message as HTML markup, per language (English is used when a language is empty; empty English = no message). Allowed: normal markup, links, images, class attributes. Removed on display: scripts, inline style attributes, data-* attributes."
+        },
+        "rememberDays": {
+          "type": "integer",
+          "minimum": 1,
+          "title": "Remember 'don't show again' for (days)",
+          "description": "How long a patron who ticked the box is left alone. 180 = about 6 months. A changed message is shown regardless."
+        },
+        "dontShowAgainLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Checkbox label"
+        },
+        "closeLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Close button label"
+        }
+      },
+      "required": [
+        "enabled",
+        "title",
+        "html",
+        "rememberDays",
+        "dontShowAgainLabel",
+        "closeLabel"
+      ]
+    },
     "printReturnLabel": {
       "type": "object",
       "additionalProperties": false,

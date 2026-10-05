@@ -40,6 +40,10 @@ fieldset > .desc { margin: 0 0 .75rem; color: var(--muted); font-size: .85rem; }
 .field .control textarea { min-height: 4.5rem; font-family: ui-monospace, Consolas, monospace; font-size: .9rem; }
 .field .control .row { display: grid; grid-template-columns: 2.5rem 1fr; gap: .5rem; align-items: center; margin-bottom: .35rem; }
 .field .control .row .lang { color: var(--muted); font-size: .8rem; text-transform: uppercase; }
+/* Localised HTML (schema "format": "html", e.g. the welcome message): tall, resizable textarea per language. */
+.field .control .row.top { align-items: start; }
+.field .control .row.top .lang { padding-top: .5rem; }
+.field .control textarea.html { min-height: 14rem; resize: vertical; white-space: pre-wrap; }
 .field .control table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 .field .control td { padding: .15rem .25rem 0 0; }
 .field .control td input { width: 100%; }

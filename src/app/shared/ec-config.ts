@@ -86,6 +86,18 @@ export interface EcConfigValues {
     floatButtonSelector: string;
     iframeSelector: string;
   };
+  /** Modal shown when the view is opened — see EcWelcomeMessageComponent. */
+  welcomeMessage: {
+    /** false = no message on this view (or on all views when set in global.json). */
+    enabled: boolean;
+    title: Localised;
+    /** Message body as HTML markup; sanitised by Angular when rendered. Empty en = no message. */
+    html: Localised;
+    /** Days a "don't show again" tick is honoured (180 ≈ 6 months). */
+    rememberDays: number;
+    dontShowAgainLabel: Localised;
+    closeLabel: Localised;
+  };
   resourceSharing: {
     forceFormat: '' | 'digital' | 'physical' | 'photocopy';
     hideFormatField: boolean;

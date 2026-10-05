@@ -39,6 +39,27 @@ the problem. This is deliberate.
 3. Put the default in `config/global.json`.
 4. Read it in code as `EC_CONFIG.section.key`.
 
+Presentation hints: `title`/`description` written next to a `$ref` are used by the UI, and
+`"format": "html"` on a localised entry (see `welcomeMessage.html`) renders a large textarea per
+language instead of one-line inputs.
+
+## Welcome message
+
+Section `welcomeMessage` — the modal shown when a patron opens a view
+(`src/app/shared/components/ec-welcome-message/`).
+
+| Want | Do |
+|---|---|
+| One message for all views | Global tab: tick *Show the message*, fill in *Title* and *Message (HTML)* |
+| A different message on one view | That view's tab: *Override for this view* on *Title* / *Message (HTML)* |
+| No message on one view | That view's tab: override *Show the message* and untick it |
+| No message anywhere | Global tab: untick *Show the message* |
+
+Closing the modal hides it for the rest of the browser tab's session; ticking *Don't show this
+message again* hides it for `rememberDays` (180 ≈ 6 months). **Any change to the title or text is a
+new message** and is shown to everyone again — there is no id to bump. The HTML is sanitised on
+display: scripts, inline `style` and `data-*` attributes are removed; use `class` for styling.
+
 Never put secrets here — these files ship in the customization package.
 
 ## The settings UI
