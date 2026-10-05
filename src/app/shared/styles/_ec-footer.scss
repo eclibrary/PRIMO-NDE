@@ -1,0 +1,73 @@
+// =============================================================================
+// Custom footer — styles for src/assets/header-footer/footer*.html
+// -----------------------------------------------------------------------------
+// Loaded by: src/app/shared/styles/_shared-theme.scss → @use 'ec-footer';
+//            (so it ends up in every view's custom.css)
+//
+// EC-blue band at the bottom of every page, modelled on the ECL site footer's
+// "related sites" section: a small heading, then the links in up to three
+// columns (one column on narrow screens). White on #004494 ≈ 9:1 contrast;
+// keyboard focus shows an EC-yellow ring, as in the header.
+//
+// !important on the properties NDE's global typography overrides (link colour,
+// heading/list margins and sizes) — same reason as in _ec-header.scss.
+// =============================================================================
+
+.ec-footer {
+  background: #004494 !important;
+  color: #fff !important;
+  padding: 2rem 1rem !important;
+  font-size: .9375rem !important;
+  line-height: 1.5 !important;
+}
+
+// Content width matches a typical page column; centred on wide screens.
+.ec-footer .ec-footer__section {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.ec-footer .ec-footer__title {
+  margin: 0 0 1rem !important;
+  padding: 0 0 .75rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, .35);
+  color: #fff !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+}
+
+// Links in columns: 1 → 2 → 3 as the screen gets wider.
+.ec-footer .ec-footer__list {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .5rem 2rem;
+
+  @media (min-width: 40rem) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (min-width: 64rem) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.ec-footer .ec-footer__item {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+// ECL "standalone, inverted" link: white, no underline until hover/focus.
+.ec-footer a.ec-footer__link {
+  color: #fff !important;
+  font-size: inherit !important;
+  text-decoration: none !important;
+
+  &:hover {
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+  }
+  &:focus-visible {
+    outline: 2px solid #ffd617;   // EC yellow, visible on the blue band
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}

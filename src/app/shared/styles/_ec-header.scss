@@ -1,0 +1,84 @@
+// =============================================================================
+// Custom header — styles for src/assets/header-footer/header*.html
+// -----------------------------------------------------------------------------
+// Loaded by: src/app/shared/styles/_shared-theme.scss → @use 'ec-header';
+//            (so it ends up in every view's custom.css)
+//
+// One thin EC-blue bar above NDE's top menu, in every view:
+//   left  — credits: "This website is powered by Primo and managed by the
+//           European Commission." (underlined white links)
+//   right — "Privacy statement" as an outlined pill (filled white on hover)
+// On narrow screens the pill wraps under the credits.
+// White on #004494 gives a contrast of about 9:1; keyboard focus shows an
+// EC-yellow ring.
+// =============================================================================
+
+// WHY THE !important AND DOUBLE CLASSES: NDE's global typography wins over
+// single-class rules — links came out grey and not underlined, and paragraphs
+// got NDE's margin and font size (pushing the text up and out of line with the
+// pill). Every property NDE was overriding is therefore set with a more
+// specific selector and !important. (Seen on localhost, Oct 2026.)
+
+.ec-header {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center !important;
+  justify-content: space-between;
+  gap: .25rem 1.5rem;
+  background: #004494 !important;
+  color: #fff !important;
+  padding: .375rem 1rem !important;
+  font-size: .8125rem !important;
+  line-height: 1.4 !important;
+}
+
+.ec-header .ec-header__text {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
+}
+
+// All header links: white, underlined; thicker underline on hover.
+.ec-header a.ec-header__link {
+  color: #fff !important;
+  font-size: inherit !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+
+  &:hover { text-decoration-thickness: 2px; }
+  &:focus-visible {
+    outline: 2px solid #ffd617;   // EC yellow, visible on the blue bar
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+// Right-hand "Privacy statement" as a pill: outlined in white, filled white
+// with blue text on hover. Small vertical padding keeps the bar thin.
+.ec-header a.ec-header__privacy {
+  white-space: nowrap;
+  padding: .125rem .75rem !important;
+  border: 1px solid rgba(255, 255, 255, .85) !important;
+  border-radius: 999px !important;
+  line-height: 1.4 !important;
+  text-decoration: none !important;
+
+  &:hover {
+    background: #fff !important;
+    color: #004494 !important;
+    text-decoration: none !important;
+  }
+  &:focus-visible { border-radius: 999px; }
+}
+
+// "(opens in a new tab)": read by screen readers, not shown.
+.ec-header .ec-header__sr {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+}
