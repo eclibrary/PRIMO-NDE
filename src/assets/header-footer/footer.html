@@ -1,20 +1,44 @@
 <!--
-  Custom FOOTER — default / English. Rendered by NDE at the bottom of EVERY page.
-  Language variants: footer_fr.html etc. (same naming caveat as header.html).
+  Custom FOOTER — default / English. Rendered by NDE at the bottom of EVERY page, in all
+  views: this file lives in the SHARED assets (src/assets/header-footer/).
+  Language variants: footer.html (default/English), footer_fr.html,
+  footer_de.html — keep them in sync. Only the title is translated; the link
+  texts are names of sites/catalogues and stay as they are.
 
-  DUMMY MARKUP: replace with the real EC footer (legal links, contact, EU Login
-  logout, etc.) once you've seen where it renders. Same rules as header.html:
-  no <script>, data-ec-audience and data-ec-nav are supported.
+  CONTENT: "Our sites and catalogues" — a heading and a list of links to the
+  EC Library's other sites. Markup follows the structure of the ECL site footer
+  ("related" section), but with our own ec-footer__* classes: ECL's stylesheet
+  is not loaded in NDE, so its classes would do nothing here.
+
+  STYLING: src/app/shared/styles/_ec-footer.scss (loaded by _shared-theme.scss).
+  No <script> here (NDE strips it).
+
+  LINK TARGETS: copied from the current EC Library site; the Find-eR, Country
+  Knowledge and EU Publications links still point to the Primo VE views
+  (VU1, CKNWL, OP_PUBS). Switch them to the NDE views when those go live.
 -->
-<footer class="ec-footer" style="background:#f2f2f2;color:#404040;padding:1rem;font-family:Arial,sans-serif;font-size:.85rem;text-align:center;">
-  <p style="margin:0 0 .5rem">
-    <a href="https://ec.europa.eu/libraries/">EC Library</a> |
-    <a href="https://commission.europa.eu/privacy-policy_en">Privacy policy</a> |
-    <a href="https://commission.europa.eu/accessibility-statement_en">Accessibility</a> |
-    <a href="https://commission.europa.eu/legal-notice_en">Legal notice</a>
-  </p>
-  <p style="margin:0">
-    &copy; European Union, 2026
-    <em style="opacity:.7">(custom footer.html — dummy)</em>
-  </p>
+<footer class="ec-footer" lang="en">
+  <nav class="ec-footer__section" aria-labelledby="ec-footer-related-title">
+    <h2 class="ec-footer__title" id="ec-footer-related-title">Our sites and catalogues</h2>
+    <ul class="ec-footer__list">
+      <li class="ec-footer__item">
+        <a class="ec-footer__link" href="https://ec-europa-finder.primo.exlibrisgroup.com/discovery/search?vid=32EUC_INST:VU1">Find-eR</a>
+      </li>
+      <li class="ec-footer__item">
+        <a class="ec-footer__link" href="https://eu-lib-cat.primo.exlibrisgroup.com/discovery/search?vid=32EU_DN:EUROPEAN_UNION">EULibCat</a>
+      </li>
+      <li class="ec-footer__item">
+        <a class="ec-footer__link" href="https://ec-europa-eu.libguides.com/">EC Library Guides</a>
+      </li>
+      <li class="ec-footer__item">
+        <a class="ec-footer__link" href="https://eceuropaeu.sharepoint.com/sites/ec-library">EC Library on My Intracomm</a>
+      </li>
+      <li class="ec-footer__item">
+        <a class="ec-footer__link" href="https://ec-europa-finder.primo.exlibrisgroup.com/discovery/search?vid=32EUC_INST:CKNWL">Country Knowledge Find-eR</a>
+      </li>
+      <li class="ec-footer__item">
+        <a class="ec-footer__link" href="https://ec-europa-finder.primo.exlibrisgroup.com/discovery/search?vid=32EUC_INST:OP_PUBS">EU Publications Find-eR</a>
+      </li>
+    </ul>
+  </nav>
 </footer>

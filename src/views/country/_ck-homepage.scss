@@ -50,13 +50,6 @@
   max-width: 44rem;            // ~70 characters per line
   padding: 2rem 0 1.5rem;
 
-  h2 {
-    margin: 0 0 .75rem;
-    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
-    font-weight: 700;
-    color: var(--ck-blue);
-    letter-spacing: -.01em;
-  }
   p { margin: 0 0 .75rem; font-size: 1.0625rem; }
 }
 
@@ -140,14 +133,17 @@
   &:first-child { border-top: 0; padding-top: 0; }
   &:focus { outline: none; }               // focus is moved here programmatically only
 
-  h3 {
+  // Region headings (h2 since the intro heading was removed). !important:
+  // NDE's global h2 typography would otherwise make them huge.
+  h2 {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     gap: .75rem;
-    margin: 0 0 1rem;
-    font-size: 1.25rem;
-    font-weight: 700;
+    margin: 0 0 1rem !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
   }
 }
 
@@ -221,3 +217,15 @@
 .top-bar-background-image{
   background-image: url('/nde/custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/flags_background.jpg') !important;
 }
+
+// --- NDE landing container ---------------------------------------------------
+// Space above the landing content, under NDE's banner. NDE's own class; the
+// emulated-encapsulation attribute (e.g. [_ngcontent-ng-c742759394]) is
+// deliberately left out — that hash changes with NDE releases and would
+// silently break the rule. !important beats NDE's component style instead.
+// This file is part of the COUNTRY view's custom.css only, so other views are
+// unaffected.
+.home-page-container {
+  margin-top: 2rem !important;
+}
+

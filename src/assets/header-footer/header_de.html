@@ -1,13 +1,23 @@
 <!--
-  Kopfzeile — DEUTSCH (header_de.html). Übersetzung von header.html; Regeln siehe dort.
+  Custom HEADER — DEUTSCH. Rendered by NDE at the very top of EVERY page (above
+  NDE's own top menu), in all views: this file lives in the SHARED assets
+  (src/assets/header-footer/), so every view's package gets it unless a view
+  overrides it in src/views/<view>/assets/header-footer/.
+  Language variants: header.html (default/English), header_fr.html, header_de.html
+  — keep the three in sync when the text or links change.
+
+  CONTENT: credits on the left (links to Primo and the European Commission),
+  the privacy statement link on the right (.ec-header__privacy). All links are
+  external, so they open in a new tab; the visually hidden ".ec-header__sr"
+  text tells screen-reader users so.
+
+  STYLING: class names only — the rules live in
+  src/app/shared/styles/_ec-header.scss (loaded by _shared-theme.scss), which
+  ends up in every view's custom.css. No <script> here (NDE strips it).
 -->
-<header class="ec-header" style="background:#004494;color:#fff;padding:.5rem 1rem;font-family:Arial,sans-serif;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;">
-  <span>
-    <strong>Europäische Kommission</strong> &nbsp;|&nbsp; Bibliothek der EK &nbsp;
-    <em style="opacity:.7">(header_de.html — Beispiel)</em>
-  </span>
-  <span>
-    <span data-ec-audience="guest">Besucher &nbsp;·&nbsp; <a href="#" data-ec-nav="account" data-ec-query="section=overview" style="color:#ffd617">Anmelden</a></span>
-    <span data-ec-audience="user">Angemeldet &nbsp;·&nbsp; <a href="#" data-ec-nav="account" data-ec-query="section=overview" style="color:#ffd617">Mein Konto</a></span>
-  </span>
-</header>
+<div class="ec-header" lang="de">
+  <p class="ec-header__text">
+    Diese Website basiert auf <a class="ec-header__link" href="https://exlibrisgroup.com/products/primo-discovery-service/" target="_blank" rel="noopener">Primo<span class="ec-header__sr"> (öffnet in einem neuen Tab)</span></a> und wird von der <a class="ec-header__link" href="https://commission.europa.eu/index_de" target="_blank" rel="noopener">Europäischen Kommission<span class="ec-header__sr"> (öffnet in einem neuen Tab)</span></a> verwaltet.
+  </p>
+  <a class="ec-header__link ec-header__privacy" href="https://ec.europa.eu/dpo-register/detail/DPR-EC-03730" target="_blank" rel="noopener">Datenschutzerklärung<span class="ec-header__sr"> (öffnet in einem neuen Tab)</span></a>
+</div>

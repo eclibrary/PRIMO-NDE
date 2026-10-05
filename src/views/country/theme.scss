@@ -12,3 +12,13 @@
 // :root {
 //   --ec-accent: #{ec.$ec-yellow};
 // }
+
+//hide the autocomplete panel
+.mat-mdc-autocomplete-panel{
+    display:none;
+  }
+//hide search bar in full record view
+
+body:has(nde-full-display-container) nde-search-bar-container {
+    display: none !important;
+}  

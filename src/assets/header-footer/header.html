@@ -1,23 +1,23 @@
 <!--
-  Custom HEADER — default / English. Rendered by NDE at the very top of EVERY
-  page (above NDE's own top menu) when this file exists in the customization
-  package. Language variants: header_fr.html etc. Ex Libris docs name the base
-  file header.html; the upstream customModule README uses header_en.html — if
-  English does not pick this file up on Find-eR, copy it to header_en.html too.
+  Custom HEADER — default / English. Rendered by NDE at the very top of EVERY page (above
+  NDE's own top menu), in all views: this file lives in the SHARED assets
+  (src/assets/header-footer/), so every view's package gets it unless a view
+  overrides it in src/views/<view>/assets/header-footer/.
+  Language variants: header.html (default/English), header_fr.html, header_de.html
+  — keep the three in sync when the text or links change.
 
-  DUMMY MARKUP: replace with the real EC/ECL banner once you've seen where it lands.
-  - No <script> (stripped by NDE). Inline styles are fine; better: put rules in
-    _shared-theme.scss (they end up in custom.css, which is global).
-  - data-ec-audience works here too (EcSessionComponent flags <html>).
-  - data-ec-nav links are handled by EcSessionComponent (keeps vid/lang).
+  CONTENT: credits on the left (links to Primo and the European Commission),
+  the privacy statement link on the right (.ec-header__privacy). All links are
+  external, so they open in a new tab; the visually hidden ".ec-header__sr"
+  text tells screen-reader users so.
+
+  STYLING: class names only — the rules live in
+  src/app/shared/styles/_ec-header.scss (loaded by _shared-theme.scss), which
+  ends up in every view's custom.css. No <script> here (NDE strips it).
 -->
-<header class="ec-header" style="background:#004494;color:#fff;padding:.5rem 1rem;font-family:Arial,sans-serif;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;">
-  <span>
-    <strong>European Commission</strong> &nbsp;|&nbsp; EC Library &nbsp;
-    <em style="opacity:.7">(custom header.html — dummy)</em>
-  </span>
-  <span>
-    <span data-ec-audience="guest">Visitor &nbsp;·&nbsp; <a href="#" data-ec-nav="account" data-ec-query="section=overview" style="color:#ffd617">Sign in</a></span>
-    <span data-ec-audience="user">Signed in &nbsp;·&nbsp; <a href="#" data-ec-nav="account" data-ec-query="section=overview" style="color:#ffd617">My account</a></span>
-  </span>
-</header>
+<div class="ec-header" lang="en">
+  <p class="ec-header__text">
+    This website is powered by <a class="ec-header__link" href="https://exlibrisgroup.com/products/primo-discovery-service/" target="_blank" rel="noopener">Primo<span class="ec-header__sr"> (opens in a new tab)</span></a> and managed by the <a class="ec-header__link" href="https://commission.europa.eu/index_en" target="_blank" rel="noopener">European Commission<span class="ec-header__sr"> (opens in a new tab)</span></a>.
+  </p>
+  <a class="ec-header__link ec-header__privacy" href="https://ec.europa.eu/dpo-register/detail/DPR-EC-03730" target="_blank" rel="noopener">Privacy statement<span class="ec-header__sr"> (opens in a new tab)</span></a>
+</div>

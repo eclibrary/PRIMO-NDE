@@ -1,14 +1,23 @@
 <!--
-  En-tête personnalisé — FRANÇAIS. Traduction de header.html ; voir ce fichier
-  pour les règles. Même structure, mêmes attributs, seul le texte change.
+  Custom HEADER — FRANÇAIS. Rendered by NDE at the very top of EVERY page (above
+  NDE's own top menu), in all views: this file lives in the SHARED assets
+  (src/assets/header-footer/), so every view's package gets it unless a view
+  overrides it in src/views/<view>/assets/header-footer/.
+  Language variants: header.html (default/English), header_fr.html, header_de.html
+  — keep the three in sync when the text or links change.
+
+  CONTENT: credits on the left (links to Primo and the European Commission),
+  the privacy statement link on the right (.ec-header__privacy). All links are
+  external, so they open in a new tab; the visually hidden ".ec-header__sr"
+  text tells screen-reader users so.
+
+  STYLING: class names only — the rules live in
+  src/app/shared/styles/_ec-header.scss (loaded by _shared-theme.scss), which
+  ends up in every view's custom.css. No <script> here (NDE strips it).
 -->
-<header class="ec-header" style="background:#004494;color:#fff;padding:.5rem 1rem;font-family:Arial,sans-serif;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;">
-  <span>
-    <strong>Commission européenne</strong> &nbsp;|&nbsp; Bibliothèque de la CE &nbsp;
-    <em style="opacity:.7">(header_fr.html personnalisé — exemple)</em>
-  </span>
-  <span>
-    <span data-ec-audience="guest">Visiteur &nbsp;·&nbsp; <a href="#" data-ec-nav="account" data-ec-query="section=overview" style="color:#ffd617">Se connecter</a></span>
-    <span data-ec-audience="user">Connecté(e) &nbsp;·&nbsp; <a href="#" data-ec-nav="account" data-ec-query="section=overview" style="color:#ffd617">Mon compte</a></span>
-  </span>
-</header>
+<div class="ec-header" lang="fr">
+  <p class="ec-header__text">
+    Ce site web fonctionne avec <a class="ec-header__link" href="https://exlibrisgroup.com/products/primo-discovery-service/" target="_blank" rel="noopener">Primo<span class="ec-header__sr"> (s’ouvre dans un nouvel onglet)</span></a> et est géré par la <a class="ec-header__link" href="https://commission.europa.eu/index_fr" target="_blank" rel="noopener">Commission européenne<span class="ec-header__sr"> (s’ouvre dans un nouvel onglet)</span></a>.
+  </p>
+  <a class="ec-header__link ec-header__privacy" href="https://ec.europa.eu/dpo-register/detail/DPR-EC-03730" target="_blank" rel="noopener">Déclaration de confidentialité<span class="ec-header__sr"> (s’ouvre dans un nouvel onglet)</span></a>
+</div>

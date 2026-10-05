@@ -332,7 +332,7 @@ function injectStylesOnce(): void {
       background: var(--sys-surface-container, #eef3fa);
       color: var(--sys-on-surface, #1d2433);
       font-size: .875rem;
-      line-height: 1.2;
+      line-height: 1.4;
       white-space: nowrap;
     }
     /* Björn's hand-tuned offset: pulls the chip left to sit flush with NDE's

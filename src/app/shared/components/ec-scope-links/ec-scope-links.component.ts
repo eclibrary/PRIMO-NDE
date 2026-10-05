@@ -14,11 +14,12 @@
 //
 // WHERE IT GOES (verified NDE markup, Oct 2026, results page):
 //   div.search-result-list-content
+//     ← strip inserted here (moved above the paging bar, Oct 2026)
 //     nde-search-results-top-bar     ("1-10 of 70 Results", select all, export)
-//     ← strip inserted here
 //     nde-search-results             (div#searchResults → result items)
-// It is inserted as a sibling BEFORE nde-search-results — never inside it — so
-// NDE's own list rendering (ngFor over the results) is not disturbed.
+// It is inserted as a sibling BEFORE nde-search-results-top-bar — never inside
+// an NDE component — so NDE's own rendering is not disturbed. (The top bar is
+// sticky; being above it, the strip simply scrolls away while the bar sticks.)
 //
 // Like the chip, this is plain DOM (the container belongs to NDE): it is
 // re-checked after every navigation and DOM change (batched per frame) and
@@ -38,8 +39,8 @@ import { SCOPE_LINKS, ScopeLink, ScopeLinkKind } from './scope-links.data';
 
 /** NDE selectors this component depends on — update here if NDE changes its markup. */
 const SEL = {
-  /** The results list; the strip goes right before it. */
-  results: '.search-result-list-content > nde-search-results',
+  /** NDE's results top bar (count, paging size, export); the strip goes right before it. */
+  anchor: '.search-result-list-content > nde-search-results-top-bar',
 } as const;
 
 /** Class of the strip element (also used to find an existing one). */
@@ -113,25 +114,25 @@ export class EcScopeLinksComponent implements OnDestroy {
 
   /** Make the results area match the current scope: strip present, updated, or gone. */
   private sync(): void {
-    const results = document.querySelector<HTMLElement>(SEL.results);
+    const anchor = document.querySelector<HTMLElement>(SEL.anchor);
     const scope = this.scope.activeOnResults();
     const links = scope?.key ? SCOPE_LINKS[scope.key] ?? [] : [];
     const existing = document.querySelector<HTMLElement>(`.${STRIP_CLASS}`);
 
-    // Nothing to show: no results list yet, no active scope, no links for this
+    // Nothing to show: no results area yet, no active scope, no links for this
     // country, or not on the first page.
-    if (!results || !scope || links.length === 0 || !isFirstPage()) {
+    if (!anchor || !scope || links.length === 0 || !isFirstPage()) {
       existing?.remove();
       return;
     }
 
     // Already in the right place for the right country → nothing to do.
-    if (existing && existing.nextElementSibling === results && existing.dataset['key'] === scope.key) {
+    if (existing && existing.nextElementSibling === anchor && existing.dataset['key'] === scope.key) {
       return;
     }
 
     existing?.remove();
-    results.before(buildStrip(scope, links));
+    anchor.before(buildStrip(scope, links));
   }
 }
 

@@ -4,6 +4,8 @@
 // (inspect nde-color-theme-*.css in devtools for the list) over targeting DOM
 // selectors, which change between NDE releases.
 @use 'ec-tokens' as ec;
+@use 'ec-header'; // custom header bar (src/assets/header-footer/header*.html)
+@use 'ec-footer'; // custom footer band (src/assets/header-footer/footer*.html)
 
 // Material Symbols icon font from the Google Fonts CDN, for the static HTML
 // (landing page, header, footer) and components alike. The stylesheet defines
@@ -87,4 +89,13 @@ html:not(.ec-env-sandbox) .ec-rs-format-locked {
 .material-symbols-outlined {
   font-size: 28px;
   color: var(--sys-primary, #004494);
+}
+
+.side-nav-filters-actions {
+  background-color:var(--sys-surface-container-low, #f5f8fc) !important;
+}
+
+//increase the EC logo size
+[src="custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/library-logo.png"]{
+  transform: scale(1.5);
 }
