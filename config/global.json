@@ -14,7 +14,19 @@
       "useLocalCustomPackage",
       "_customAssetCheck"
     ],
-    "maxAgeDays": 30
+    "maxAgeDays": 30,
+    "pageLabel": {
+      "en": "(page {n})",
+      "fr": "(page {n})",
+      "de": "(Seite {n})"
+    },
+    "defaultPageSize": 10,
+    "fullDisplayPath": "/fulldisplay",
+    "lastViewedLabel": {
+      "en": "Last viewed",
+      "fr": "Dernier consulté",
+      "de": "Zuletzt angesehen"
+    }
   },
   "askALibrarian": {
     "triggerUrlPrefixes": [
@@ -115,6 +127,58 @@
       "fr": "Fermer",
       "de": "Schließen"
     }
+  },
+  "libraryOnTheGo": {
+    "enabled": true,
+    "collectionId": "8183322120004061",
+    "label": {
+      "en": "Library on the Go"
+    },
+    "color": "#00727a",
+    "infoButtonLabel": {
+      "en": "What is Library on the Go?",
+      "fr": "Qu'est-ce que Library on the Go ?",
+      "de": "Was ist Library on the Go?"
+    },
+    "dialogTitle": {
+      "en": "Library on the Go"
+    },
+    "dialogHtml": {
+      "en": "<p>Titles marked <strong>Library on the Go</strong> can be read outside the European Commission network.</p><p>Sign in with your EU Login when asked and you can use them from anywhere, on any device.</p>"
+    },
+    "closeLabel": {
+      "en": "Close",
+      "fr": "Fermer",
+      "de": "Schließen"
+    },
+    "pnxEndpoint": "/primaws/rest/pub/pnxs/L/{recordId}?vid={vid}&lang={lang}"
+  },
+  "noResultsHelp": {
+    "enabled": true,
+    "title": {
+      "en": "Still can't find it?",
+      "fr": "Toujours rien trouvé ?",
+      "de": "Immer noch nichts gefunden?"
+    },
+    "html": {
+      "en": "<ul><li><a href=\"https://ec-europa-eu.libguides.com/finder_guide\" target=\"_blank\">Read the search tips</a> for ways to widen or sharpen your search.</li><li><a href=\"https://ec.europa.eu/libraries/pages/askalibrarian/en/\">Ask a librarian</a>: we can help you find it, or get it for you from another library.</li></ul>"
+    }
+  },
+  "loansDue": {
+    "enabled": true,
+    "dueSoonDays": 7,
+    "overdueLabel": {
+      "en": "Overdue loans: {n}",
+      "fr": "Prêts en retard : {n}",
+      "de": "Überfällige Ausleihen: {n}"
+    },
+    "dueSoonLabel": {
+      "en": "Loans due within {days} days: {n}",
+      "fr": "Prêts à rendre dans les {days} jours : {n}",
+      "de": "In den nächsten {days} Tagen fällig: {n}"
+    },
+    "testWithPastLoans": false,
+    "endpoint": "/primaws/rest/priv/myaccount/loans?type={type}&lang={lang}&inst_code={inst}&patron_id={patronId}&vid={vid}"
   },
   "resourceSharing": {
     "forceFormat": "digital",

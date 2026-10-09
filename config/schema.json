@@ -74,6 +74,27 @@
           "minimum": 1,
           "title": "Forget after (days)",
           "description": "A stored search older than this is discarded."
+        },
+        "pageLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Page indication",
+          "description": "Shown after the search terms when the patron was beyond the first page, e.g. (page 4). {n} is replaced by the page number. Empty English = no page indication."
+        },
+        "defaultPageSize": {
+          "type": "integer",
+          "minimum": 1,
+          "title": "Results per page (default)",
+          "description": "NDE's default page size. The results URL only carries an offset (offset=30), so the page number is offset / page size + 1. When the patron picks another page size it is detected from the number of results on screen; this value is used until then."
+        },
+        "fullDisplayPath": {
+          "type": "string",
+          "title": "Full record route",
+          "description": "Router path of the full record page, relative to /nde. Opening a record there marks it as the last viewed one."
+        },
+        "lastViewedLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "'Last viewed' label",
+          "description": "Shown in the results list on the record the patron opened last; the list also scrolls to it when they return through the landing-page link. Empty English = feature off."
         }
       }
     },
@@ -288,6 +309,139 @@
         "rememberDays",
         "dontShowAgainLabel",
         "closeLabel"
+      ]
+    },
+    "libraryOnTheGo": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Library on the Go",
+      "description": "Badge on records of the 'Library on the Go' digital collection (titles readable outside the EC network with EU Login), at the end of the record's top line in the results list and the full record, with an (i) button that opens an explanation.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Show the badge"
+        },
+        "collectionId": {
+          "type": "string",
+          "title": "Collection ID",
+          "description": "Alma ID of the Library on the Go collection — the number after $$D in the record's PNX field control.colldiscovery, also visible in the URL when filtering on the collection (facet=digital_collection,include,<ID>)."
+        },
+        "label": {
+          "$ref": "#/definitions/localised",
+          "title": "Badge text"
+        },
+        "color": {
+          "type": "string",
+          "title": "Badge colour",
+          "description": "Any CSS colour, e.g. #00727a. Used for the text and the (i) icon."
+        },
+        "infoButtonLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "(i) button label",
+          "description": "Read by screen readers; not visible."
+        },
+        "dialogTitle": {
+          "$ref": "#/definitions/localised",
+          "title": "Dialog title"
+        },
+        "dialogHtml": {
+          "$ref": "#/definitions/localised",
+          "format": "html",
+          "title": "Dialog text (HTML)",
+          "description": "Explanation shown when the (i) is clicked, as HTML markup per language (English is used when a language is empty). Scripts, inline style and data-* attributes are removed on display."
+        },
+        "closeLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Close button label"
+        },
+        "pnxEndpoint": {
+          "type": "string",
+          "title": "PNX endpoint (fallback)",
+          "description": "Technical. Used only when the record data cannot be read from the NDE component: Primo endpoint returning one record's PNX. Placeholders: {recordId}, {vid}, {lang}."
+        }
+      },
+      "required": [
+        "enabled",
+        "collectionId",
+        "label",
+        "color",
+        "infoButtonLabel",
+        "dialogTitle",
+        "dialogHtml",
+        "closeLabel",
+        "pnxEndpoint"
+      ]
+    },
+    "noResultsHelp": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "No results help",
+      "description": "Help block shown under NDE's 'No records found' message: the library's own ways out (search guide, Ask a librarian, ...).",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Show the help block"
+        },
+        "title": {
+          "$ref": "#/definitions/localised",
+          "title": "Title"
+        },
+        "html": {
+          "$ref": "#/definitions/localised",
+          "format": "html",
+          "title": "Text (HTML)",
+          "description": "Body as HTML markup per language (English is used when a language is empty; empty English = no block). A link to the Ask-a-librarian page opens the modal. Scripts, inline style and data-* attributes are removed on display."
+        }
+      },
+      "required": [
+        "enabled",
+        "title",
+        "html"
+      ]
+    },
+    "loansDue": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Loans due soon",
+      "description": "Line on the landing page for signed-in patrons with the number of overdue loans and loans due soon, linking to the library card. Only on views whose landing page contains the data-ec-loans-due markup.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Show the line"
+        },
+        "dueSoonDays": {
+          "type": "integer",
+          "minimum": 1,
+          "title": "'Due soon' means within (days)"
+        },
+        "overdueLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Text for overdue loans",
+          "description": "{n} is replaced by the number of overdue loans."
+        },
+        "dueSoonLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Text for loans due soon",
+          "description": "{n} = number of loans, {days} = the number of days above."
+        },
+        "testWithPastLoans": {
+          "type": "boolean",
+          "title": "TEST ONLY: use past loans",
+          "description": "Reads the loan history instead of the active loans, so every past loan counts as overdue and the line can be seen without having an active loan. Never leave this ticked in production."
+        },
+        "endpoint": {
+          "type": "string",
+          "title": "Loans endpoint",
+          "description": "Technical. Primo endpoint the library card itself uses. Placeholders: {type} (active/history), {lang}, {inst}, {patronId}, {vid}."
+        }
+      },
+      "required": [
+        "enabled",
+        "dueSoonDays",
+        "overdueLabel",
+        "dueSoonLabel",
+        "testWithPastLoans",
+        "endpoint"
       ]
     },
     "printReturnLabel": {

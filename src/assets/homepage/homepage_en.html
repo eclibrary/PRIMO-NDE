@@ -94,7 +94,9 @@
     <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
       <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Pick up where you left off</h2>
       <span class="welcome-content">Your last search on this site:</span>
-      <a href="#" data-ec-last-search-link tabindex="0" role="link">“<span data-ec-last-search-terms></span>”</a>
+      <!-- data-ec-last-search-page: filled with "(page 4)" when the patron left
+           off beyond page 1 (text: setting lastSearch.pageLabel); empty otherwise. -->
+      <a href="#" data-ec-last-search-link tabindex="0" role="link">“<span data-ec-last-search-terms></span>” <span data-ec-last-search-page></span></a>
     </div>
 
     <!-- ===== Announcements — everyone ======================================= -->

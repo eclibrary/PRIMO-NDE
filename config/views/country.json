@@ -1,3 +1,13 @@
 {
-  "$schema": "../schema.json"
+  "$schema": "../schema.json",
+  "welcomeMessage": {
+    "html": {
+      "en": "<p>One place to find up-to-date, reliable country information from the Commission's Directorates-General and beyond.</p>\n<p>Open to all Commission staff, it covers the EU Member States and countries worldwide, with thematic knowledge to support your briefings and speeches.</p>\n"
+    },
+    "title": {
+      "en": "Welcome to Country Knowledge Find-eR",
+      "fr": "Bienvenue",
+      "de": "Willkommen"
+    }
+  }
 }

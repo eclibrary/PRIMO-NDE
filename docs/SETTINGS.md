@@ -60,6 +60,28 @@ message again* hides it for `rememberDays` (180 ≈ 6 months). **Any change to t
 new message** and is shown to everyone again — there is no id to bump. The HTML is sanitised on
 display: scripts, inline `style` and `data-*` attributes are removed; use `class` for styling.
 
+## Library on the Go
+
+Section `libraryOnTheGo` — badge on records of the Library on the Go collection
+(`src/app/shared/components/ec-library-on-the-go/`), shown at the end of the record's top line with
+an (i) button that opens an explanation. Set the **Collection ID** (the number after `$$D` in the
+record's PNX field `control.colldiscovery`), the badge text and colour, and the dialog title and
+text (HTML). Untick *Show the badge* on a view tab to switch it off for that view.
+
+## No results help
+
+Section `noResultsHelp` — block under NDE's "No records found" message
+(`src/app/shared/components/ec-no-results-help/`). Title and text (HTML) per language; a link to the
+Ask-a-librarian page opens the modal.
+
+## Loans due soon
+
+Section `loansDue` — line on the landing page for signed-in patrons
+(`src/app/shared/components/ec-loans-due/`), e.g. "Overdue loans: 1 · Loans due within 7 days: 2".
+It fills the `data-ec-loans-due` markup in the landing page HTML and is hidden when there is nothing
+to report. **TEST ONLY: use past loans** shows past loans as overdue so the line can be checked
+without an active loan — never leave it ticked in production.
+
 Never put secrets here — these files ship in the customization package.
 
 ## The settings UI

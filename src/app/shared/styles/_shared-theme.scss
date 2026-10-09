@@ -82,6 +82,7 @@ html:not(.ec-env-sandbox) .ec-rs-format-locked {
   width: 1px !important;
   height: 1px !important;
   overflow: hidden !important;
+  
 }
 
 
@@ -95,7 +96,7 @@ html:not(.ec-env-sandbox) .ec-rs-format-locked {
   background-color:var(--sys-surface-container-low, #f5f8fc) !important;
 }
 
-//increase the EC logo size
-[src="custom/32EUC_INST-COUNTRY_KNOWLEDGE/assets/images/library-logo.png"]{
-  transform: scale(1.5);
+/*increase the EC logo size*/
+[src*="/library-logo.png"]{
+  transform: scale(1.6);
 }

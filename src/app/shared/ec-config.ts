@@ -58,6 +58,14 @@ export interface EcConfigValues {
     homePath: string;
     stripParams: string[];
     maxAgeDays: number;
+    /** Page indication after the terms, `{n}` = page number; shown from page 2 on. */
+    pageLabel: Localised;
+    /** NDE's default results-per-page; used until another size is detected on screen. */
+    defaultPageSize: number;
+    /** Route of the full record page; a visit there records the "last viewed" record. */
+    fullDisplayPath: string;
+    /** Label put on the last viewed record in the results list. Empty en = off. */
+    lastViewedLabel: Localised;
   };
   askALibrarian: {
     triggerUrlPrefixes: string[];
@@ -97,6 +105,44 @@ export interface EcConfigValues {
     rememberDays: number;
     dontShowAgainLabel: Localised;
     closeLabel: Localised;
+  };
+  /** "Library on the Go" badge on records of that collection — see EcLibraryOnTheGoComponent. */
+  libraryOnTheGo: {
+    enabled: boolean;
+    /** Alma collection id; matched against $$D in PNX control.colldiscovery. */
+    collectionId: string;
+    label: Localised;
+    /** Any CSS colour for the badge text and (i) icon. */
+    color: string;
+    /** Accessible name of the (i) button. */
+    infoButtonLabel: Localised;
+    dialogTitle: Localised;
+    /** Explanation as HTML markup; sanitised by Angular when rendered. */
+    dialogHtml: Localised;
+    closeLabel: Localised;
+    /** Fallback PNX endpoint; placeholders {recordId}, {vid}, {lang}. */
+    pnxEndpoint: string;
+  };
+  /** Help block under NDE's "No records found" — see EcNoResultsHelpComponent. */
+  noResultsHelp: {
+    enabled: boolean;
+    title: Localised;
+    /** Body as HTML markup; sanitised by Angular when rendered. Empty en = no block. */
+    html: Localised;
+  };
+  /** "Loans due soon" line on the landing page — see EcLoansDueComponent. */
+  loansDue: {
+    enabled: boolean;
+    /** A loan due within this many days counts as "due soon". */
+    dueSoonDays: number;
+    /** `{n}` = number of overdue loans. */
+    overdueLabel: Localised;
+    /** `{n}` = number of loans, `{days}` = dueSoonDays. */
+    dueSoonLabel: Localised;
+    /** TEST ONLY: read the loan history, so past loans show up as overdue. */
+    testWithPastLoans: boolean;
+    /** Placeholders {type}, {lang}, {inst}, {patronId}, {vid}. */
+    endpoint: string;
   };
   resourceSharing: {
     forceFormat: '' | 'digital' | 'physical' | 'photocopy';

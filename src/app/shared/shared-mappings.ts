@@ -13,6 +13,8 @@
  */
 import { EcSharedRootComponent } from './components/ec-shared-root/ec-shared-root.component';
 import { EcResourceSharingFormatComponent } from './components/ec-resource-sharing-format/ec-resource-sharing-format.component';
+import { EcNoResultsHelpComponent } from './components/ec-no-results-help/ec-no-results-help.component';
+import { EcLibraryOnTheGoComponent } from './components/ec-library-on-the-go/ec-library-on-the-go.component';
 // import { EcNoticeComponent } from './components/ec-notice/ec-notice.component';
 
 export const sharedSelectorMappings: Array<[string, any]> = [
@@ -25,6 +27,17 @@ export const sharedSelectorMappings: Array<[string, any]> = [
   // Resource-sharing request dialog: force the Format per view (config resourceSharing.*).
   // Renders inside the request dialog; hostComponent is the Formly-driven form.
   ['nde-base-request-form-after', EcResourceSharingFormatComponent],
+
+  // "Library on the Go" badge at the end of a record's top line (results list
+  // and full record share the markup). nde-record-type is the first element of
+  // that line and exists on every record; the component moves itself to the end
+  // of the line. Settings: libraryOnTheGo.* (on/off, collection id, texts).
+  ['nde-record-type-after', EcLibraryOnTheGoComponent],
+
+  // "Still can't find it?" help under NDE's "No records found" message.
+  // nde-search-no-results only exists on a results page without hits.
+  // Settings: noResultsHelp.* (on/off, title, HTML text).
+  ['nde-search-no-results-after', EcNoResultsHelpComponent],
 
   // Earlier placeholder that proved the module-federation pipeline. Kept for
   // reference; re-enable on a different slot if you still want it visible.

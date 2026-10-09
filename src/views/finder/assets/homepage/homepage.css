@@ -9,18 +9,129 @@
   global (custom.css via _shared-theme.scss) so header/footer can use them too.
 */
 
-/* EC accent on the quick-link tiles */
+/* ===== Quick-link tiles ====================================================
+   Markup (homepage_<lang>.html):
+     <li><a> <div class="icon"> <span class="material-symbols-outlined">name</span> </div>
+             <span>Label</span> </a></li>
+   NDE's own landing styles draw the tile and the round .icon disc; they were
+   written for an <img> inside the disc. We use the Material Symbols icon FONT
+   instead, so the rules below centre and size that glyph and set the colours. */
+
+/* EC accent on the tile border */
 .main-landing-page .menu li a {
   border-color: var(--ec-blue, #004494);
 }
-.main-landing-page .menu li a:hover,
-.main-landing-page .menu li a:focus {
-  background-color: var(--ec-yellow, #ffd617);
+
+/* The round disc: centre whatever is inside, and tint it EC blue instead of
+   NDE's lilac so disc, icon and border are one colour family. */
+.main-landing-page .menu li a .icon {
+  align-items: center;
+  justify-content: center;
+  background-color: #e3ecf8; /* light EC blue */
 }
 
-/* The welcome CTA ("Sign in" / "Go to my library card") */
-.main-landing-page .welcome a[data-ec-nav] {
+/* The icon glyph. More specific than the global .material-symbols-outlined rule
+   in _shared-theme.scss (28px), so it wins here without touching that file.
+   - font-size   = icon size; change this one value to make the icons bigger/smaller.
+   - line-height 1 + margin 0: the glyph box is exactly font-size square, so the
+     flex centring above puts it dead centre in the disc. */
+.main-landing-page .menu li a .icon .material-symbols-outlined {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin: 0;
+  color: var(--ec-blue, #004494);
+}
+
+/* Hover / keyboard focus: light-blue tile (was EC yellow), white disc. */
+.main-landing-page .menu li a:hover,
+.main-landing-page .menu li a:focus {
+  background-color: #d3e2f5; /* one step darker than the disc tint */
+  /* Underline only the label (next rule). Left on the link, the underline is
+     also drawn under the icon glyph — a font icon is text to the browser. */
+  text-decoration: none;
+}
+.main-landing-page .menu li a:hover > span,
+.main-landing-page .menu li a:focus > span {
+  text-decoration: underline;
+}
+.main-landing-page .menu li a:hover .icon,
+.main-landing-page .menu li a:focus .icon {
+  background-color: #fff;
+}
+
+/* ===== Welcome / "Pick up where you left off" ==============================
+   Three blocks share the .welcome column in homepage_<lang>.html:
+     [data-ec-audience="guest"]  "Welcome to the EC Library" + Sign in
+     [data-ec-audience="user"]   "Welcome back" + Go to my library card
+     [data-ec-last-search]       "Pick up where you left off" + last search link
+   Which ones exist for the visitor is decided by classes on <html>
+   (ec-audience-guest|user from EcSessionComponent, ec-has-last-search from
+   EcLastSearchComponent) and the show/hide rules in _shared-theme.scss. */
+
+/* ALIGNMENT FIX. _shared-theme.scss un-hides the user and last-search blocks
+   with `display: revert`, which falls back to the browser default (block) and
+   so drops the flex column NDE gives .welcome — the button then sat inline in
+   the text. Restore the column for the blocks that are shown that way. */
+html.ec-audience-user .main-landing-page .welcome[data-ec-audience='user'],
+html.ec-has-last-search .main-landing-page .welcome[data-ec-last-search] {
+  display: flex;
+}
+
+/* ONE BLOCK AT A TIME. When there is a last search to pick up, it REPLACES the
+   welcome block (guest or user) instead of squeezing in as an extra column.
+   Must stay BELOW the rule above: same specificity, so the later one wins. */
+html.ec-has-last-search .main-landing-page .welcome[data-ec-audience] {
+  display: none;
+}
+
+/* The button in each block ("Sign in" / "Go to my library card" / the last
+   search): EC blue, and no wider than its text (a flex column would otherwise
+   stretch it or centre it, depending on NDE's alignment). */
+.main-landing-page .welcome a[data-ec-nav],
+.main-landing-page .welcome a[data-ec-last-search-link] {
   background-color: var(--ec-blue, #004494);
+  align-self: flex-start;
+}
+
+/* ===== "Loans due soon" line ==============================================
+   <p class="ec-loans-due" data-ec-loans-due> … </p> inside the welcome-back and
+   last-search blocks. EcLoansDueComponent fills the text and adds
+     .ec-loans-due--show     when there is something to report (else hidden)
+     .ec-loans-due--overdue  when at least one loan is overdue (red instead of blue). */
+.main-landing-page .ec-loans-due {
+  display: none;               /* hidden until the component has something to say */
+  align-items: center;
+  gap: .375rem;
+  margin: 1rem 0 0;
+  color: var(--ec-blue, #004494);
+}
+.main-landing-page .ec-loans-due.ec-loans-due--show {
+  display: flex;
+}
+.main-landing-page .ec-loans-due.ec-loans-due--overdue {
+  color: #b3261e;              /* Material error red: readable on white */
+}
+/* The link is a plain text link, not a button: `all: unset` drops the pill
+   styling NDE (and the rule above for a[data-ec-nav]) gives links in .welcome. */
+.main-landing-page .welcome .ec-loans-due a {
+  /* !important throughout: NDE's own .welcome link rules are more specific
+     than anything we can write here without copying their selectors. */
+  all: unset !important;
+  cursor: pointer !important;
+  color: inherit !important;
+  font-weight: 600 !important;
+  text-decoration: underline !important;
+}
+.main-landing-page .welcome .ec-loans-due a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+/* Icon: smaller than the global 28px .material-symbols-outlined rule. */
+.main-landing-page .ec-loans-due .material-symbols-outlined {
+  font-size: 1.25rem;
+  line-height: 1;
+  margin: 0;
+  color: inherit;
 }
 
 /* Plain text links inside the user shortcuts list */

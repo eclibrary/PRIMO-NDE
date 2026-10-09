@@ -18,7 +18,8 @@
 //         <a href="#" data-ec-nav="account" data-ec-query="section=overview">
 //     are navigated through the shell router with the current `vid` and `lang`
 //     preserved. One delegated click listener on <body> handles them all.
-//     data-ec-query may contain {currentYear}, replaced at click time.
+//     data-ec-query may contain {currentYear} and {lotgCollectionId},
+//     replaced at click time (see handleNavClick).
 //
 //  3. LIVE COUNTS — `<span data-ec-count="CSS selector">` gets the number of
 //     elements matching that selector as its text, optionally with a word:
@@ -42,7 +43,7 @@
 import { Component, effect, inject, NgZone, OnDestroy, Renderer2 } from '@angular/core';
 import { AuthStateService } from '../../auth-state.service';
 import { SHELL_ROUTER } from '../../../injection-tokens';
-import { isSandbox } from '../../ec-config';
+import { EC_CONFIG, isSandbox } from '../../ec-config';
 import { SubjectScopeService } from '../../subject-scope.service';
 
 @Component({
@@ -149,7 +150,7 @@ export class EcSessionComponent implements OnDestroy {
    * in-app navigation to `/account?vid=<current>&lang=<current>&section=overview`.
    *
    * Known routes (NDE, Sept 2026): home, search, account, favorites, jsearch,
-   * dbsearch, browse. `login` is not a route — sending a guest to `account`
+   * dbsearch, browse, collectionDiscovery (+ collectionId=…, verified Oct 2026). `login` is not a route — sending a guest to `account`
    * triggers the sign-in prompt, which is what the "Sign in" CTA wants.
    */
   private handleNavClick(ev: MouseEvent): void {
@@ -175,8 +176,12 @@ export class EcSessionComponent implements OnDestroy {
     // Placeholders, resolved at click time so static HTML never goes stale:
     //   {currentYear} → e.g. 2026 (from the visitor's clock), used for date
     //   ranges like mfacet=creationdate,include,[2020 TO {currentYear}].
+    //   {lotgCollectionId} → the Library on the Go collection id from the
+    //   settings (libraryOnTheGo.collectionId), so the landing-page tile and the
+    //   record badge can never point at different collections.
     const rawQuery = (anchor.dataset['ecQuery'] ?? '')
-      .replace(/\{currentYear\}/g, String(new Date().getFullYear()));
+      .replace(/\{currentYear\}/g, String(new Date().getFullYear()))
+      .replace(/\{lotgCollectionId\}/g, EC_CONFIG.libraryOnTheGo?.collectionId ?? '');
     const extra = new URLSearchParams(rawQuery);
     // Collect the declared keys with forEach: the project's tsconfig has no
     // "dom.iterable" lib, so URLSearchParams.keys() isn't typed here.

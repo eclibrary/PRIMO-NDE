@@ -32,39 +32,52 @@
 <main class="main-landing-page display-flex flex-column flex-layout-center-center">
 
   <!-- ===== Quick links — everyone ========================================== -->
+  <!-- TILE ICONS: Google "Material Symbols Outlined" font (loaded by
+       _shared-theme.scss). The text inside the span is the icon NAME — pick one
+       at https://fonts.google.com/icons and type its name (lower case, with
+       underscores). Size/colour/centring: homepage.css. aria-hidden because the
+       link already has a text label. -->
   <div class="menu-container width-100">
     <ul role="list" class="menu width-100">
       <li role="listitem">
-        <a id="Opening_hours_link" href="https://ec.europa.eu/libraries/pages/readingrooms/en/" aria-label="Opening hours" role="link">
-          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/clock.svg"></div>
+        <a id="Opening_hours_link" href="https://ec.europa.eu/libraries/pages/readingrooms/en/" aria-label="Opening hours" role="link" target="_blank">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">schedule</span></div>
           <span>Reading rooms</span>
         </a>
       </li>
       <li role="listitem">
-        <a id="FAQ_link" href="https://ec.europa.eu/libraries/#faq" aria-label="FAQ" role="link">
-          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/search.svg"></div>
+        <a id="FAQ_link" href="https://ec.europa.eu/libraries/#faq" aria-label="FAQ" role="link" target="_blank">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">help</span></div>
           <span>FAQ</span>
         </a>
       </li>
       <li role="listitem">
-        <a id="Ask_a_librarian_link" href="https://ec.europa.eu/libraries/pages/askalibrarian/en/" aria-label="Ask a librarian" role="link">
+        <a id="Ask_a_librarian_link" href="https://ec.europa.eu/libraries/pages/askalibrarian/en/" aria-label="Ask a librarian" role="link" target="_blank">
           <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">mail</span></div>
           <span>Ask a librarian</span>
         </a>
       </li>
       <li role="listitem">
-        <a id="Search_tips_link" href="https://ec.europa.eu/libraries/#search-tips" aria-label="Search tips" role="link">
-          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/comp_search.svg"></div>
+        <a id="Search_tips_link" href="https://ec-europa-eu.libguides.com/finder_guide" aria-label="Search tips" role="link" target="_blank">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">manage_search</span></div>
           <span>Search tips</span>
         </a>
       </li>
-      <!-- User-only tile: quick jump to loans. Stays a <li> so the grid keeps its rhythm. -->
-      <li role="listitem" data-ec-audience="user">
-        <a id="My_loans_link" href="#" data-ec-nav="account" data-ec-query="section=loans" aria-label="My loans" role="link">
-          <div class="icon display-flex"><img alt="" src="assets/images/homePageImages/book.svg"></div>
-          <span>My loans</span>
+      <!-- Library on the Go: opens NDE's collection page. {lotgCollectionId} is
+           replaced by the collection id from the settings (libraryOnTheGo.collectionId). -->
+      <li role="listitem">
+        <a id="Library_on_the_go_link" href="#" data-ec-nav="collectionDiscovery" data-ec-query="collectionId={lotgCollectionId}" aria-label="Library on the Go: titles you can read outside the Commission network" role="link">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">travel_explore</span></div>
+          <span>Library on the Go</span>
         </a>
       </li>
+      <!-- User-only tile: quick jump to loans. Stays a <li> so the grid keeps its rhythm. -->
+      <!--<li role="listitem" data-ec-audience="user">
+        <a id="My_loans_link" href="#" data-ec-nav="account" data-ec-query="section=loans" aria-label="My loans" role="link">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span></div>
+          <span>My loans</span>
+        </a>
+      </li>-->
     </ul>
   </div>
 
@@ -73,12 +86,18 @@
     <!-- ===== Welcome — differs per audience ================================= -->
     <!-- GUEST -->
     <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="guest">
-      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Welcome to the EC Library</h2>
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Welcome to Find-eR</h2>
       <span class="welcome-content">
-        Sign in with EU Login to request items, renew loans, save searches and manage your favourites.
+
+        <p>Find-eR is the catalogue of the European Commission libraries. It brings their print and electronic collections together 
+          in one simple search. Use it to find data, information and research on EU integration and policies, law, economics, politics, international relations and more.</p>
+
+<!--
+<p>Find-eR covers the collections of the <strong>EC Library</strong>, the <strong>Library of the Learning Centre</strong>, the <strong>DG COMP Library</strong>, the <strong>DGT Library</strong>, the <strong>IAS Library</strong>, the <strong>JRC Library</strong> and the <strong>RTD Library</strong>.</p>
+  -->  
       </span>
       <a id="signInCta" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Sign in with EU Login" role="link">Sign in</a>
-    </div>
+    </div><!-- /GUEST welcome — must close here: the blocks below are siblings, not children -->
     <!-- USER -->
     <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="user">
       <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Welcome back</h2>
@@ -86,6 +105,12 @@
         You are signed in. Your loans, requests and favourites are one click away.
       </span>
       <a id="myLibraryCard" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Go to my library card" role="link">Go to my library card</a>
+      <!-- "Loans due soon" — filled by EcLoansDueComponent for signed-in patrons
+           (settings: loansDue); stays hidden when there is nothing to report. -->
+      <p class="ec-loans-due" data-ec-loans-due>
+        <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
+        <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
+      </p>
     </div>
 
     <!-- ===== Last search — only when EcLastSearchComponent has one stored ======
@@ -94,7 +119,15 @@
     <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
       <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Pick up where you left off</h2>
       <span class="welcome-content">Your last search on this site:</span>
-      <a href="#" data-ec-last-search-link tabindex="0" role="link">“<span data-ec-last-search-terms></span>”</a>
+      <!-- data-ec-last-search-page: filled with "(page 4)" when the patron left
+           off beyond page 1 (text: setting lastSearch.pageLabel); empty otherwise. -->
+      <a href="#" data-ec-last-search-link tabindex="0" role="link">“<span data-ec-last-search-terms></span>” <span data-ec-last-search-page></span></a>
+      <!-- "Loans due soon" — filled by EcLoansDueComponent for signed-in patrons
+           (settings: loansDue); stays hidden when there is nothing to report. -->
+      <p class="ec-loans-due" data-ec-loans-due>
+        <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
+        <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
+      </p>
     </div>
 
     <!-- ===== Announcements — everyone ======================================= -->
@@ -117,35 +150,31 @@
   </div>
 
   <!-- ===== About — everyone, with a guest-only sign-in nudge ================= -->
-  <div class="about display-flex width-100">
+  <!--<div class="about display-flex width-100">
     <div class="about-content flex-row">
       <div class="about-text flex-column flex-space-between">
-        <h2 role="heading" aria-level="2" class="about-text-title mat-headline-large">About the EC Library</h2>
+        <h2 role="heading" aria-level="2" class="about-text-title mat-headline-large">About Find-eR</h2>
         <p class="about-text-description">
-          The European Commission Library gives Commission staff and visitors access to books, e-books,
-          journals, databases and EU publications from all Commission library sites in one search.
+          Find-eR joins the electronic and physical resources of several European Commission libraries into a single, easy to use search interface.<br>
+          These libraries are:
+          <ul class="about-text-title mat-headline-large">
+            <li>EC Library</li>
+            <li>Library of the Learning Centres</li>
+            <li>DG COMP Library</li>
+            <li>DGT Library</li>
+            <li>IAS Library</li>
+            <li>JRC Library</li>
+            <li>RTD Library</li> 
+          </ul> 
         </p>
-        <div class="help-sign-in-container flex-column gap-05" data-ec-audience="guest">
-          <span>Sign in with EU Login to:</span>
-          <ul role="list">
-            <li role="listitem"><img alt="" src="assets/images/homePageImages/success.svg"><span> Request and renew books</span></li>
-            <li role="listitem"><img alt="" src="assets/images/homePageImages/success.svg"><span> Save searches and favourites</span></li>
-            <li role="listitem"><img alt="" src="assets/images/homePageImages/success.svg"><span> Access licensed e-resources off-site</span></li>
-          </ul>
-        </div>
-        <div class="help-sign-in-container flex-column gap-05" data-ec-audience="user">
-          <span>Shortcuts:</span>
-          <ul role="list">
-            <li role="listitem"><a href="#" data-ec-nav="favorites">My favourites</a></li>
-            <li role="listitem"><a href="#" data-ec-nav="account" data-ec-query="section=requests">My requests</a></li>
-          </ul>
-        </div>
+      
+        
       </div>
       <div class="about-image flex-layout-center-center">
         <img alt="" src="assets/images/homePageImages/about_image.svg">
       </div>
     </div>
-  </div>
+  </div>-->
 </main>
 </body>
 </html>

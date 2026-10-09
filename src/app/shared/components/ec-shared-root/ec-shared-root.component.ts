@@ -9,6 +9,7 @@
 //   - EcLastSearchComponent   remembers the last results URL ("pick up where you left off")
 //   - EcLibChatComponent      LibChat floating widget with patron prefill
 //   - EcWelcomeMessageComponent welcome modal on opening the view (settings: welcomeMessage)
+//   - EcLoansDueComponent     "loans due soon" line on the landing page (settings: loansDue)
 //
 // Add future shared features (cookie notice, ...) here.
 // Each child is headless or renders its own hidden <dialog>, so this root
@@ -26,11 +27,12 @@ import { EcScopeChipComponent } from '../ec-scope-chip/ec-scope-chip.component';
 import { EcScopeLinksComponent } from '../ec-scope-links/ec-scope-links.component';
 import { EcMenuLinksComponent } from '../ec-menu-links/ec-menu-links.component';
 import { EcWelcomeMessageComponent } from '../ec-welcome-message/ec-welcome-message.component';
+import { EcLoansDueComponent } from '../ec-loans-due/ec-loans-due.component';
 
 @Component({
   selector: 'custom-ec-shared-root',
   standalone: true,
-  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent, EcScopeChipComponent, EcScopeLinksComponent, EcMenuLinksComponent, EcWelcomeMessageComponent],
+  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent, EcScopeChipComponent, EcScopeLinksComponent, EcMenuLinksComponent, EcWelcomeMessageComponent, EcLoansDueComponent],
   host: { 'data-component-id': 'custom-ec-shared-root' },
   template: `
     <custom-ec-session></custom-ec-session>
@@ -45,6 +47,8 @@ import { EcWelcomeMessageComponent } from '../ec-welcome-message/ec-welcome-mess
     <custom-ec-menu-links></custom-ec-menu-links>
     <!-- Welcome message modal on opening the view; renders nothing when switched off or dismissed. -->
     <custom-ec-welcome-message></custom-ec-welcome-message>
+    <!-- Fills the "loans due soon" line in the landing page HTML for signed-in patrons (headless). -->
+    <custom-ec-loans-due></custom-ec-loans-due>
   `,
 })
 export class EcSharedRootComponent {}

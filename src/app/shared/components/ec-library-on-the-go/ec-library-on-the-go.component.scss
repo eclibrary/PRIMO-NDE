@@ -1,0 +1,142 @@
+// "Library on the Go" badge + its info dialog.
+//
+// ViewEncapsulation.None (see the .ts): these rules are GLOBAL. Every selector
+// starts with the component tag, .ec-lotg or .ec-lotg-dialog — keep it so.
+//
+// COLOUR: the badge colour comes from the settings (libraryOnTheGo.color) as
+// the CSS variable --ec-lotg-color set on .ec-lotg; the fallback below is used
+// when the setting is empty.
+@use '../../styles/ec-tokens' as ec;
+
+// The host element sits in NDE's flex row "JOURNAL | PEER REVIEWED | …".
+// order: 1 (siblings are 0) keeps it LAST even when NDE inserts another
+// indication after we were placed. display: contents would lose `order`, so
+// the host is a normal inline-flex item.
+custom-ec-library-on-the-go {
+  order: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ec-lotg {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ec-lotg-color, #00727a);
+
+  // Vertical rule, sized like NDE's own divider before "Peer reviewed".
+  &__divider {
+    align-self: stretch;
+    width: 1px;
+    min-height: 1.25rem;
+    margin: 0 .625rem;
+    background: var(--sys-outline-variant, #c4c7c5);
+  }
+
+  // Same typography as NDE's .record-type / .record-indication on this line.
+  &__label {
+    font-size: .8125rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  // (i) button: bare icon, comfortable click target without growing the line.
+  &__info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 0 .125rem;
+    padding: .125rem;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+
+    // More specific than the global .material-symbols-outlined rule (28px).
+    .material-symbols-outlined {
+      font-size: 1.125rem;
+      line-height: 1;
+      margin: 0;
+      color: inherit;
+    }
+
+    &:hover { background: rgba(0, 0, 0, .08); }
+    &:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+  }
+}
+
+// ---- info dialog (same look as the welcome-message / Ask-a-librarian modals) --
+.ec-lotg-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 0;
+  border-radius: .75rem;
+  background: var(--sys-surface, #fff);
+  color: var(--sys-on-surface, #1b1b1b);
+  box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, .28);
+  overflow: hidden; // clip to the rounded corners; the body scrolls instead
+  // The dialog is a DOM child of the uppercase record line: reset what it inherits.
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: normal;
+  text-align: left;
+  cursor: auto;
+
+  &::backdrop { background: rgba(0, 0, 0, .45); }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 2rem);
+  }
+
+  &__bar {
+    padding: .9rem 1.25rem;
+    background: var(--ec-blue, #{ec.$ec-blue});
+    color: #fff;
+  }
+
+  &__title {
+    margin: 0;
+    font: 600 1.125rem/1.3 #{ec.$ec-font};
+  }
+
+  // The explanation from the settings (HTML).
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 1.25rem;
+    font: 1rem/1.5 #{ec.$ec-font};
+    overflow-wrap: anywhere;
+
+    > :first-child { margin-top: 0; }
+    > :last-child { margin-bottom: 0; }
+    p, ul, ol { margin: 0 0 .75rem; }
+    ul, ol { padding-left: 1.25rem; }
+    a { color: var(--ec-blue, #{ec.$ec-blue}); text-decoration: underline; }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: .75rem 1.25rem;
+    border-top: 1px solid var(--sys-outline-variant, #d9d9d9);
+  }
+
+  &__close {
+    padding: .5rem 1.25rem;
+    border: 0;
+    border-radius: 1.25rem;
+    background: var(--ec-blue, #{ec.$ec-blue});
+    color: #fff;
+    font: 600 .95rem/1.3 #{ec.$ec-font};
+    cursor: pointer;
+
+    &:hover { filter: brightness(1.15); }
+    &:focus-visible { outline: 3px solid var(--sys-on-surface, #1b1b1b); outline-offset: 2px; }
+  }
+}
