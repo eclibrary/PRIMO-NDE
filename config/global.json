@@ -180,6 +180,48 @@
     "testWithPastLoans": false,
     "endpoint": "/primaws/rest/priv/myaccount/loans?type={type}&lang={lang}&inst_code={inst}&patron_id={patronId}&vid={vid}"
   },
+  "accountCounts": {
+    "enabled": false,
+    "ariaLabel": {
+      "en": "Your library account",
+      "fr": "Votre compte lecteur",
+      "de": "Ihr Bibliothekskonto"
+    },
+    "welcomeLabel": {
+      "en": "Welcome back",
+      "fr": "Bon retour parmi nous",
+      "de": "Willkommen zurück"
+    },
+    "loans": {
+      "label": {
+        "en": "{n} loan|{n} loans",
+        "fr": "{n} prêt|{n} prêts",
+        "de": "{n} Ausleihe|{n} Ausleihen"
+      },
+      "route": "account/loans"
+    },
+    "favorites": {
+      "label": {
+        "en": "{n} saved record|{n} saved records",
+        "fr": "{n} notice enregistrée|{n} notices enregistrées",
+        "de": "{n} gespeicherter Titel|{n} gespeicherte Titel"
+      },
+      "route": "account/favorites"
+    },
+    "savedSearches": {
+      "label": {
+        "en": "{n} saved search|{n} saved searches",
+        "fr": "{n} recherche enregistrée|{n} recherches enregistrées",
+        "de": "{n} gespeicherte Suche|{n} gespeicherte Suchen"
+      },
+      "route": "account/savedSearches"
+    },
+    "testWithPastLoans": false,
+    "storageKeyPrefix": "ec-account-counts:",
+    "loansEndpoint": "/primaws/rest/priv/myaccount/loans?type={type}&lang={lang}&inst_code={inst}&patron_id={patronId}&vid={vid}",
+    "favoritesEndpoint": "/primaws/rest/priv/favorites?lang={lang}&vid={vid}",
+    "savedSearchesEndpoint": "/primaws/rest/priv/savedSearches?inst_code={inst}&patron_id={patronId}&lang={lang}&vid={vid}"
+  },
   "resourceSharing": {
     "forceFormat": "digital",
     "hideFormatField": true,

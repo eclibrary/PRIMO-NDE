@@ -444,6 +444,129 @@
         "endpoint"
       ]
     },
+    "accountCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Account counts on the landing page",
+      "description": "Links with the number of loans, saved records and saved searches on the landing page (items at 0 are hidden). Shown to guests too, with the numbers remembered from the last signed-in visit on that browser. Only on views whose landing page contains the data-ec-account-counts markup.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Show the counts"
+        },
+        "ariaLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Screen-reader name of the row",
+          "description": "Read out before the links, e.g. \"Your library account\"."
+        },
+        "welcomeLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Welcome line above the counts",
+          "description": "Shown above the links whenever they are shown (returning guests, 'Pick up where you left off'). Not shown in the signed-in 'Welcome back' block, which already says it. Empty = no line."
+        },
+        "loans": {
+          "type": "object",
+          "additionalProperties": false,
+          "title": "Loans",
+          "properties": {
+            "label": {
+              "$ref": "#/definitions/localised",
+              "title": "Text",
+              "description": "\"singular|plural\" — {n} is the number, e.g. \"{n} loan|{n} loans\"."
+            },
+            "route": {
+              "type": "string",
+              "title": "NDE page",
+              "description": "Technical. NDE route the link opens, e.g. account/loans; vid and lang are added automatically."
+            }
+          },
+          "required": [
+            "label",
+            "route"
+          ]
+        },
+        "favorites": {
+          "type": "object",
+          "additionalProperties": false,
+          "title": "Saved records (favourites)",
+          "properties": {
+            "label": {
+              "$ref": "#/definitions/localised",
+              "title": "Text",
+              "description": "\"singular|plural\" — {n} is the number, e.g. \"{n} loan|{n} loans\"."
+            },
+            "route": {
+              "type": "string",
+              "title": "NDE page",
+              "description": "Technical. NDE route the link opens, e.g. account/favorites; vid and lang are added automatically."
+            }
+          },
+          "required": [
+            "label",
+            "route"
+          ]
+        },
+        "savedSearches": {
+          "type": "object",
+          "additionalProperties": false,
+          "title": "Saved searches",
+          "properties": {
+            "label": {
+              "$ref": "#/definitions/localised",
+              "title": "Text",
+              "description": "\"singular|plural\" — {n} is the number, e.g. \"{n} loan|{n} loans\"."
+            },
+            "route": {
+              "type": "string",
+              "title": "NDE page",
+              "description": "Technical. NDE route the link opens, e.g. account/savedSearches; vid and lang are added automatically."
+            }
+          },
+          "required": [
+            "label",
+            "route"
+          ]
+        },
+        "testWithPastLoans": {
+          "type": "boolean",
+          "title": "TEST ONLY: count past loans",
+          "description": "Counts the loan history instead of the active loans, so the loans link can be seen without having an active loan. Never leave this ticked in production."
+        },
+        "storageKeyPrefix": {
+          "type": "string",
+          "title": "Storage key prefix",
+          "description": "Technical. localStorage key = prefix + vid."
+        },
+        "loansEndpoint": {
+          "type": "string",
+          "title": "Loans endpoint",
+          "description": "Technical. Placeholders: {type} (active/history), {lang}, {inst}, {patronId}, {vid}."
+        },
+        "favoritesEndpoint": {
+          "type": "string",
+          "title": "Saved records endpoint",
+          "description": "Technical. Placeholders: {lang}, {vid}."
+        },
+        "savedSearchesEndpoint": {
+          "type": "string",
+          "title": "Saved searches endpoint",
+          "description": "Technical. Placeholders: {lang}, {inst}, {patronId}, {vid}."
+        }
+      },
+      "required": [
+        "enabled",
+        "ariaLabel",
+        "welcomeLabel",
+        "loans",
+        "favorites",
+        "savedSearches",
+        "testWithPastLoans",
+        "storageKeyPrefix",
+        "loansEndpoint",
+        "favoritesEndpoint",
+        "savedSearchesEndpoint"
+      ]
+    },
     "printReturnLabel": {
       "type": "object",
       "additionalProperties": false,

@@ -1,9 +1,11 @@
 /*
-  eulibcat.js — EC's contribution to the EULibCat union catalogue (NDE).
+  unionview.js — EC's contribution to the EULibCat union catalogue (NDE).
+  (Named after the union view rather than EULibCat — the name the other
+  institutions already use; formerly eulibcat.js.)
 
-  WHERE IT LIVES   src/assets/js/eulibcat.js in the EC views repo → shipped in every
-                   view package. The union package loads the Find-eR copy:
-                   https://ec-europa-finder.primo.exlibrisgroup.com/nde/custom/32EUC_INST-VU2/assets/js/eulibcat.js
+  WHERE IT LIVES   src/views/finder/assets/js/unionview.js in the EC views repo → shipped
+                   in the Find-eR package only. The union package loads it from:
+                   https://ec-europa-finder.primo.exlibrisgroup.com/nde/custom/32EUC_INST-VU2/assets/js/unionview.js
 
   WHO LOADS IT     EULibCat's own custom.js, after sign-in, once the vid's institution
                    part reads 32EUC_INST (the vid switches from 32EU_DN:EULIBCAT_UNION to
@@ -15,9 +17,9 @@
                    no Angular, no dependency on how the union package is built.
 
   CONSTRAINTS      Keep it dependency-free and self-contained; other institutions will
-                   copy the pattern for their own eulibcat.js.
+                   copy the pattern for their own unionview.js.
 
-  LOGGING          One console line per step, prefixed "[ec:eulibcat]".
+  LOGGING          One console line per step, prefixed "[ec:unionview]".
 */
 (() => {
   'use strict';
@@ -41,7 +43,7 @@
   };
 
   const LOCKED_CLASS = 'ec-rs-format-locked';
-  const log = (msg, ...rest) => console.info(`[ec:eulibcat] ${msg}`, ...rest);
+  const log = (msg, ...rest) => console.info(`[ec:unionview] ${msg}`, ...rest);
 
   // Guard: the union package may inject this script more than once per page life.
   if (window.__ecEulibcatLoaded) { log('already loaded — skipping'); return; }

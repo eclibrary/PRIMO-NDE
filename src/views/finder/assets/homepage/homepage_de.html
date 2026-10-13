@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<!--
+  Startseite der NDE-Ansichten der EC Library — DEUTSCH (Find-eR).
+  Übersetzung von homepage_en.html: gleiche Struktur, gleiche Attribute
+  (data-ec-audience / data-ec-nav / data-ec-*). Nur der Text ändert sich.
+  Regeln: siehe Kommentar am Anfang von homepage_en.html; alle drei Dateien
+  (en/fr/de) synchron halten.
+  Links auf Europa-Seiten der Bibliothek (Lesesäle, Ask a librarian) zeigen auf
+  die englische Fassung, da es keine deutsche gibt.
+-->
+<html lang="de">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>EC Library</title>
+  <link href="./homepage.css" rel="stylesheet">
+</head>
+<body>
+<main class="main-landing-page display-flex flex-column flex-layout-center-center">
+
+  <!-- ===== Schnellzugriff — für alle ======================================= -->
+  <!-- Symbole: Google-Schrift "Material Symbols Outlined" (siehe homepage_en.html). -->
+  <div class="menu-container width-100">
+    <ul role="list" class="menu width-100">
+      <li role="listitem">
+        <a id="Opening_hours_link" href="https://ec.europa.eu/libraries/pages/readingrooms/en/" aria-label="Lesesäle" role="link" target="_blank">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">schedule</span></div>
+          <span>Lesesäle</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a id="FAQ_link" href="https://ec-europa-eu.libanswers.com/" aria-label="Häufige Fragen" role="link" target="_blank" rel="noopener">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">help</span></div>
+          <span>Häufige Fragen</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a id="Ask_a_librarian_link" href="https://ec.europa.eu/libraries/pages/askalibrarian/en/" aria-label="Fragen Sie die Bibliothek" role="link" target="_blank">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">mail</span></div>
+          <span>Fragen Sie die Bibliothek</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a id="Search_tips_link" href="https://ec-europa-eu.libguides.com/finder_guide" aria-label="Suchtipps" role="link" target="_blank">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">manage_search</span></div>
+          <span>Suchtipps</span>
+        </a>
+      </li>
+      <!-- Library on the Go: öffnet die Sammlungsseite in NDE; {lotgCollectionId}
+           wird durch die Sammlungs-ID aus den Einstellungen ersetzt. -->
+      <li role="listitem">
+        <a id="Library_on_the_go_link" href="#" data-ec-nav="collectionDiscovery" data-ec-query="collectionId={lotgCollectionId}" aria-label="Library on the Go: Titel, die Sie außerhalb des Kommissionsnetzes lesen können" role="link">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">travel_explore</span></div>
+          <span>Library on the Go</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="flex-row flex-layout-space-between width-100 welcome-announcements-container">
+
+    <!-- ===== Begrüßung — je nach Zielgruppe ================================ -->
+    <!-- GAST -->
+    <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="guest">
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Willkommen bei Find-eR</h2>
+      <span class="welcome-content">
+        <p>Find-eR ist der Katalog der Bibliotheken der Europäischen Kommission. Er vereint ihre gedruckten und elektronischen Bestände
+          in einer einfachen Suche. Hier finden Sie Daten, Informationen und Forschung zur europäischen Integration und zu den Politikbereichen der EU, zu Recht, Wirtschaft, Politik, internationalen Beziehungen und vielem mehr.</p>
+      </span>
+      <a id="signInCta" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Mit EU Login anmelden" role="link">Anmelden</a>
+      <!-- Kontozähler (Ausleihen / gespeicherte Titel / gespeicherte Suchen) —
+           gefüllt von EcAccountCountsComponent; Texte kommen aus den Einstellungen.
+           Element leer lassen. -->
+      <nav class="ec-account-counts" data-ec-account-counts></nav>
+    </div><!-- /GAST — muss hier schließen: die folgenden Blöcke sind Geschwister, keine Kinder -->
+    <!-- ANGEMELDET -->
+    <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="user">
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Willkommen zurück</h2>
+      <span class="welcome-content">
+        Sie sind angemeldet. Ihre Ausleihen, Bestellungen und Favoriten sind nur einen Klick entfernt.
+      </span>
+      <a id="myLibraryCard" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Zu meinem Bibliothekskonto" role="link">Zu meinem Bibliothekskonto</a>
+      <!-- "Bald fällige Ausleihen" — gefüllt von EcLoansDueComponent (Einstellungen: loansDue). -->
+      <p class="ec-loans-due" data-ec-loans-due>
+        <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
+        <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
+      </p>
+      <!-- Kontozähler; data-ec-account-counts-welcome="off": dieser Block hat
+           bereits die Überschrift "Willkommen zurück". -->
+      <nav class="ec-account-counts" data-ec-account-counts data-ec-account-counts-welcome="off"></nav>
+    </div>
+
+    <!-- ===== Letzte Suche — nur wenn EcLastSearchComponent eine gespeichert hat ===== -->
+    <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Dort weitermachen, wo Sie aufgehört haben</h2>
+      <span class="welcome-content">Ihre letzte Suche auf dieser Website:</span>
+      <!-- data-ec-last-search-page: "(Seite 4)" ab Seite 2 (Einstellung lastSearch.pageLabel). -->
+      <a href="#" data-ec-last-search-link tabindex="0" role="link">„<span data-ec-last-search-terms></span>“ <span data-ec-last-search-page></span></a>
+      <p class="ec-loans-due" data-ec-loans-due>
+        <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
+        <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
+      </p>
+      <nav class="ec-account-counts" data-ec-account-counts></nav>
+    </div>
+
+    <!-- ===== Ankündigungen — für alle ======================================= -->
+    <!-- EULibCat-Hinweis (Okt. 2026): externer Link (neuer Tab) zur Primo-Instanz
+         von EULibCat; lang=de in der URL beibehalten. -->
+    <div class="announcements display-flex flex-column">
+      <header class="flex-column gap-1">
+        <h2 class="mat-title-medium" role="heading" aria-level="2">Ankündigungen</h2>
+        <h3 role="heading" aria-level="3" class="announcements-item-title mat-headline-medium">Entdecken Sie EULibCat</h3>
+      </header>
+      <article>
+        <p class="mat-body-large">
+          EULibCat vereint die Sammlungen von 7 Institutionen und Einrichtungen der EU.
+        </p>
+        <a class="ec-announcement-button" href="https://eu-lib-cat.primo.exlibrisgroup.com/discovery/search?vid=32EU_DN:EUROPEAN_UNION&amp;lang=de" target="_blank" rel="noopener" role="link">Zum Katalog</a>
+      </article>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -27,6 +27,33 @@ main { padding: 1.5rem 2rem; }
 section.card { background: var(--card); border: 1px solid var(--line); border-radius: .75rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
 section.card > h2 { font-size: 1.05rem; margin-bottom: .25rem; }
 section.card > .desc { margin: 0 0 1rem; color: var(--muted); font-size: .9rem; max-width: 80ch; }
+
+/* Collapsible panels (Global / view tabs): <details class="card"><summary>…</summary>…</details>.
+   Closed panels are a single compact row; the whole row is the click target. */
+details.card { background: var(--card); border: 1px solid var(--line); border-radius: .75rem; margin-bottom: .5rem; }
+details.card > summary { display: flex; align-items: center; gap: .6rem; padding: .7rem 1.25rem; cursor: pointer; list-style: none; border-radius: .75rem; }
+details.card > summary::-webkit-details-marker { display: none; }
+/* Chevron: ▸ closed, rotates to ▾ when open. */
+details.card > summary::before { content: '▸'; color: var(--blue); font-size: .9rem; transition: transform .15s; }
+details.card[open] > summary::before { transform: rotate(90deg); }
+details.card > summary:hover { background: #f0f4fa; }
+details.card > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+details.card > summary h2 { font-size: 1.05rem; }
+details.card[open] > summary { border-bottom: 1px solid #eee; border-radius: .75rem .75rem 0 0; }
+/* Body of an open panel: same padding as the old cards. */
+details.card > :not(summary) { margin-left: 1.25rem; margin-right: 1.25rem; }
+details.card > .desc { margin-top: .75rem; margin-bottom: 1rem; color: var(--muted); font-size: .9rem; max-width: 80ch; }
+details.card > :last-child { margin-bottom: 1rem; }
+
+/* Small status labels in the summary line. */
+.chip { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; padding: .1rem .5rem; border-radius: 999px; background: #eceef2; color: var(--muted); }
+.chip.on { background: #dcf3e2; color: var(--ok); }
+.chip.off { background: #eceef2; color: var(--muted); }
+.chip.overridden { background: #e3ecf8; color: var(--blue); text-transform: none; letter-spacing: 0; }
+
+/* "Expand all · Collapse all" */
+.panel-tools { display: flex; gap: .5rem; align-items: center; margin: -0.5rem 0 .75rem; color: var(--muted); font-size: .85rem; }
+.panel-tools button.link { background: none; border: 0; padding: 0; color: var(--blue); text-decoration: underline; font-size: inherit; }
 fieldset { border: 1px solid var(--line); border-radius: .5rem; margin: .75rem 0; padding: .5rem 1rem 1rem; }
 legend { font-weight: 600; padding: 0 .25rem; }
 fieldset > .desc { margin: 0 0 .75rem; color: var(--muted); font-size: .85rem; }

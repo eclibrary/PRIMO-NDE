@@ -31,7 +31,7 @@
         </a>
       </li>
       <li role="listitem">
-        <a id="FAQ_link" href="https://ec.europa.eu/libraries/#faq" aria-label="FAQ" role="link">
+        <a id="FAQ_link" href="https://ec-europa-eu.libanswers.com/" aria-label="FAQ" role="link" target="_blank" rel="noopener">
           <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">help</span></div>
           <span>FAQ</span>
         </a>
@@ -76,6 +76,12 @@
         Connectez-vous avec EU Login pour réserver des documents, prolonger vos prêts, enregistrer vos recherches et gérer vos favoris.
       </span>
       <a id="signInCta" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Se connecter avec EU Login" role="link">Se connecter</a>
+      <!-- Compteurs du compte — prêts / notices enregistrées / recherches
+           enregistrées, remplis par EcAccountCountsComponent (réglages :
+           accountCounts ; les libellés viennent des réglages). Les visiteurs non
+           connectés voient les chiffres mémorisés lors de leur dernière visite
+           connectée ; masqué si tout est à 0. Laisser l'élément vide. -->
+      <nav class="ec-account-counts" data-ec-account-counts></nav>
     </div>
     <!-- UTILISATEUR CONNECTÉ -->
     <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="user">
@@ -90,6 +96,13 @@
         <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
         <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
       </p>
+      <!-- Compteurs du compte — prêts / notices enregistrées / recherches
+           enregistrées, remplis par EcAccountCountsComponent (réglages :
+           accountCounts ; les libellés viennent des réglages). Les visiteurs non
+           connectés voient les chiffres mémorisés lors de leur dernière visite
+           connectée ; masqué si tout est à 0. Laisser l'élément vide. -->
+      <!-- data-ec-account-counts-welcome="off" : ce bloc a déjà le titre « Bon retour parmi nous ». -->
+      <nav class="ec-account-counts" data-ec-account-counts data-ec-account-counts-welcome="off"></nav>
     </div>
 
     <!-- ===== Last search — only when EcLastSearchComponent has one stored ======
@@ -105,22 +118,27 @@
         <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
         <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
       </p>
+      <!-- Compteurs du compte — prêts / notices enregistrées / recherches
+           enregistrées, remplis par EcAccountCountsComponent (réglages :
+           accountCounts ; les libellés viennent des réglages). Les visiteurs non
+           connectés voient les chiffres mémorisés lors de leur dernière visite
+           connectée ; masqué si tout est à 0. Laisser l'élément vide. -->
+      <nav class="ec-account-counts" data-ec-account-counts></nav>
     </div>
 
     <!-- ===== Annonces — tout le monde ======================================== -->
+    <!-- Promotion d'EULibCat (oct. 2026) : lien externe (nouvel onglet) vers
+         l'instance Primo d'EULibCat ; garder lang=fr dans l'URL. -->
     <div class="announcements display-flex flex-column">
       <header class="flex-column gap-1">
         <h2 class="mat-title-medium" role="heading" aria-level="2">Annonces</h2>
-        <h3 role="heading" aria-level="3" class="announcements-item-title mat-headline-medium">Find-eR passe à la nouvelle interface</h3>
+        <h3 role="heading" aria-level="3" class="announcements-item-title mat-headline-medium">Découvrez EULibCat</h3>
       </header>
       <article>
         <p class="mat-body-large">
-          La nouvelle interface de recherche est déployée progressivement. Donnez-nous votre avis via
-          <a href="https://ec.europa.eu/libraries/pages/askalibrarian/fr/">Demander à un bibliothécaire</a>.
+          EULibCat réunit les collections de 7 institutions et organes de l'UE.
         </p>
-        <p class="mat-body-large" data-ec-audience="user">
-          Vos recherches enregistrées et vos favoris de l'ancienne interface ont été repris.
-        </p>
+        <a class="ec-announcement-button" href="https://eu-lib-cat.primo.exlibrisgroup.com/discovery/search?vid=32EU_DN:EUROPEAN_UNION&amp;lang=fr" target="_blank" rel="noopener" role="link">J'y vais</a>
       </article>
     </div>
   </div>

@@ -10,6 +10,8 @@
 //   - EcLibChatComponent      LibChat floating widget with patron prefill
 //   - EcWelcomeMessageComponent welcome modal on opening the view (settings: welcomeMessage)
 //   - EcLoansDueComponent     "loans due soon" line on the landing page (settings: loansDue)
+//   - EcAccountCountsComponent loans / saved records / saved searches counts on the
+//                             landing page, remembered for guests (settings: accountCounts)
 //
 // Add future shared features (cookie notice, ...) here.
 // Each child is headless or renders its own hidden <dialog>, so this root
@@ -28,11 +30,12 @@ import { EcScopeLinksComponent } from '../ec-scope-links/ec-scope-links.componen
 import { EcMenuLinksComponent } from '../ec-menu-links/ec-menu-links.component';
 import { EcWelcomeMessageComponent } from '../ec-welcome-message/ec-welcome-message.component';
 import { EcLoansDueComponent } from '../ec-loans-due/ec-loans-due.component';
+import { EcAccountCountsComponent } from '../ec-account-counts/ec-account-counts.component';
 
 @Component({
   selector: 'custom-ec-shared-root',
   standalone: true,
-  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent, EcScopeChipComponent, EcScopeLinksComponent, EcMenuLinksComponent, EcWelcomeMessageComponent, EcLoansDueComponent],
+  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent, EcScopeChipComponent, EcScopeLinksComponent, EcMenuLinksComponent, EcWelcomeMessageComponent, EcLoansDueComponent, EcAccountCountsComponent],
   host: { 'data-component-id': 'custom-ec-shared-root' },
   template: `
     <custom-ec-session></custom-ec-session>
@@ -49,6 +52,9 @@ import { EcLoansDueComponent } from '../ec-loans-due/ec-loans-due.component';
     <custom-ec-welcome-message></custom-ec-welcome-message>
     <!-- Fills the "loans due soon" line in the landing page HTML for signed-in patrons (headless). -->
     <custom-ec-loans-due></custom-ec-loans-due>
+    <!-- Fills the loans / saved records / saved searches links in the landing page HTML,
+         from the API when signed in, from localStorage for guests (headless). -->
+    <custom-ec-account-counts></custom-ec-account-counts>
   `,
 })
 export class EcSharedRootComponent {}

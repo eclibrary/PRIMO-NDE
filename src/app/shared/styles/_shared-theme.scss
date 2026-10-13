@@ -6,6 +6,7 @@
 @use 'ec-tokens' as ec;
 @use 'ec-header'; // custom header bar (src/assets/header-footer/header*.html)
 @use 'ec-footer'; // custom footer band (src/assets/header-footer/footer*.html)
+@use 'ec-dialogs'; // heading sizes in every EC dialog (title bar + body headings)
 
 // Material Symbols icon font from the Google Fonts CDN, for the static HTML
 // (landing page, header, footer) and components alike. The stylesheet defines

@@ -19,6 +19,14 @@
   or one large textarea per language when the schema says `"format": "html"`,
   e.g. the welcome message), and nested objects with `properties`, rendered as
   fieldsets.
+
+  Collapsible panels (Oct 2026): on the Global and view tabs every top-level
+  section is a <details> panel, closed by default. The summary line shows the
+  section title, an on/off chip when the section has an `enabled` switch, and
+  (view tabs) how many settings the view overrides. Which panels are open is
+  remembered per tab in memory AND in localStorage (key OPEN_KEY), because the
+  whole tab is re-rendered on every Override / Use global / Enable click — without
+  that, the panel you are working in would snap shut on each click.
 */
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -37,6 +45,79 @@ let state = null;         // bootstrap payload from the server
 let active = 'global';    // current tab id
 let draft = null;         // working copy of the active tab's data
 let dirty = false;
+
+// ------------------------------------------------------- collapsible panels
+
+/** localStorage key holding { "<tab id>": ["sectionKey", …] } — the open panels per tab. */
+const OPEN_KEY = 'nde-settings-ui:open-panels';
+/** In-memory copy (localStorage may be unavailable; the UI must work without it). */
+let openPanels = (() => {
+  try { return JSON.parse(localStorage.getItem(OPEN_KEY) || '{}') || {}; } catch { return {}; }
+})();
+
+/** Is the panel for section `key` open on the current tab? */
+function isOpen(key) {
+  return (openPanels[active] || []).includes(key);
+}
+
+/** Remember that the panel for `key` on the current tab is open/closed. */
+function rememberOpen(key, open) {
+  const set = new Set(openPanels[active] || []);
+  if (open) set.add(key); else set.delete(key);
+  openPanels[active] = [...set];
+  try { localStorage.setItem(OPEN_KEY, JSON.stringify(openPanels)); } catch { /* storage blocked: memory only */ }
+}
+
+/**
+ * A collapsible top-level panel:
+ *   <details class="card" data-key="welcomeMessage">
+ *     <summary><h2>Title</h2> <span class="chip on">on</span> <span class="chip">2 overrides</span></summary>
+ *     …description and fields…
+ *   </details>
+ * `chips` = small labels shown in the summary line (useful while closed).
+ */
+function panel(key, title, chips, ...children) {
+  const details = el('details', { class: 'card', 'data-key': key },
+    el('summary', {}, el('h2', {}, title), ...chips),
+    ...children);
+  details.open = isOpen(key);
+  // `toggle` also fires when we set .open programmatically (Expand/Collapse
+  // all) — that is fine, it records the same state.
+  details.addEventListener('toggle', () => rememberOpen(key, details.open));
+  return details;
+}
+
+/** Summary chips for a section: on/off (if it has `enabled`) and the override count (view tabs). */
+function sectionChips(key, schema, ctx) {
+  const chips = [];
+  if (schema.properties && schema.properties.enabled) {
+    const on = getPath(ctx.data, [key, 'enabled']) === true;
+    chips.push(el('span', { class: `chip ${on ? 'on' : 'off'}` }, on ? 'on' : 'off'));
+  }
+  if (ctx.overrides) {
+    const n = countLeaves(getPath(ctx.overrides, [key]));
+    if (n > 0) chips.push(el('span', { class: 'chip overridden' }, `${n} override${n === 1 ? '' : 's'}`));
+  }
+  return chips;
+}
+
+/** Number of overridden values below an override object (objects recurse; arrays/scalars count 1). */
+function countLeaves(v) {
+  if (v === undefined) return 0;
+  if (v && typeof v === 'object' && !Array.isArray(v)) {
+    return Object.values(v).reduce((n, x) => n + countLeaves(x), 0);
+  }
+  return 1;
+}
+
+/** "Expand all · Collapse all" row above the panels of a config tab. */
+function panelToolbar() {
+  const setAll = (open) => document.querySelectorAll('#main details.card').forEach((d) => { d.open = open; });
+  return el('div', { class: 'panel-tools' },
+    el('button', { type: 'button', class: 'link', onclick: () => setAll(true) }, 'Expand all'),
+    el('span', { 'aria-hidden': 'true' }, '·'),
+    el('button', { type: 'button', class: 'link', onclick: () => setAll(false) }, 'Collapse all'));
+}
 
 // ---------------------------------------------------------------- schema utils
 
@@ -197,8 +278,9 @@ function renderField(key, schema, path, ctx) {
 /** An object with `properties` → fieldset (top level: card). */
 function renderObject(key, schema, path, ctx, top = false) {
   schema = resolve(schema);
+  // Top level = collapsible panel (see panel()); nested objects stay fieldsets.
   const container = top
-    ? el('section', { class: 'card' }, el('h2', {}, schema.title || key), schema.description ? el('p', { class: 'desc' }, schema.description) : null)
+    ? panel(key, schema.title || key, sectionChips(key, schema, ctx), schema.description ? el('p', { class: 'desc' }, schema.description) : null)
     : el('fieldset', {}, el('legend', {}, schema.title || key), schema.description ? el('p', { class: 'desc' }, schema.description) : null);
   for (const [k, sub] of Object.entries(schema.properties || {})) {
     const p = [...path, k];
@@ -218,6 +300,7 @@ function renderConfigTab(viewKey) {
   main.append(el('p', { class: 'intro' }, isGlobal
     ? 'Values for every view (config/global.json). A view tab can override any of them.'
     : `Values for this view (config/views/${viewKey}.json). Greyed fields are inherited from Global; override them here, or "Use global" to remove an override.`));
+  main.append(panelToolbar());
   for (const [k, sub] of Object.entries(state.schema.properties)) {
     const r = resolve(sub);
     // Optional feature sections (e.g. printReturnLabel) show on views only when present,
@@ -225,8 +308,11 @@ function renderConfigTab(viewKey) {
     const present = getPath(ctx.data, [k]) !== undefined;
     if (kindOf(r) === 'object' && !present) {
       if (state.schema.required?.includes(k)) continue;
-      main.append(el('section', { class: 'card' }, el('h2', {}, r.title || k), el('p', { class: 'desc' }, r.description || ''),
+      main.append(panel(k, r.title || k, [el('span', { class: 'chip off' }, 'not enabled here')],
+        el('p', { class: 'desc' }, r.description || ''),
         el('div', { class: 'actions' }, el('button', { type: 'button', class: 'secondary', onclick: () => {
+          // Keep the panel open after the re-render, so the new fields are in view.
+          rememberOpen(k, true);
           setPath(ctx.data, [k], {}); if (ctx.overrides) setPath(ctx.overrides, [k], {}); markDirty(); render();
         } }, `Enable "${r.title || k}" here`))));
       continue;

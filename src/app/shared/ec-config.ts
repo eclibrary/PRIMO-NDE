@@ -39,6 +39,14 @@ export interface EcUserInfo {
   city?: string;
 }
 
+/** One link of the landing-page account counts (settings accountCounts.loans/favorites/savedSearches). */
+export interface EcAccountCountItem {
+  /** "singular|plural", `{n}` = the number, e.g. "{n} loan|{n} loans". */
+  label: Localised;
+  /** NDE route the link opens (data-ec-nav), e.g. "account/loans"; vid + lang are carried over. */
+  route: string;
+}
+
 /**
  * Shape of the settings — the TypeScript twin of config/schema.json.
  * Every property here must exist in the schema and vice versa; the generated
@@ -143,6 +151,36 @@ export interface EcConfigValues {
     testWithPastLoans: boolean;
     /** Placeholders {type}, {lang}, {inst}, {patronId}, {vid}. */
     endpoint: string;
+  };
+  /**
+   * Loans / saved records / saved searches counts on the landing page, also
+   * shown to guests from localStorage — see EcAccountCountsComponent.
+   * Off in global.json; switched on per view (Find-eR only, Oct 2026).
+   */
+  accountCounts: {
+    enabled: boolean;
+    /** Screen-reader name of the row of links. */
+    ariaLabel: Localised;
+    /**
+     * Line shown above the links whenever they are shown ("Welcome back").
+     * Empty en = no line. A container with data-ec-account-counts-welcome="off"
+     * never shows it (Find-eR: the signed-in block, which has it as heading).
+     */
+    welcomeLabel: Localised;
+    /** One entry per item. label = "singular|plural" with {n}; route = NDE route, e.g. "account/loans". */
+    loans: EcAccountCountItem;
+    favorites: EcAccountCountItem;
+    savedSearches: EcAccountCountItem;
+    /** TEST ONLY: count the loan history instead of the active loans. */
+    testWithPastLoans: boolean;
+    /** localStorage key = prefix + vid. */
+    storageKeyPrefix: string;
+    /** Placeholders {type}, {lang}, {inst}, {patronId}, {vid}. */
+    loansEndpoint: string;
+    /** Placeholders {lang}, {vid}. */
+    favoritesEndpoint: string;
+    /** Placeholders {lang}, {inst}, {patronId}, {vid}. */
+    savedSearchesEndpoint: string;
   };
   resourceSharing: {
     forceFormat: '' | 'digital' | 'physical' | 'photocopy';

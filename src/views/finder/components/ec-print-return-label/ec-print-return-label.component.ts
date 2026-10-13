@@ -104,13 +104,25 @@ export class EcPrintReturnLabelComponent implements OnInit {
     this.href.set(`${root}${CONFIG.labelPagePath}?${params.toString()}`);
   }
 
-  /** First candidate path on hostComponent that yields a non-empty string. */
+  /**
+   * The loan's library code, e.g. "BCB".
+   *
+   * 1. The configured candidate paths (printReturnLabel.codePaths), in order.
+   * 2. FALLBACK (Oct 2026) — independent of the settings, so the link cannot
+   *    vanish again because finder.json lost a path: look one level deep in
+   *    the host component for any plain object carrying a library-code
+   *    property. Verified shapes: active loans → `loan.mainlocationcode`,
+   *    past loans → `result.mainlocationcode` (value "BCB", next to
+   *    `mainlocationname` "EC Library BXL"). Only own enumerable properties are
+   *    inspected and only one level deep, so services/stores on the host are
+   *    looked at but never walked into.
+   */
   private libraryCode(): string {
     for (const path of CONFIG?.codePaths ?? []) {
       const value = path.split('.').reduce<any>((o, k) => (o == null ? undefined : o[k]), this.hostComponent);
       if (typeof value === 'string' && value.trim()) return value.trim();
     }
-    return '';
+    return findCodeOneLevelDeep(this.hostComponent);
   }
 
   /** One-off console dump to find the right property path when none of codePaths matched. */
@@ -124,4 +136,26 @@ export class EcPrintReturnLabelComponent implements OnInit {
       { keys: Object.keys(hc), hostComponent: hc },
     );
   }
+}
+
+/** Property names that hold a loan's library code in NDE's loan objects (first match wins). */
+const CODE_KEYS = ['mainlocationcode', 'mainLocationCode', 'libraryCode'];
+
+/**
+ * Fallback for libraryCode(): the first CODE_KEYS value found on any plain
+ * object directly under `host` (e.g. host.result.mainlocationcode), or ''.
+ * Arrays, functions and class instances other than plain objects are skipped,
+ * except that the check itself is a cheap property read — nothing is called.
+ */
+function findCodeOneLevelDeep(host: any): string {
+  if (!host || typeof host !== 'object') return '';
+  for (const key of Object.keys(host)) {
+    const child = host[key];
+    if (!child || typeof child !== 'object' || Array.isArray(child)) continue;
+    for (const codeKey of CODE_KEYS) {
+      const value = child[codeKey];
+      if (typeof value === 'string' && value.trim()) return value.trim();
+    }
+  }
+  return '';
 }

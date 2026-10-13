@@ -18,7 +18,7 @@
   - Keep the structure/classes of the upstream template (main-landing-page,
     menu, welcome, announcements, about) so NDE's default landing styles apply;
     homepage.css only adds on top.
-  - Text lives in this file (not in Alma labels). Keep homepage_fr.html in sync.
+  - Text lives in this file (not in Alma labels). Keep homepage_fr.html and homepage_de.html in sync.
 -->
 <html lang="en">
 <head>
@@ -46,7 +46,7 @@
         </a>
       </li>
       <li role="listitem">
-        <a id="FAQ_link" href="https://ec.europa.eu/libraries/#faq" aria-label="FAQ" role="link" target="_blank">
+        <a id="FAQ_link" href="https://ec-europa-eu.libanswers.com/" aria-label="FAQ" role="link" target="_blank" rel="noopener">
           <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">help</span></div>
           <span>FAQ</span>
         </a>
@@ -97,6 +97,12 @@
   -->  
       </span>
       <a id="signInCta" href="#" data-ec-nav="account" data-ec-query="section=overview" tabindex="0" aria-label="Sign in with EU Login" role="link">Sign in</a>
+      <!-- Account counts — loans / saved records / saved searches, filled by
+           EcAccountCountsComponent (settings: accountCounts; labels in all
+           languages come from the settings, not from this file). Guests see the
+           numbers remembered from their last signed-in visit; the row stays
+           hidden when everything is 0. Leave the element empty. -->
+      <nav class="ec-account-counts" data-ec-account-counts></nav>
     </div><!-- /GUEST welcome — must close here: the blocks below are siblings, not children -->
     <!-- USER -->
     <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="user">
@@ -111,6 +117,13 @@
         <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
         <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
       </p>
+      <!-- Account counts — loans / saved records / saved searches, filled by
+           EcAccountCountsComponent (settings: accountCounts; labels in all
+           languages come from the settings, not from this file). Guests see the
+           numbers remembered from their last signed-in visit; the row stays
+           hidden when everything is 0. Leave the element empty. -->
+      <!-- data-ec-account-counts-welcome="off": this block already has the "Welcome back" heading. -->
+      <nav class="ec-account-counts" data-ec-account-counts data-ec-account-counts-welcome="off"></nav>
     </div>
 
     <!-- ===== Last search — only when EcLastSearchComponent has one stored ======
@@ -128,23 +141,29 @@
         <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
         <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
       </p>
+      <!-- Account counts — loans / saved records / saved searches, filled by
+           EcAccountCountsComponent (settings: accountCounts; labels in all
+           languages come from the settings, not from this file). Guests see the
+           numbers remembered from their last signed-in visit; the row stays
+           hidden when everything is 0. Leave the element empty. -->
+      <nav class="ec-account-counts" data-ec-account-counts></nav>
     </div>
 
     <!-- ===== Announcements — everyone ======================================= -->
+    <!-- EULibCat promotion (Oct 2026). EULibCat is the union catalogue of the EU
+         institutions on its own Primo instance, so this is a plain external
+         link (new tab), not a data-ec-nav link. Keep lang= in the URL equal to
+         this file's language. -->
     <div class="announcements display-flex flex-column">
       <header class="flex-column gap-1">
         <h2 class="mat-title-medium" role="heading" aria-level="2">Announcements</h2>
-        <h3 role="heading" aria-level="3" class="announcements-item-title mat-headline-medium">Find-eR is moving to the new interface</h3>
+        <h3 role="heading" aria-level="3" class="announcements-item-title mat-headline-medium">Discover EULibCat</h3>
       </header>
       <article>
         <p class="mat-body-large">
-          We are rolling out the new discovery experience step by step. Tell us what you think via
-          <a href="https://ec.europa.eu/libraries/pages/askalibrarian/en/">Ask a librarian</a>.
+          EULibCat unites the collections of 7 EU institutions and bodies.
         </p>
-        <!-- Small user-only addendum inside a common block: fine, the attribute works at any depth. -->
-        <p class="mat-body-large" data-ec-audience="user">
-          Your saved searches and favourites from the previous interface have been carried over.
-        </p>
+        <a class="ec-announcement-button" href="https://eu-lib-cat.primo.exlibrisgroup.com/discovery/search?vid=32EU_DN:EUROPEAN_UNION&amp;lang=en" target="_blank" rel="noopener" role="link">Take me there</a>
       </article>
     </div>
   </div>

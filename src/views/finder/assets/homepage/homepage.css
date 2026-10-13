@@ -139,3 +139,89 @@ html.ec-has-last-search .main-landing-page .welcome[data-ec-audience] {
   color: var(--ec-blue, #004494);
   text-decoration: underline;
 }
+
+/* ===== Account counts (loans / saved records / saved searches) =============
+   <nav class="ec-account-counts" data-ec-account-counts></nav> in the guest
+   welcome, user welcome and last-search blocks. EcAccountCountsComponent fills
+   it with links
+     <a class="ec-account-counts__item ec-account-counts__item--loans|favorites|savedSearches">
+       <span class="material-symbols-outlined">icon</span>
+       <span class="ec-account-counts__text">2 loans</span></a>
+   and adds .ec-account-counts--show when at least one count is above 0. */
+.main-landing-page .ec-account-counts {
+  display: none;               /* hidden until there is something to show */
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1rem 0 0;
+}
+.main-landing-page .ec-account-counts.ec-account-counts--show {
+  display: flex;
+}
+/* Each link is a light-blue pill (same tint family as the tiles above).
+   `all: unset` + !important: NDE's own .welcome link rules (and our
+   a[data-ec-nav] button rule above) would otherwise turn them into big
+   EC-blue buttons. */
+.main-landing-page .welcome .ec-account-counts a {
+  all: unset !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .375rem !important;
+  padding: .25rem .75rem .25rem .5rem !important;
+  border-radius: 999px !important;
+  background-color: #e3ecf8 !important;   /* light EC blue, as the tile discs */
+  color: var(--ec-blue, #004494) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+}
+.main-landing-page .welcome .ec-account-counts a:hover {
+  background-color: #d3e2f5 !important;   /* as the tile hover */
+}
+.main-landing-page .welcome .ec-account-counts a:hover .ec-account-counts__text {
+  text-decoration: underline;
+}
+.main-landing-page .welcome .ec-account-counts a:focus-visible {
+  outline: 2px solid var(--ec-blue, #004494) !important;
+  outline-offset: 2px !important;
+}
+/* "Welcome back" line the component puts above the links (setting
+   accountCounts.welcomeLabel). flex-basis 100% = a row of its own, so the
+   pills wrap onto the next line. Styled as a small heading in EC blue. */
+.main-landing-page .ec-account-counts .ec-account-counts__welcome {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--ec-blue, #004494);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+/* Icon: smaller than the global 28px .material-symbols-outlined rule. */
+.main-landing-page .ec-account-counts .material-symbols-outlined {
+  font-size: 1.25rem;
+  line-height: 1;
+  margin: 0;
+  color: inherit;
+}
+
+/* ===== Announcements box: button ==========================================
+   <a class="ec-announcement-button"> under the announcement text ("Take me
+   there" → EULibCat). Same EC-blue pill as the buttons in the welcome block;
+   !important because NDE's own .announcements link rules are more specific. */
+.main-landing-page .announcements .ec-announcement-button {
+  display: inline-flex !important;
+  align-self: flex-start !important;
+  margin-top: 1rem !important;
+  padding: .5rem 1.25rem !important;
+  border-radius: 999px !important;
+  background-color: var(--ec-blue, #004494) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+.main-landing-page .announcements .ec-announcement-button:hover,
+.main-landing-page .announcements .ec-announcement-button:focus-visible {
+  background-color: #003270 !important;   /* darker EC blue */
+  text-decoration: underline !important;
+}
+.main-landing-page .announcements .ec-announcement-button:focus-visible {
+  outline: 2px solid var(--ec-blue, #004494) !important;
+  outline-offset: 2px !important;
+}

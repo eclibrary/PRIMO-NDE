@@ -18,5 +18,21 @@
       "fr": "Imprimer l'étiquette de retour",
       "de": "Rücksendeetikett drucken"
     }
+  },
+  "accountCounts": {
+    "enabled": true
+  },
+  "welcomeMessage": {
+    "enabled": true,
+    "title": {
+      "en": "Which resources can I access?",
+      "fr": "À quelles ressources puis-je accéder ?",
+      "de": "Auf welche Ressourcen kann ich zugreifen?"
+    },
+    "html": {
+      "en": "<h2>European Commission staff</h2>\n<p>By signing in with your EU Login, you have access to the full range of library services.<br>\nYou can access online resources, request book loans, save records and searches, set up alerts on your favourite subjects and more.<br>\nBook loans will be delivered straight to your office.\n</p>\n\n<h2>Staff of other EU institutions and bodies</h2>\n<p>\nStaff from other EU institutions and bodies can search for and consult open access resources, such as EU publications.\nTo consult restricted resources, you must either request an interlibrary loan via your institution’s library or visit one of our reading rooms.</p>\n\n<h2>General public</h2>\n<p>\nExternal users can search for and consult open access resources, such as EU publications.<br>\nTo consult restricted resources, you can request a visit to our reading room, or contact your local library for an interlibrary loan.</p>",
+      "fr": "<h2>Personnel de la Commission européenne</h2>\n<p>En vous connectant avec EU Login, vous avez accès à l'ensemble des services de la bibliothèque.<br>\nVous pouvez consulter les ressources en ligne, emprunter des livres, enregistrer des notices et des recherches, créer des alertes sur vos sujets favoris, et plus encore.<br>\nLes livres empruntés sont livrés directement à votre bureau.\n</p>\n\n<h2>Personnel des autres institutions et organes de l'UE</h2>\n<p>\nLe personnel des autres institutions et organes de l'UE peut rechercher et consulter les ressources en libre accès, comme les publications de l'UE.\nPour consulter les ressources à accès restreint, vous devez soit demander un prêt entre bibliothèques via la bibliothèque de votre institution, soit vous rendre dans l'une de nos salles de lecture.</p>\n\n<h2>Grand public</h2>\n<p>\nLes utilisateurs externes peuvent rechercher et consulter les ressources en libre accès, comme les publications de l'UE.<br>\nPour consulter les ressources à accès restreint, vous pouvez demander à visiter notre salle de lecture ou contacter votre bibliothèque locale pour un prêt entre bibliothèques.</p>",
+      "de": "<h2>Personal der Europäischen Kommission</h2>\n<p>Wenn Sie sich mit EU Login anmelden, stehen Ihnen alle Dienste der Bibliothek zur Verfügung.<br>\nSie können Online-Ressourcen nutzen, Bücher ausleihen, Titel und Suchen speichern, Benachrichtigungen zu Ihren bevorzugten Themen einrichten und vieles mehr.<br>\nAusgeliehene Bücher werden direkt in Ihr Büro geliefert.\n</p>\n\n<h2>Personal anderer Organe und Einrichtungen der EU</h2>\n<p>\nPersonal anderer Organe und Einrichtungen der EU kann frei zugängliche Ressourcen wie EU-Veröffentlichungen suchen und einsehen.\nUm zugangsbeschränkte Ressourcen einzusehen, beantragen Sie entweder eine Fernleihe über die Bibliothek Ihrer Institution oder besuchen einen unserer Lesesäle.</p>\n\n<h2>Allgemeine Öffentlichkeit</h2>\n<p>\nExterne Nutzerinnen und Nutzer können frei zugängliche Ressourcen wie EU-Veröffentlichungen suchen und einsehen.<br>\nUm zugangsbeschränkte Ressourcen einzusehen, können Sie einen Besuch in unserem Lesesaal beantragen oder sich für eine Fernleihe an Ihre örtliche Bibliothek wenden.</p>"
+    }
   }
 }
