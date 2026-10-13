@@ -84,6 +84,34 @@ without an active loan — never leave it ticked in production.
 
 Never put secrets here — these files ship in the customization package.
 
+## Languages
+
+The UI languages of all views live in `config/languages.json` (English first —
+it is the fallback whenever a translation is missing, and cannot be removed).
+Change them in the settings UI (**Languages** tab) or on the command line:
+
+    npm run languages                       # list
+    npm run languages -- add it "Italiano"  # add (creates starter files, see below)
+    npm run languages -- remove it          # remove (lists what goes, asks first)
+    # --dry-run: show only · --yes: no question
+
+**Adding** a language updates `config/schema.json`, so every translatable text
+in the settings gets a field for it (empty = English is shown), and creates
+`homepage_<code>.html` next to every `homepage_en.html` plus
+`header_<code>.html` / `footer_<code>.html` — copies of the English files marked
+"TODO: translate". Existing files are never overwritten.
+
+**Removing** a language deletes its translations from `config/global.json` and
+`config/views/*.json`, resets `defaultLang` to `en` where needed, and deletes its
+homepage/header/footer files. The settings UI shows the full list before saving.
+
+By hand, after adding: enable the language for each view in **Alma** (NDE only
+offers languages enabled there), translate the starter HTML files, and — if the
+return-label page should be translated too — add an entry to the text table in
+`src/views/finder/assets/return-label/label.js` (missing languages show English).
+Rebuild the views after any change: the list reaches the bundle as
+`EC_LANGUAGES` in the generated config.
+
 ## The settings UI
 
     npm run settings          # http://localhost:4300, opens in the browser

@@ -5,6 +5,21 @@
  *   npm run views:remove -- <key>            -> lists what will go, asks to confirm
  *   npm run views:remove -- <key> --yes      -> no prompt (CI / scripts)
  *   npm run views:remove -- <key> --dry-run  -> list only, change nothing
+ *   npm run views:remove -- --orphans        -> clean up LEFTOVERS of views that are no
+ *                                               longer in views.config.json (see below);
+ *                                               --dry-run / --yes work here too
+ *
+ * The settings UI (Views tab) calls this script with --yes for every view you
+ * delete there and Save, so a view removed in the UI is removed completely.
+ *
+ * ORPHANS (--orphans): views removed before Oct 2026 via the settings UI only lost
+ * their views.config.json entry; their files stayed. This mode finds and deletes
+ *   - src/views/<dir>/            not used as `dir` by any configured view
+ *   - config/views/<key>.json     for keys that are not configured (*.example files are kept)
+ *   - dist/<INST>-<X>/ and .zip   where X is not the viewId of a configured view
+ *   - .active-view                when it points to an unknown key
+ * then runs views:sync so angular.json is pruned too. It always lists first and
+ * asks before deleting anything.
  *
  * What is scrubbed, in order:
  *   1. the entry in views.config.json               (single source of truth)
@@ -56,9 +71,70 @@ function confirm(question) {
   return new Promise((resolve) => rl.question(question, (a) => { rl.close(); resolve(/^y(es)?$/i.test(a.trim())); }));
 }
 
-async function main() {
+/**
+ * Leftovers of views that are no longer configured — see "ORPHANS" in the header.
+ * Returns [{ label, path }] of things that exist and belong to no configured view.
+ */
+function orphanPlan(cfg) {
+  const keys = new Set(Object.keys(cfg.views));
+  const dirs = new Set(Object.values(cfg.views).map((v, i) => v.dir || Object.keys(cfg.views)[i]));
+  const viewIds = new Set(Object.values(cfg.views).map((v) => v.viewId));
+  const found = [];
+
+  const viewsRoot = path.join(ROOT, 'src', 'views');
+  if (fs.existsSync(viewsRoot)) {
+    for (const d of fs.readdirSync(viewsRoot, { withFileTypes: true })) {
+      if (d.isDirectory() && !dirs.has(d.name)) found.push({ label: 'view folder', path: path.join(viewsRoot, d.name) });
+    }
+  }
+  const settingsRoot = path.join(ROOT, 'config', 'views');
+  if (fs.existsSync(settingsRoot)) {
+    for (const f of fs.readdirSync(settingsRoot)) {
+      // Only "<key>.json"; templates such as union.json.example are not views.
+      if (f.endsWith('.json') && !keys.has(f.slice(0, -5))) found.push({ label: 'settings overrides', path: path.join(settingsRoot, f) });
+    }
+  }
+  const distRoot = path.join(ROOT, 'dist');
+  const prefix = `${cfg.instId}-`;
+  if (fs.existsSync(distRoot)) {
+    for (const f of fs.readdirSync(distRoot)) {
+      if (!f.startsWith(prefix)) continue; // not a view package (leave anything else alone)
+      const viewId = f.slice(prefix.length).replace(/\.zip$/, '');
+      if (!viewIds.has(viewId)) found.push({ label: f.endsWith('.zip') ? 'build output zip' : 'build output folder', path: path.join(distRoot, f) });
+    }
+  }
+  const active = readActiveKey();
+  if (active && !keys.has(active) && fs.existsSync(ACTIVE_FILE)) found.push({ label: `.active-view (points to "${active}")`, path: ACTIVE_FILE });
+  return found;
+}
+
+/** --orphans: list leftovers, confirm, delete, re-sync angular.json. */
+async function removeOrphans() {
   const cfg = loadConfig();
-  if (!key) fail(`Usage: npm run views:remove -- <key> [--yes] [--dry-run]\nKnown views: ${Object.keys(cfg.views).join(', ')}`);
+  const found = orphanPlan(cfg);
+  if (found.length === 0) {
+    console.log('No leftovers found: every view folder, settings file and build output belongs to a configured view.');
+  } else {
+    console.log(`\nLeftovers of views that are no longer in views.config.json (configured: ${Object.keys(cfg.views).join(', ')}):`);
+    for (const it of found) console.log(`  ✔ ${it.label.padEnd(28)} ${path.relative(ROOT, it.path)}`);
+    console.log('  ✔ angular.json                 stale build/serve configurations (pruned by views:sync)');
+    if (dryRun) { console.log('\n--dry-run: nothing changed.'); return; }
+    if (!yes && !(await confirm('\nType "yes" to delete these: '))) { console.log('Aborted.'); return; }
+    for (const it of found) {
+      fs.rmSync(it.path, { recursive: true, force: true });
+      console.log(`  deleted ${path.relative(ROOT, it.path)}`);
+    }
+  }
+  if (dryRun) return;
+  const r = spawnSync(process.execPath, ['scripts/sync-views.cjs'], { cwd: ROOT, stdio: 'inherit' });
+  if (r.status !== 0) fail('views:sync failed — run "npm run views:sync" and check angular.json.');
+  console.log('\nDone. Review with "git status", then commit.');
+}
+
+async function main() {
+  if (args.includes('--orphans')) return removeOrphans();
+  const cfg = loadConfig();
+  if (!key) fail(`Usage: npm run views:remove -- <key> [--yes] [--dry-run]\n       npm run views:remove -- --orphans [--yes] [--dry-run]\nKnown views: ${Object.keys(cfg.views).join(', ')}`);
   if (!cfg.views[key]) fail(`Unknown view "${key}". Known views: ${Object.keys(cfg.views).join(', ')}`);
   if (Object.keys(cfg.views).length === 1) fail(`"${key}" is the only view; the tooling needs at least one. Add another before removing it.`);
 

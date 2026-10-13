@@ -17,10 +17,19 @@
 // contains the merged values for the view being built. Components therefore
 // read e.g. EC_CONFIG.askALibrarian.hideFields directly — there is no runtime
 // "which view am I" lookup for settings.
-import { EC_CONFIG_VALUES, EC_CONFIG_VIEW } from './ec-config.generated';
+import { EC_CONFIG_VALUES, EC_CONFIG_VIEW, EC_LANGUAGES } from './ec-config.generated';
 
-/** UI languages the views are served in (EN, FR, DE). Add a code here, in currentLang() AND in schema.json when a new language is enabled in Alma. */
-export type EcLang = 'en' | 'fr' | 'de';
+/**
+ * A UI language code ("en", "fr", "de", …). The list is DATA, not code: it
+ * lives in config/languages.json (settings UI → Languages tab, or
+ * `npm run languages`) and reaches the bundle as EC_LANGUAGES in the generated
+ * config. Hence a plain string here — currentLang() only ever returns a code
+ * from that list.
+ */
+export type EcLang = string;
+
+/** The configured UI languages, English first (re-exported for components). */
+export { EC_LANGUAGES };
 
 /** Lookup by language with an English fallback — used for every localised string/URL. */
 export type Localised<T = string> = Partial<Record<EcLang, T>> & { en: T };
@@ -241,7 +250,8 @@ export function currentLang(): EcLang {
   const fromQuery = new URLSearchParams(window.location.search).get('lang');
   const fromHtml = document.documentElement.lang;
   const candidate = (fromQuery || fromHtml || EC_CONFIG.defaultLang).slice(0, 2).toLowerCase();
-  return candidate === 'fr' || candidate === 'de' ? candidate : 'en';
+  // Any configured language is accepted; anything else falls back to English.
+  return EC_LANGUAGES.includes(candidate) ? candidate : 'en';
 }
 
 /** Current view id (`vid` query parameter), e.g. `32EUC_INST:VU2`. */

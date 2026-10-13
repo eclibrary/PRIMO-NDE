@@ -5,10 +5,9 @@
 (async () => {
   const params = new URLSearchParams(window.location.search);
   const code = (params.get('lang') || 'en').slice(0, 2).toLowerCase();
-  const lang = code === 'fr' || code === 'de' ? code : 'en';
-
-  // On-screen text (never printed). Add languages here if the views gain one.
-  const TEXT = {
+  // On-screen text (never printed). Languages of the views (config/languages.json)
+  // that are missing here show English — add an entry to translate this page too.
+  const TEXTS = {
     en: {
       instructions: 'Print this label and stick it on an envelope containing the item to be returned. Internal post will take care of the rest.',
       print: 'Print',
@@ -27,7 +26,9 @@
       thanks: 'Vielen Dank!',
       error: 'Leider wurde für diese Ausleihe keine Rücksendeadresse gefunden. Bitte wenden Sie sich an die Bibliothek.',
     },
-  }[lang];
+  };
+  const lang = TEXTS[code] ? code : 'en';
+  const TEXT = TEXTS[lang];
 
   document.documentElement.lang = lang;
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = TEXT[el.dataset.i18n];

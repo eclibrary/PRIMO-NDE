@@ -26,6 +26,7 @@ const path = require('path');
 const { spawn, spawnSync } = require('child_process');
 const { ROOT, CONFIG_PATH, loadConfig, readActiveKey } = require('../view-context.cjs');
 const { loadMergedConfig, validate, deepMerge, SCHEMA_FILE, GLOBAL_FILE, VIEWS_DIR } = require('../config-generate.cjs');
+const { readLanguages, applyLanguages } = require('../languages.cjs');
 
 const PORT = Number(process.argv[2]) || 4300;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -63,7 +64,7 @@ function bootstrap() {
     views[key] = { overrides, merged: deepMerge(globalRaw, overrides), label: viewsConfig.views[key].label, viewId: viewsConfig.views[key].viewId };
   }
   const returnLabels = fs.existsSync(RETURN_LABELS_FILE) ? readJson(RETURN_LABELS_FILE) : {};
-  return { schema, global: globalRaw, views, viewsConfig, returnLabels, root: ROOT };
+  return { schema, global: globalRaw, views, viewsConfig, returnLabels, languages: readLanguages(), root: ROOT };
 }
 
 /** Validate a candidate global (alone) AND merged with every view, so a global change cannot break a view. */
@@ -136,6 +137,19 @@ async function handleApi(req, res, url) {
     return send(res, 200, { ok: true, output: regenerateConfig(key) });
   }
 
+  // POST /api/languages/plan   body = { languages: [{code, name}, …] } → what a save would change (nothing written)
+  // PUT  /api/languages        same body → apply (schema, settings files, per-language HTML files)
+  // See scripts/languages.cjs for exactly what is touched.
+  if (resource === 'languages' && ((req.method === 'POST' && key === 'plan') || (req.method === 'PUT' && !key))) {
+    const body = await readBody(req);
+    const dryRun = req.method === 'POST';
+    const result = applyLanguages(body.languages, { dryRun });
+    if (result.errors.length) return send(res, 400, { errors: result.errors });
+    // A real change also regenerates the TypeScript config (EC_LANGUAGES, schema-typed values).
+    const output = result.lines.join('\n') + (dryRun ? '' : '\n' + regenerateConfig());
+    return send(res, 200, { ok: true, removed: result.removed, added: result.added.map((l) => l.code), lines: result.lines, output });
+  }
+
   // PUT /api/return-labels
   if (req.method === 'PUT' && resource === 'return-labels') {
     const body = await readBody(req);
@@ -160,7 +174,20 @@ async function handleApi(req, res, url) {
       if (v.host && !/^https:\/\/[^/\s]+$/.test(v.host)) errors.push(`${k}: host must be https://host (no path)`);
     }
     if (errors.length) return send(res, 400, { errors });
-    writeJson(CONFIG_PATH, { ...current, instId: body.instId, defaultHost: body.defaultHost, views: body.views });
+    // Views deleted in the UI: remove them COMPLETELY (folder, settings file,
+    // build output, angular.json configurations) with the same script as
+    // `npm run views:remove`. It needs the view still in views.config.json, so
+    // it runs BEFORE the new config is written; it rewrites the config itself,
+    // hence the re-read of `current` afterwards.
+    let output = '';
+    const removed = Object.keys(current.views || {}).filter((k) => !(k in (body.views || {})));
+    for (const k of removed) {
+      const rr = spawnSync(process.execPath, ['scripts/remove-view.cjs', k, '--yes'], { cwd: ROOT, encoding: 'utf8' });
+      output += (rr.stdout || '') + (rr.stderr || '');
+      if (rr.status !== 0) return send(res, 500, { errors: [`Removing view "${k}" failed — nothing else was saved.`], output });
+    }
+    const fresh = removed.length ? readJson(CONFIG_PATH) : current;
+    writeJson(CONFIG_PATH, { ...fresh, instId: body.instId, defaultHost: body.defaultHost, views: body.views });
     // Scaffold new views + angular.json configurations (idempotent).
     const r = spawnSync(process.execPath, ['scripts/sync-views.cjs'], { cwd: ROOT, encoding: 'utf8' });
     // A new view also needs an (empty) config file so the UI can show it.
@@ -168,7 +195,7 @@ async function handleApi(req, res, url) {
       const f = path.join(VIEWS_DIR, `${k}.json`);
       if (!fs.existsSync(f)) writeJson(f, { $schema: '../schema.json' });
     }
-    return send(res, r.status === 0 ? 200 : 500, { ok: r.status === 0, output: (r.stdout || '') + (r.stderr || '') });
+    return send(res, r.status === 0 ? 200 : 500, { ok: r.status === 0, output: output + (r.stdout || '') + (r.stderr || '') });
   }
 
   // GET /api/build/<key>  → Server-Sent Events with the build output

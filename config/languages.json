@@ -1,0 +1,17 @@
+{
+  "$comment": "UI languages of all views. Edit with `npm run languages` or the settings UI (Languages tab), not by hand: a change also updates schema.json, the settings files and the per-language HTML files.",
+  "languages": [
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "fr",
+      "name": "Français"
+    },
+    {
+      "code": "de",
+      "name": "Deutsch"
+    }
+  ]
+}

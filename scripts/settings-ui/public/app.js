@@ -12,6 +12,9 @@
                       "Use global". Only overrides are written to the view file.
     Return labels     edits data/return-labels.json
     Views             edits views.config.json (id/label/host) and adds views
+    Languages         edits config/languages.json — add/remove UI languages for
+                      all views (scripts/languages.cjs does the work: schema,
+                      settings files, homepage/header/footer HTML files)
 
   Field kinds (from the schema): scalar (string/number/boolean/enum), list
   (array of strings — one per line), map (object with additionalProperties —
@@ -363,7 +366,7 @@ function renderReturnLabels() {
 
 function renderViews() {
   const main = $('#main'); main.replaceChildren();
-  main.append(el('p', { class: 'intro' }, 'The views this repo builds (views.config.json). Saving scaffolds any new view (src/views/<key>/, angular.json) and creates its settings file. Deleting a row only removes it from the config; its folder stays.'));
+  main.append(el('p', { class: 'intro' }, 'The views this repo builds (views.config.json). Saving scaffolds any new view (src/views/<key>/, angular.json) and creates its settings file. Deleting a row and saving removes the view completely from this repo: its folder under src/views/, its settings file, its build output and its angular.json configurations (the view in Alma is not touched). Leftovers of views deleted before this worked: run npm run views:remove -- --orphans.'));
   const tbody = el('tbody');
   const row = (key, v) => {
     const tr = el('tr');
@@ -379,7 +382,7 @@ function renderViews() {
       el('td', {}, key ? el('button', { type: 'button', class: 'secondary', onclick: () => build(key) }, 'Build') : null),
       el('td', {}, el('button', { type: 'button', class: 'del', title: 'Remove', onclick: () => {
         const label = inputs.key.value.trim() || 'this row';
-        if (!confirm(`Remove view "${label}" from views.config.json? Its folder under src/views/ is kept. (Nothing is written until you Save.)`)) return;
+        if (!confirm(`Remove view "${label}"? When you Save, its folder under src/views/, its settings file (config/views/), its build output (dist/) and its angular.json configurations are DELETED. The view in Alma is not touched. (Nothing happens until you Save.)`)) return;
         tr.remove(); commit();
       } }, '✕')));
     return tr;
@@ -406,16 +409,54 @@ function renderViews() {
   $('#bar').hidden = false;
 }
 
+/**
+ * Languages tab: the UI languages of ALL views (config/languages.json).
+ * English is fixed in first place (fallback for every text). Saving goes through
+ * a dry-run first, so removing a language shows exactly which translations and
+ * files will be deleted before anything happens.
+ */
+function renderLanguages() {
+  const main = $('#main'); main.replaceChildren();
+  main.append(el('p', { class: 'intro' },
+    'The UI languages of all views. Adding one gives every translatable text in the settings a field for it, and creates homepage/header/footer HTML files for it (copies of the English ones, to translate). ',
+    'Removing one deletes its translations and those files. English cannot be removed: it is shown whenever a translation is missing. ',
+    'Also enable the language for each view in Alma — otherwise NDE never offers it.'));
+  const tbody = el('tbody');
+  const rebuild = () => {
+    draft = [...tbody.querySelectorAll('tr')].map((tr) => {
+      const [code, name] = tr.querySelectorAll('input');
+      return { code: code.value.trim().toLowerCase(), name: name.value.trim() };
+    }).filter((l) => l.code || l.name);
+  };
+  const row = (l, isNew) => {
+    const fixed = l.code === 'en';
+    const code = el('input', { type: 'text', value: l.code || '', placeholder: 'e.g. it', maxlength: '2', size: '4', ...(isNew ? {} : { readonly: '' }) });
+    const name = el('input', { type: 'text', value: l.name || '', placeholder: 'e.g. Italiano' });
+    [code, name].forEach((i) => i.addEventListener('input', () => { rebuild(); markDirty(); }));
+    const tr = el('tr', {}, el('td', {}, code), el('td', {}, name),
+      el('td', {}, fixed ? el('span', { class: 'muted' }, 'fallback — always present') : el('button', { type: 'button', class: 'del', title: 'Remove', onclick: () => {
+        tr.remove(); rebuild(); markDirty();
+      } }, '✕')));
+    return tr;
+  };
+  for (const l of draft) tbody.append(row(l, false));
+  main.append(el('section', { class: 'card' },
+    el('table', { class: 'views' }, el('thead', {}, el('tr', {}, el('th', {}, 'Code'), el('th', {}, 'Name'), el('th'))), tbody),
+    el('div', { class: 'actions' }, el('button', { type: 'button', class: 'secondary', onclick: () => { tbody.append(row({}, true)); markDirty(); } }, '+ Add language'))));
+  $('#bar').hidden = false;
+}
+
 function render() {
   const tabs = $('#tabs'); tabs.replaceChildren();
   const tab = (id, text) => el('button', { type: 'button', role: 'tab', 'aria-selected': String(id === active), onclick: () => switchTab(id) }, text);
   tabs.append(tab('global', 'Global'), el('span', { class: 'group' }, 'Views:'));
   for (const [key, v] of Object.entries(state.views)) tabs.append(tab(`view:${key}`, `${v.label} (${v.viewId})`));
-  tabs.append(el('span', { class: 'group' }, '·'), tab('labels', 'Return labels'), tab('views', 'Views'));
+  tabs.append(el('span', { class: 'group' }, '·'), tab('labels', 'Return labels'), tab('views', 'Views'), tab('languages', 'Languages'));
 
   if (active === 'global') renderConfigTab(null);
   else if (active.startsWith('view:')) renderConfigTab(active.slice(5));
   else if (active === 'labels') renderReturnLabels();
+  else if (active === 'languages') renderLanguages();
   else renderViews();
 }
 
@@ -425,6 +466,7 @@ function loadDraft() {
   if (active === 'global') draft = clone(state.global);
   else if (active.startsWith('view:')) draft = clone(state.views[active.slice(5)]);
   else if (active === 'labels') draft = clone(state.returnLabels);
+  else if (active === 'languages') draft = clone(state.languages);
   else draft = clone(state.viewsConfig);
   dirty = false;
   $('#status').textContent = '';
@@ -451,6 +493,20 @@ async function save() {
   if (active === 'global') { url = '/api/global'; body = draft; }
   else if (active.startsWith('view:')) { url = `/api/views/${active.slice(5)}`; body = draft.overrides; }
   else if (active === 'labels') { url = '/api/return-labels'; body = draft; }
+  else if (active === 'languages') {
+    url = '/api/languages'; body = { languages: draft };
+    // Dry run first: show what will be created/deleted, and insist on a
+    // confirmation when a language (with its translations and files) goes.
+    const plan = await fetch('/api/languages/plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const pj = await plan.json();
+    if (!plan.ok) {
+      $('#status').textContent = 'Not saved:\n' + (pj.errors || ['unknown error']).join('\n');
+      $('#status').className = 'status err';
+      return;
+    }
+    const verb = pj.removed.length ? 'DELETES' : 'changes';
+    if (!confirm(`This ${verb}:\n\n${pj.lines.join('\n')}\n\nContinue?`)) return;
+  }
   else { url = '/api/views-config'; body = draft; }
 
   $('#save').disabled = true;

@@ -97,6 +97,11 @@ function loadMergedConfig(viewKey) {
 
 // --------------------------------------------------------------------- main
 
+/** Language list — lazy require: languages.cjs requires view-context.cjs too, keep load order simple. */
+function readLanguages() {
+  return require('./languages.cjs').readLanguages();
+}
+
 function main() {
   const arg = process.argv[2];
   let viewKey = null;
@@ -124,7 +129,9 @@ function main() {
     `import type { EcConfigValues } from './ec-config';\n\n` +
     `/** View this bundle was generated for ('' = global only). */\n` +
     `export const EC_CONFIG_VIEW = ${JSON.stringify(viewKey ?? '')};\n\n` +
-    `export const EC_CONFIG_VALUES: EcConfigValues = ${JSON.stringify(merged, null, 2)};\n`;
+    `export const EC_CONFIG_VALUES: EcConfigValues = ${JSON.stringify(merged, null, 2)};\n\n` +
+    `/** UI languages of the views (config/languages.json; first = English, the fallback). */\n` +
+    `export const EC_LANGUAGES: readonly string[] = ${JSON.stringify(readLanguages().map((l) => l.code))};\n`;
 
   fs.writeFileSync(OUT_FILE, banner);
   console.log(`[config] wrote ${path.relative(ROOT, OUT_FILE)} for ${viewKey ?? 'global'}`);
