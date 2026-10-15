@@ -122,16 +122,15 @@
            languages come from the settings, not from this file). Guests see the
            numbers remembered from their last signed-in visit; the row stays
            hidden when everything is 0. Leave the element empty. -->
-      <!-- data-ec-account-counts-welcome="off": this block already has the "Welcome back" heading. -->
-      <nav class="ec-account-counts" data-ec-account-counts data-ec-account-counts-welcome="off"></nav>
+      <nav class="ec-account-counts" data-ec-account-counts></nav>
     </div>
 
     <!-- ===== Last search — only when EcLastSearchComponent has one stored ======
          Shown/hidden by the `ec-has-last-search` class on <html>; the component
          fills the href and the terms span, and handles the click in-app. -->
     <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
-      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Pick up where you left off</h2>
-      <span class="welcome-content">Your last search on this site:</span>
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Welcome back</h2>
+      <span class="welcome-content">Pick up where you left off:</span>
       <!-- data-ec-last-search-page: filled with "(page 4)" when the patron left
            off beyond page 1 (text: setting lastSearch.pageLabel); empty otherwise. -->
       <a href="#" data-ec-last-search-link tabindex="0" role="link">“<span data-ec-last-search-terms></span>” <span data-ec-last-search-page></span></a>

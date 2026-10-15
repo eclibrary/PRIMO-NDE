@@ -1,0 +1,39 @@
+// src/app/shared/styles/_ec-network.scss
+//
+// Show/hide by network — loaded for all views by _shared-theme.scss
+// (`@use 'ec-network';`). Same idea as the data-ec-audience rules there.
+//
+//   data-ec-network="ec"        only on the EC network
+//   data-ec-network="external"  only outside it — also the DEFAULT while the
+//                               check is running or when it is switched off,
+//                               so EC-only content never flashes up for outsiders
+//
+// The classes on <html> come from EcSessionComponent, which reflects
+// NetworkService (src/app/shared/network.service.ts).
+// Hide-only rules (no `display: revert`), so elements keep their own display
+// value (e.g. the inline-block of a Material Symbols icon) when shown.
+
+html:not(.ec-network-ec) [data-ec-network='ec'] { display: none !important; }
+html.ec-network-ec [data-ec-network='external'] { display: none !important; }
+
+// ---- Footer: lock after "EC Library on My Intracomm" -----------------------
+// Markup (footer*.html):
+//   <span class="material-symbols-outlined ec-network-lock" data-ec-network="external" …>lock</span>
+//   <span class="material-symbols-outlined ec-network-lock" data-ec-network="ec" …>lock_open</span>
+// Closed lock outside the EC network (Intracomm will not open there), open lock inside.
+// !important on size/colour: the global .material-symbols-outlined rule in
+// _shared-theme.scss (28px) and the footer link styles would otherwise win.
+.ec-network-lock {
+  font-size: .95em !important;  // about the link text's height
+  line-height: 1;
+  color: #fff !important;       // white on the blue footer band
+  margin-left: .3em;
+  vertical-align: -0.12em;      // sit on the text baseline
+  text-decoration: none;        // no underline under the glyph when the link is underlined
+}
+// Closed lock (outside the EC network) in red. #ff6b6b rather than pure red:
+// on the EC-blue footer (#004494) pure red has a contrast of only 2.3:1, this
+// light red 3.4:1 — above the 3:1 minimum for icons (WCAG 1.4.11).
+.ec-network-lock[data-ec-network='external'] {
+  color: #ff6b6b !important;
+}

@@ -101,17 +101,17 @@
            accountCounts ; les libellés viennent des réglages). Les visiteurs non
            connectés voient les chiffres mémorisés lors de leur dernière visite
            connectée ; masqué si tout est à 0. Laisser l'élément vide. -->
-      <!-- data-ec-account-counts-welcome="off" : ce bloc a déjà le titre « Bon retour parmi nous ». -->
-      <nav class="ec-account-counts" data-ec-account-counts data-ec-account-counts-welcome="off"></nav>
+      <nav class="ec-account-counts" data-ec-account-counts></nav>
     </div>
 
     <!-- ===== Last search — only when EcLastSearchComponent has one stored ======
          Shown/hidden by the `ec-has-last-search` class on <html>; the component
          fills the href and the terms span, and handles the click in-app. -->
     <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
-      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Reprenez là où vous en étiez</h2>
-      <span class="welcome-content">Votre dernière recherche : <strong data-ec-last-search-terms></strong> <span data-ec-last-search-page></span></span>
-      <a href="#" data-ec-last-search-link tabindex="0" role="link">Retour aux résultats</a>
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Bon retour parmi nous</h2>
+      <span class="welcome-content">Reprenez là où vous en étiez :</span>
+      <!-- data-ec-last-search-page : « (page 4) » à partir de la page 2 (réglage lastSearch.pageLabel). -->
+      <a href="#" data-ec-last-search-link tabindex="0" role="link">«&nbsp;<span data-ec-last-search-terms></span>&nbsp;» <span data-ec-last-search-page></span></a>
       <!-- « Prêts à rendre » — rempli par EcLoansDueComponent pour les utilisateurs
            connectés (réglages : loansDue) ; reste masqué s'il n'y a rien à signaler. -->
       <p class="ec-loans-due" data-ec-loans-due>

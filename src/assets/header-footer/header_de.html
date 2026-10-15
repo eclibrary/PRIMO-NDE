@@ -19,5 +19,8 @@
   <p class="ec-header__text">
     Diese Website basiert auf <a class="ec-header__link" href="https://exlibrisgroup.com/products/primo-discovery-service/" target="_blank" rel="noopener">Primo<span class="ec-header__sr"> (öffnet in einem neuen Tab)</span></a> und wird von der <a class="ec-header__link" href="https://commission.europa.eu/index_de" target="_blank" rel="noopener">Europäischen Kommission<span class="ec-header__sr"> (öffnet in einem neuen Tab)</span></a> verwaltet.
   </p>
+  <!-- Reading room PCs only (kiosk mode, src/app/shared/kiosk.ts): hidden elsewhere by
+       _ec-header.scss; the minutes are filled in from the setting kiosk.idleMinutes. -->
+  <span class="ec-header__kiosk" data-ec-kiosk><span class="material-symbols-outlined" aria-hidden="true">desktop_windows</span><span>Lesesaal-PC · Sitzung wird nach <span data-ec-kiosk-minutes>60</span> Min. Inaktivität gelöscht</span></span>
   <a class="ec-header__link ec-header__privacy" href="https://ec.europa.eu/dpo-register/detail/DPR-EC-03730" target="_blank" rel="noopener">Datenschutzerklärung<span class="ec-header__sr"> (öffnet in einem neuen Tab)</span></a>
 </div>

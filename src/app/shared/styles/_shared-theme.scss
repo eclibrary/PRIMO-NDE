@@ -7,6 +7,7 @@
 @use 'ec-header'; // custom header bar (src/assets/header-footer/header*.html)
 @use 'ec-footer'; // custom footer band (src/assets/header-footer/footer*.html)
 @use 'ec-dialogs'; // heading sizes in every EC dialog (title bar + body headings)
+@use 'ec-network'; // show/hide by EC network (data-ec-network) + footer lock
 
 // Material Symbols icon font from the Google Fonts CDN, for the static HTML
 // (landing page, header, footer) and components alike. The stylesheet defines
@@ -100,4 +101,9 @@ html:not(.ec-env-sandbox) .ec-rs-format-locked {
 /*increase the EC logo size*/
 [src*="/library-logo.png"]{
   transform: scale(1.6);
+}
+
+//hide "add address line" element
+nde-formly-add-address-line-button{
+  display:none !important;
 }

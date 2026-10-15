@@ -108,6 +108,8 @@ export interface EcConfigValues {
   libchat: {
     libanswersHost: string;
     hash: string;
+    /** true = only signed-in patrons get the chat; guests never load it (see EcLibChatComponent). */
+    signedInOnly?: boolean;
     floatButtonSelector: string;
     iframeSelector: string;
   };
@@ -190,6 +192,24 @@ export interface EcConfigValues {
     favoritesEndpoint: string;
     /** Placeholders {lang}, {inst}, {patronId}, {vid}. */
     savedSearchesEndpoint: string;
+  };
+  /** EC network check — see NetworkService. Optional: absent = off (treated as external). */
+  network?: {
+    enabled: boolean;
+    /** A URL that only answers on the EC network. */
+    pingUrl: string;
+    /** Give up after this many ms and treat the visitor as external. */
+    timeoutMs: number;
+  };
+  /** Reading room PCs — see kiosk.ts. Optional: absent = 60 minutes, English texts. */
+  kiosk?: {
+    /** Minutes without activity before the tab is reset; 0 = never. */
+    idleMinutes: number;
+    /** "Are you still there?" dialog, shown one minute before the reset. */
+    warningTitle: Localised;
+    /** `{s}` = seconds left. */
+    warningText: Localised;
+    continueLabel: Localised;
   };
   resourceSharing: {
     forceFormat: '' | 'digital' | 'physical' | 'photocopy';

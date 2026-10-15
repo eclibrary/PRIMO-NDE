@@ -5,7 +5,7 @@
 // injects as plain HTML, with <script> tags stripped) can react to state that
 // only our Angular code can see.
 //
-// It does four things:
+// It does five things:
 //
 //  1. AUDIENCE CLASS — keeps `ec-audience-guest` / `ec-audience-user` on <html>.
 //     The CSS in _shared-theme.scss then shows/hides any element carrying
@@ -34,6 +34,11 @@
 //     That facet is then kept on every following search until the user removes
 //     it (see SubjectScopeService). Used by the Country Knowledge flag tiles.
 //
+//  5. NETWORK CLASS — keeps `ec-network-ec` / `ec-network-external` on <html>
+//     from NetworkService (EC network check, settings: network). CSS in
+//     styles/_ec-network.scss shows/hides `data-ec-network="ec|external"`
+//     markup; no class yet = still checking = treated as external.
+//
 // In-page jumps (the Country Knowledge region index) are plain `href` links with
 // the full page URL before the #fragment — no JS; see that page's header comment.
 //
@@ -45,6 +50,7 @@ import { AuthStateService } from '../../auth-state.service';
 import { SHELL_ROUTER } from '../../../injection-tokens';
 import { EC_CONFIG, isSandbox } from '../../ec-config';
 import { SubjectScopeService } from '../../subject-scope.service';
+import { NetworkService } from '../../network.service';
 
 @Component({
   selector: 'custom-ec-session',
@@ -64,6 +70,8 @@ export class EcSessionComponent implements OnDestroy {
   private readonly zone = inject(NgZone);
   /** Keeps the facet of a clicked scope tile on every following search. */
   private readonly subjectScope = inject(SubjectScopeService);
+  /** EC network check (runs once per tab) — reflected on <html> in (5). */
+  private readonly network = inject(NetworkService);
   /** Watches for static HTML arriving/re-rendering so counts can be (re)filled. */
   private countObserver?: MutationObserver;
   /** True while a fillCounts() run is queued for the next frame (batches mutations). */
@@ -86,6 +94,16 @@ export class EcSessionComponent implements OnDestroy {
       this.renderer.removeClass(html, 'ec-audience-guest');
       this.renderer.removeClass(html, 'ec-audience-user');
       this.renderer.addClass(html, `ec-audience-${audience}`);
+    });
+
+    // (5) Reflect the EC network check on <html>. Nothing is set while the
+    //     check runs ('unknown'): the CSS treats that as external.
+    effect(() => {
+      const html = document.documentElement;
+      const status = this.network.status();
+      this.renderer.removeClass(html, 'ec-network-ec');
+      this.renderer.removeClass(html, 'ec-network-external');
+      if (status !== 'unknown') this.renderer.addClass(html, `ec-network-${status}`);
     });
 
     // (2) Delegated click handling for data-ec-nav anchors.

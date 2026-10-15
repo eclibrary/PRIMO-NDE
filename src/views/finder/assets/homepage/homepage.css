@@ -225,3 +225,28 @@ html.ec-has-last-search .main-landing-page .welcome[data-ec-audience] {
   outline: 2px solid var(--ec-blue, #004494) !important;
   outline-offset: 2px !important;
 }
+
+/* ===== Welcome / announcements balance (desktop) ============================
+   The welcome column grew with its text (one long paragraph = one very wide
+   column) and squeezed the announcements box. On wider screens:
+     - the welcome column is capped at a comfortable reading width
+       (about 72 characters per line);
+     - the announcements box gets a steady width, so its title fits on one line.
+   The space between the two stays empty on very wide screens, which reads
+   calmer than stretched lines. Below 960px NDE's own stacked layout applies. */
+@media (min-width: 960px) {
+  .main-landing-page .welcome-announcements-container {
+    gap: 3rem;
+    align-items: flex-start;
+  }
+  .main-landing-page .welcome-announcements-container > .welcome {
+    flex: 1 1 0;
+    max-width: 50rem;
+  }
+  .main-landing-page .welcome .welcome-content {
+    max-width: 72ch;
+  }
+  .main-landing-page .welcome-announcements-container > .announcements {
+    flex: 0 0 24rem;
+  }
+}

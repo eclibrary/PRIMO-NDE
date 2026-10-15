@@ -15,12 +15,25 @@
 // SETTINGS: EC_CONFIG.libchat (config/global.json; a view overrides `hash` in
 // config/views/<view>.json — an empty hash disables the chat on that view).
 //
+// SIGNED-IN ONLY (setting `signedInOnly`, Oct 2026 — on for Find-eR):
+//   - Guests: LibChat is NOT loaded at all (no script, no button, no request to
+//     LibAnswers).
+//   - Signing in: the chat is loaded at that moment, without a page reload
+//     (AuthStateService signal → effect below).
+//   - Signing out on the same page: the button and any open chat are hidden
+//     with CSS (rule injected below, keyed on the `ec-audience-guest` class
+//     EcSessionComponent puts on <html>). The widget cannot be cleanly unloaded
+//     once LibAnswers' script has run, so it is hidden rather than removed; it
+//     shows again if the patron signs back in.
+//   Off (default): everyone gets the chat, as before.
+//
 // MOUNT POINT: rendered by EcSharedRootComponent (see shared-mappings.ts).
 // NOTE: that root sits on a search-bar slot, so the chat button exists on
 // pages that have a search bar. Move the root to an every-page slot if the
 // button must also appear on account/full-record pages.
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, effect, inject } from '@angular/core';
 import { EC_CONFIG } from '../../ec-config';
+import { AuthStateService } from '../../auth-state.service';
 import { UserInfoService } from '../../user-info.service';
 
 /** Guard against a second instance (the slot can render more than once). */
@@ -34,21 +47,41 @@ let installed = false;
 })
 export class EcLibChatComponent implements OnDestroy {
   private readonly userInfo = inject(UserInfoService);
+  private readonly auth = inject(AuthStateService);
   private readonly onClick = (ev: MouseEvent) => this.handleClick(ev);
   private readonly hash = EC_CONFIG.libchat.hash;
+  /** Setting `signedInOnly`; absent in older generated configs = false. */
+  private readonly signedInOnly = EC_CONFIG.libchat.signedInOnly === true;
 
   constructor() {
-    if (!this.hash || installed) return;
-    installed = true;
-    this.inject();
-    // Capture phase: run before LibChat's own handler opens the iframe, so our
-    // poll below catches the iframe as soon as it appears.
-    document.addEventListener('click', this.onClick, true);
+    if (!this.hash) return; // no widget hash = no chat on this view
+
+    if (!this.signedInOnly) {
+      this.install();
+      return;
+    }
+
+    // Signed-in only: hide the widget for guests (covers sign-out after the
+    // chat was loaded), and load it the first time a signed-in session is seen.
+    addGuestHideRule(EC_CONFIG.libchat.floatButtonSelector, this.hash);
+    effect(() => {
+      if (this.auth.isSignedIn()) this.install(); // install() is idempotent
+    });
   }
 
   ngOnDestroy(): void {
     document.removeEventListener('click', this.onClick, true);
     // The widget itself is left in place: it is page-level, not per component.
+  }
+
+  /** Load the widget and start listening for the first click — once per page. */
+  private install(): void {
+    if (installed) return;
+    installed = true;
+    this.inject();
+    // Capture phase: run before LibChat's own handler opens the iframe, so our
+    // poll below catches the iframe as soon as it appears.
+    document.addEventListener('click', this.onClick, true);
   }
 
   /** Add the LibChat loader script and its container once. */
@@ -98,4 +131,24 @@ export class EcLibChatComponent implements OnDestroy {
       iframe.src = `${cfg.libanswersHost}/chat/widget/${encodeURIComponent(this.hash)}?${params.toString()}`;
     }, 100);
   }
+}
+
+/**
+ * Global CSS rule (added once) that hides everything LibChat puts on the page
+ * while the visitor is a guest: our container div, LibChat's floating button
+ * and its widget/iframe wrappers (ids starting "s-lch-widget"). Keyed on the
+ * `ec-audience-guest` class that EcSessionComponent sets on <html>.
+ * !important: LibChat sets inline display styles on its own elements.
+ */
+function addGuestHideRule(floatButtonSelector: string, hash: string): void {
+  const id = 'ec-libchat-guest-hide';
+  if (document.getElementById(id)) return;
+  const targets = [`#libchat${hash}`, floatButtonSelector, '[id^="s-lch-widget"]']
+    .filter(Boolean)
+    .map((sel) => `html.ec-audience-guest ${sel}`)
+    .join(',\n');
+  const style = document.createElement('style');
+  style.id = id;
+  style.textContent = `${targets} { display: none !important; }`;
+  document.head.appendChild(style);
 }

@@ -19,5 +19,8 @@
   <p class="ec-header__text">
     Ce site web fonctionne avec <a class="ec-header__link" href="https://exlibrisgroup.com/products/primo-discovery-service/" target="_blank" rel="noopener">Primo<span class="ec-header__sr"> (s’ouvre dans un nouvel onglet)</span></a> et est géré par la <a class="ec-header__link" href="https://commission.europa.eu/index_fr" target="_blank" rel="noopener">Commission européenne<span class="ec-header__sr"> (s’ouvre dans un nouvel onglet)</span></a>.
   </p>
+  <!-- Reading room PCs only (kiosk mode, src/app/shared/kiosk.ts): hidden elsewhere by
+       _ec-header.scss; the minutes are filled in from the setting kiosk.idleMinutes. -->
+  <span class="ec-header__kiosk" data-ec-kiosk><span class="material-symbols-outlined" aria-hidden="true">desktop_windows</span><span>PC de salle de lecture · session effacée après <span data-ec-kiosk-minutes>60</span> min d’inactivité</span></span>
   <a class="ec-header__link ec-header__privacy" href="https://ec.europa.eu/dpo-register/detail/DPR-EC-03730" target="_blank" rel="noopener">Déclaration de confidentialité<span class="ec-header__sr"> (s’ouvre dans un nouvel onglet)</span></a>
 </div>

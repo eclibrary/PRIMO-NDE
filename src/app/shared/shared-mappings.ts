@@ -11,6 +11,9 @@
  * NOTE: the map holds ONE component per selector. Shared page-level features
  * therefore hang off EcSharedRootComponent rather than each taking a slot.
  */
+// Reading room (kiosk) mode: imported for its start-up code (URL switch +
+// idle reset), which must run on every page — see kiosk.ts.
+import './kiosk';
 import { EcSharedRootComponent } from './components/ec-shared-root/ec-shared-root.component';
 import { EcResourceSharingFormatComponent } from './components/ec-resource-sharing-format/ec-resource-sharing-format.component';
 import { EcNoResultsHelpComponent } from './components/ec-no-results-help/ec-no-results-help.component';

@@ -103,8 +103,32 @@
   "libchat": {
     "libanswersHost": "https://ec-europa-eu.libanswers.com",
     "hash": "c78ee6cc0e28c62ba3c16869ef1d7fc75036cf356cda6bfbab938f6251e74017",
+    "signedInOnly": false,
     "floatButtonSelector": ".s-lch-widget-float-btn",
     "iframeSelector": "[id^=\"s-lch-widget\"] iframe"
+  },
+  "network": {
+    "enabled": true,
+    "pingUrl": "https://intragate.ec.europa.eu/eclibrarytools/ping",
+    "timeoutMs": 3000
+  },
+  "kiosk": {
+    "idleMinutes": 60,
+    "warningTitle": {
+      "en": "Are you still there?",
+      "fr": "Êtes-vous toujours là ?",
+      "de": "Sind Sie noch da?"
+    },
+    "warningText": {
+      "en": "For your privacy, this session will be cleared in {s} seconds.",
+      "fr": "Pour protéger votre vie privée, cette session sera effacée dans {s} secondes.",
+      "de": "Zum Schutz Ihrer Privatsphäre wird diese Sitzung in {s} Sekunden gelöscht."
+    },
+    "continueLabel": {
+      "en": "Continue",
+      "fr": "Continuer",
+      "de": "Weiter"
+    }
   },
   "welcomeMessage": {
     "enabled": false,
@@ -188,9 +212,9 @@
       "de": "Ihr Bibliothekskonto"
     },
     "welcomeLabel": {
-      "en": "Welcome back",
-      "fr": "Bon retour parmi nous",
-      "de": "Willkommen zurück"
+      "en": "You have:",
+      "fr": "Vous avez :",
+      "de": "Sie haben:"
     },
     "loans": {
       "label": {

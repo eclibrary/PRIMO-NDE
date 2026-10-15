@@ -47,6 +47,7 @@
 import { Component, OnDestroy, Renderer2, ViewEncapsulation, inject } from '@angular/core';
 import { SHELL_ROUTER } from '../../../injection-tokens';
 import { EC_CONFIG, currentVid, localised } from '../../ec-config';
+import { isKiosk } from '../../kiosk';
 
 /** What we persist. Keep it small and self-describing for future readers of localStorage. */
 interface LastSearch {
@@ -208,14 +209,15 @@ export class EcLastSearchComponent implements OnDestroy {
 
   /**
    * Readable terms for the link label; several `query` params are joined.
-   * NDE writes `query=europe`; the VE-style `query=any,contains,europe` also
-   * occurs (advanced search, deep links) — keep only the terms in either form.
+   * NDE writes `query=europe` for a simple search. Advanced search (and VE-style
+   * deep links) use `field,precision,terms[,OPERATOR]`, with the lines of an
+   * advanced search joined by ";" in ONE parameter, e.g.
+   *     any,contains,god is not great,AND;any,exact,religion
+   * → "god is not great · religion". Only the terms of each line are kept; the
+   * field, precision and the AND/OR/NOT that links a line to the next are dropped.
    */
   private termsOf(params: URLSearchParams): string {
-    return params.getAll('query')
-      .map((q) => (q.includes(',') ? q.split(',').slice(2).join(',') : q).trim())
-      .filter(Boolean)
-      .join(' ; ');
+    return termsOfQueries(params.getAll('query'));
   }
 
   // ------------------------------------------------------------ page number
@@ -307,12 +309,17 @@ export class EcLastSearchComponent implements OnDestroy {
     return `${EC_CONFIG.lastSearch.storageKeyPrefix}${currentVid()}`;
   }
 
+  // KIOSK (reading room PCs, see kiosk.ts): nothing is stored and nothing is
+  // read back, so the landing page never shows a previous visitor's search.
+  // Everything goes through save()/load(), so these two checks cover the feature.
   private save(entry: LastSearch): void {
+    if (isKiosk()) return;
     try { localStorage.setItem(this.storageKey, JSON.stringify(entry)); } catch { /* quota/private mode: ignore */ }
   }
 
   /** Stored entry, or null when absent, malformed, or expired (expired ones are removed). */
   load(): LastSearch | null {
+    if (isKiosk()) return null;
     try {
       const raw = localStorage.getItem(this.storageKey);
       if (!raw) return null;
@@ -341,8 +348,11 @@ export class EcLastSearchComponent implements OnDestroy {
       // Real href so middle-click / copy-link work; click is handled in-app below.
       a.href = entry ? `/nde${entry.url}` : '#';
     });
+    // Terms are re-derived from the stored URL, so entries saved before the
+    // advanced-search fix (Oct 2026) display cleanly too; stored `terms` is the fallback.
+    const terms = entry ? (termsOfQueries(new URLSearchParams(entry.url.split('?')[1] ?? '').getAll('query')) || entry.terms) : '';
     document.querySelectorAll<HTMLElement>('[data-ec-last-search-terms]').forEach((el) => {
-      el.textContent = entry?.terms ?? '';
+      el.textContent = terms;
     });
     // "(page 4)" — only beyond the first page; empty otherwise so nothing shows.
     const page = entry ? this.pageOf(entry) : 1;
@@ -392,4 +402,26 @@ function takeScrollFlag(): boolean {
   } catch {
     return false;
   }
+}
+
+/** Operators that link one advanced-search line to the next. */
+const QUERY_OPERATORS = new Set(['AND', 'OR', 'NOT']);
+
+/**
+ * Readable terms from one or more `query` values (see termsOf for the formats).
+ * Lines and parameters are joined with " · "; empty pieces are dropped.
+ */
+function termsOfQueries(queries: string[]): string {
+  const pieces: string[] = [];
+  for (const q of queries) {
+    if (!q.includes(',')) { pieces.push(q.trim()); continue; } // simple NDE search
+    for (const line of q.split(';')) {
+      const parts = line.split(',');
+      if (parts.length < 3) { pieces.push(line.trim()); continue; }
+      let terms = parts.slice(2); // drop field + precision; terms may contain commas
+      if (terms.length > 1 && QUERY_OPERATORS.has(terms[terms.length - 1].trim())) terms = terms.slice(0, -1);
+      pieces.push(terms.join(',').trim());
+    }
+  }
+  return pieces.filter(Boolean).join(' · ');
 }

@@ -49,6 +49,7 @@
 // an account or full-record page sees it as soon as they reach such a page.
 import { AfterViewInit, Component, ElementRef, ViewChild, ViewEncapsulation, signal } from '@angular/core';
 import { EC_CONFIG, EcLang, currentLang, localised } from '../../ec-config';
+import { isKiosk } from '../../kiosk';
 
 /**
  * localStorage key: `{ "<fingerprint>": <epoch ms of dismissal> }`.
@@ -90,6 +91,8 @@ export class EcWelcomeMessageComponent implements AfterViewInit {
   readonly html = signal('');
   readonly closeLabel = signal('');
   readonly dontShowAgainLabel = signal('');
+  /** Reading room PC (kiosk.ts): hide the "don't show again" box. */
+  readonly kiosk = isKiosk();
 
   /** Fingerprint of the configured message — identical for every language (see header). */
   private readonly fingerprint = fingerprintOf(EC_CONFIG.welcomeMessage);
@@ -118,6 +121,8 @@ export class EcWelcomeMessageComponent implements AfterViewInit {
    * back, so localStorage does not collect fingerprints of old messages forever).
    */
   private readDismissed(): Record<string, number> {
+    // KIOSK (reading room PCs, see kiosk.ts): no "don't show again" — nothing read or stored.
+    if (isKiosk()) return {};
     const maxAge = EC_CONFIG.welcomeMessage.rememberDays * DAY_MS;
     const stored = readJson<Record<string, number>>(localStorage, DISMISSED_KEY, {});
     const fresh: Record<string, number> = {};
@@ -167,7 +172,8 @@ export class EcWelcomeMessageComponent implements AfterViewInit {
     if (!closed.includes(this.fingerprint)) writeJson(sessionStorage, CLOSED_KEY, [...closed, this.fingerprint]);
 
     // Only when the box is ticked: remember for `rememberDays`.
-    if (this.dontShowRef.nativeElement.checked) {
+    // (No box in kiosk mode — dontShowRef is then undefined.)
+    if (!isKiosk() && this.dontShowRef?.nativeElement.checked) {
       writeJson(localStorage, DISMISSED_KEY, { ...this.readDismissed(), [this.fingerprint]: Date.now() });
     }
   }

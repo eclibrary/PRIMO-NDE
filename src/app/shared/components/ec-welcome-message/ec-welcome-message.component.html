@@ -21,11 +21,16 @@
 
     <footer class="ec-welcome__footer">
       <!-- Unticked by default: closing without it only hides the message for
-           this browser tab; ticked, it stays away for `rememberDays`. -->
-      <label class="ec-welcome__remember">
-        <input #dontShow type="checkbox">
-        <span>{{ dontShowAgainLabel() }}</span>
-      </label>
+           this browser tab; ticked, it stays away for `rememberDays`.
+           Not offered on reading room PCs (kiosk mode, see kiosk.ts). -->
+      @if (!kiosk) {
+        <label class="ec-welcome__remember">
+          <input #dontShow type="checkbox">
+          <span>{{ dontShowAgainLabel() }}</span>
+        </label>
+      } @else {
+        <span></span> <!-- keeps the Close button right-aligned -->
+      }
       <!-- autofocus: showModal() focuses this instead of the first link in the body. -->
       <button type="button" class="ec-welcome__close" autofocus (click)="close()">{{ closeLabel() }}</button>
     </footer>

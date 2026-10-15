@@ -82,3 +82,23 @@
   clip: rect(0 0 0 0) !important;
   white-space: nowrap !important;
 }
+
+// Reading room badge (kiosk mode — src/app/shared/kiosk.ts puts `ec-kiosk` on <html>).
+// Hidden everywhere else. margin-left:auto keeps it on the right, next to the
+// privacy pill, instead of in the middle of the space-between bar.
+.ec-header [data-ec-kiosk] { display: none !important; }
+html.ec-kiosk .ec-header [data-ec-kiosk] {
+  display: inline-flex !important;
+  align-items: center;
+  gap: .375rem;
+  margin-left: auto;
+  padding: .125rem .75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .16); // light tint: reads as a status, not a link
+  white-space: nowrap;
+}
+.ec-header .ec-header__kiosk .material-symbols-outlined {
+  font-size: 1.1rem !important; // global icon rule is 28px
+  line-height: 1;
+  color: inherit;
+}

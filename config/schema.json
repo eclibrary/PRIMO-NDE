@@ -250,6 +250,11 @@
           "title": "Widget hash",
           "description": "From the LibChat embed code (hash= parameter). Empty = no chat on this view."
         },
+        "signedInOnly": {
+          "type": "boolean",
+          "title": "Only for signed-in users",
+          "description": "Ticked: guests do not see the chat button (LibChat is not even loaded for them); it appears as soon as the patron signs in and disappears again on sign-out. Unticked: everyone sees it."
+        },
         "floatButtonSelector": {
           "type": "string",
           "title": "Floating button selector",
@@ -263,6 +268,70 @@
       "required": [
         "libanswersHost",
         "hash"
+      ]
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "EC network check",
+      "description": "Tells whether the visitor is on the EC network by requesting a URL that only answers there. Used to show/hide content (data-ec-network=\"ec\" / \"external\" in homepage, header and footer HTML — e.g. the lock after the Intracomm link in the footer) and by components. Runs once per browser tab. Outside the network, while checking, or when switched off, visitors count as external.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Check the network"
+        },
+        "pingUrl": {
+          "type": "string",
+          "format": "uri",
+          "title": "Ping URL",
+          "description": "Technical. Must only be reachable from the EC network. Any answer counts as 'on the EC network'."
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 500,
+          "title": "Timeout (ms)",
+          "description": "No answer within this time = external."
+        }
+      },
+      "required": [
+        "enabled",
+        "pingUrl",
+        "timeoutMs"
+      ]
+    },
+    "kiosk": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Reading room PCs (kiosk mode)",
+      "description": "Kiosk mode is switched on per PC by opening a view once with &ec_kiosk=1 in the URL (and off with &ec_kiosk=0). On such a PC no feature stores anything in the browser (no 'Pick up where you left off', no remembered account counts, no 'don't show again'), and the tab is reset after a period without activity.",
+      "properties": {
+        "idleMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "title": "Reset after (minutes without activity)",
+          "description": "After this many minutes without mouse/keyboard/touch activity the session is cleared (the patron is signed out in this browser) and the home page is reloaded; a warning with a countdown appears one minute before. 0 = no automatic reset. Also shown in the reading room badge in the header."
+        },
+        "warningTitle": {
+          "$ref": "#/definitions/localised",
+          "title": "Warning title",
+          "description": "Title of the 'are you still there?' dialog shown one minute before the reset."
+        },
+        "warningText": {
+          "$ref": "#/definitions/localised",
+          "title": "Warning text",
+          "description": "{s} is replaced by the seconds left."
+        },
+        "continueLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Continue button",
+          "description": ""
+        }
+      },
+      "required": [
+        "idleMinutes",
+        "warningTitle",
+        "warningText",
+        "continueLabel"
       ]
     },
     "welcomeMessage": {
@@ -461,8 +530,8 @@
         },
         "welcomeLabel": {
           "$ref": "#/definitions/localised",
-          "title": "Welcome line above the counts",
-          "description": "Shown above the links whenever they are shown (returning guests, 'Pick up where you left off'). Not shown in the signed-in 'Welcome back' block, which already says it. Empty = no line."
+          "title": "Line above the counts",
+          "description": "Shown above the links whenever they are shown (e.g. \"You have:\"). Empty = no line. A container with data-ec-account-counts-welcome=\"off\" never shows it."
         },
         "loans": {
           "type": "object",

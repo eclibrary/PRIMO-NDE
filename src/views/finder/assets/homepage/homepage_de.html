@@ -86,15 +86,14 @@
         <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
         <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
       </p>
-      <!-- Kontozähler; data-ec-account-counts-welcome="off": dieser Block hat
-           bereits die Überschrift "Willkommen zurück". -->
-      <nav class="ec-account-counts" data-ec-account-counts data-ec-account-counts-welcome="off"></nav>
+      <!-- Kontozähler (gefüllt von EcAccountCountsComponent). -->
+      <nav class="ec-account-counts" data-ec-account-counts></nav>
     </div>
 
     <!-- ===== Letzte Suche — nur wenn EcLastSearchComponent eine gespeichert hat ===== -->
     <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
-      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Dort weitermachen, wo Sie aufgehört haben</h2>
-      <span class="welcome-content">Ihre letzte Suche auf dieser Website:</span>
+      <h2 aria-level="2" role="heading" class="welcome-title mat-headline-medium">Willkommen zurück</h2>
+      <span class="welcome-content">Dort weitermachen, wo Sie aufgehört haben:</span>
       <!-- data-ec-last-search-page: "(Seite 4)" ab Seite 2 (Einstellung lastSearch.pageLabel). -->
       <a href="#" data-ec-last-search-link tabindex="0" role="link">„<span data-ec-last-search-terms></span>“ <span data-ec-last-search-page></span></a>
       <p class="ec-loans-due" data-ec-loans-due>

@@ -75,6 +75,7 @@
 import { Component, OnDestroy, effect, inject } from '@angular/core';
 import { AuthStateService } from '../../auth-state.service';
 import { EC_CONFIG, currentLang, currentVid, localised } from '../../ec-config';
+import { isKiosk } from '../../kiosk';
 import { UserInfoService } from '../../user-info.service';
 
 /** Section may be missing from an older generated config → feature off, no crash. */
@@ -375,7 +376,11 @@ function storageKey(): string {
 }
 
 /** Stored counts, or null (nothing stored, unreadable, or storage blocked). */
+// KIOSK (reading room PCs, see kiosk.ts): readStored()/writeStored() are the only
+// storage access, so returning null / doing nothing here means guests see no
+// counts and a signed-in patron sees only their own live counts.
 function readStored(): StoredCounts | null {
+  if (isKiosk()) return null;
   try {
     const raw = localStorage.getItem(storageKey());
     const parsed = raw ? JSON.parse(raw) : null;
@@ -386,6 +391,7 @@ function readStored(): StoredCounts | null {
 }
 
 function writeStored(counts: StoredCounts): void {
+  if (isKiosk()) return;
   try {
     localStorage.setItem(storageKey(), JSON.stringify(counts));
   } catch {
