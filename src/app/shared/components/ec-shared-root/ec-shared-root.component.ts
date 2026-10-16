@@ -12,6 +12,8 @@
 //   - EcLoansDueComponent     "loans due soon" line on the landing page (settings: loansDue)
 //   - EcAccountCountsComponent loans / saved records / saved searches counts on the
 //                             landing page, remembered for guests (settings: accountCounts)
+//   - EcCustomDialogsComponent the library's own pop-up dialogs, opened by a class
+//                             (settings: customDialogs)
 //
 // Add future shared features (cookie notice, ...) here.
 // Each child is headless or renders its own hidden <dialog>, so this root
@@ -31,11 +33,12 @@ import { EcMenuLinksComponent } from '../ec-menu-links/ec-menu-links.component';
 import { EcWelcomeMessageComponent } from '../ec-welcome-message/ec-welcome-message.component';
 import { EcLoansDueComponent } from '../ec-loans-due/ec-loans-due.component';
 import { EcAccountCountsComponent } from '../ec-account-counts/ec-account-counts.component';
+import { EcCustomDialogsComponent } from '../ec-custom-dialogs/ec-custom-dialogs.component';
 
 @Component({
   selector: 'custom-ec-shared-root',
   standalone: true,
-  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent, EcScopeChipComponent, EcScopeLinksComponent, EcMenuLinksComponent, EcWelcomeMessageComponent, EcLoansDueComponent, EcAccountCountsComponent],
+  imports: [EcSessionComponent, EcAskLibrarianComponent, EcLastSearchComponent, EcLibChatComponent, EcScopeChipComponent, EcScopeLinksComponent, EcMenuLinksComponent, EcWelcomeMessageComponent, EcLoansDueComponent, EcAccountCountsComponent, EcCustomDialogsComponent],
   host: { 'data-component-id': 'custom-ec-shared-root' },
   template: `
     <custom-ec-session></custom-ec-session>
@@ -55,6 +58,8 @@ import { EcAccountCountsComponent } from '../ec-account-counts/ec-account-counts
     <!-- Fills the loans / saved records / saved searches links in the landing page HTML,
          from the API when signed in, from localStorage for guests (headless). -->
     <custom-ec-account-counts></custom-ec-account-counts>
+    <!-- Custom dialogs: elements with a dialog's name as class open it (settings: customDialogs). -->
+    <custom-ec-custom-dialogs></custom-ec-custom-dialogs>
   `,
 })
 export class EcSharedRootComponent {}

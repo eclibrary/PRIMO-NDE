@@ -1,0 +1,24 @@
+<!--
+  One native <dialog>, reused for every custom dialog: EcCustomDialogsComponent
+  fills title and text, then showModal(). Close: the button, a click on the
+  backdrop, or Esc. aria-labelledby ties the accessible name to the title.
+-->
+<dialog #dialog
+        class="ec-custom-dialog"
+        aria-labelledby="ec-custom-dialog-title"
+        (click)="onBackdropClick($event)">
+  <div class="ec-custom-dialog__panel">
+    <header class="ec-custom-dialog__bar">
+      <h2 id="ec-custom-dialog-title" class="ec-custom-dialog__title">{{ title() }}</h2>
+    </header>
+    <!-- The text from the settings; [innerHTML] = sanitised by Angular. -->
+    <div class="ec-custom-dialog__body" [innerHTML]="html()" [hidden]="!html()"></div>
+    <!-- The dialog's widget (setting "Widget code"), moved in by open(); hidden when it has none.
+         Outside Angular's control on purpose: the widget's own scripts manage it. -->
+    <div #widgetHost class="ec-custom-dialog__widget" hidden></div>
+    <footer class="ec-custom-dialog__footer">
+      <!-- autofocus: focus lands on Close, not on the first link in the text. -->
+      <button type="button" class="ec-custom-dialog__close" autofocus (click)="close()">{{ closeLabel() }}</button>
+    </footer>
+  </div>
+</dialog>

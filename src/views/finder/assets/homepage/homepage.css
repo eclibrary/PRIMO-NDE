@@ -64,25 +64,10 @@
      [data-ec-audience="guest"]  "Welcome to the EC Library" + Sign in
      [data-ec-audience="user"]   "Welcome back" + Go to my library card
      [data-ec-last-search]       "Pick up where you left off" + last search link
-   Which ones exist for the visitor is decided by classes on <html>
-   (ec-audience-guest|user from EcSessionComponent, ec-has-last-search from
-   EcLastSearchComponent) and the show/hide rules in _shared-theme.scss. */
-
-/* ALIGNMENT FIX. _shared-theme.scss un-hides the user and last-search blocks
-   with `display: revert`, which falls back to the browser default (block) and
-   so drops the flex column NDE gives .welcome — the button then sat inline in
-   the text. Restore the column for the blocks that are shown that way. */
-html.ec-audience-user .main-landing-page .welcome[data-ec-audience='user'],
-html.ec-has-last-search .main-landing-page .welcome[data-ec-last-search] {
-  display: flex;
-}
-
-/* ONE BLOCK AT A TIME. When there is a last search to pick up, it REPLACES the
-   welcome block (guest or user) instead of squeezing in as an extra column.
-   Must stay BELOW the rule above: same specificity, so the later one wins. */
-html.ec-has-last-search .main-landing-page .welcome[data-ec-audience] {
-  display: none;
-}
+   Which one shows is decided by classes on <html> (ec-audience-guest|user,
+   ec-has-last-search|ec-no-last-search) and the rules in
+   src/app/shared/styles/_ec-conditional.scss — one block at a time, nothing
+   shown before it is decided. */
 
 /* The button in each block ("Sign in" / "Go to my library card" / the last
    search): EC blue, and no wider than its text (a flex column would otherwise
@@ -226,27 +211,32 @@ html.ec-has-last-search .main-landing-page .welcome[data-ec-audience] {
   outline-offset: 2px !important;
 }
 
-/* ===== Welcome / announcements balance (desktop) ============================
-   The welcome column grew with its text (one long paragraph = one very wide
-   column) and squeezed the announcements box. On wider screens:
-     - the welcome column is capped at a comfortable reading width
-       (about 72 characters per line);
-     - the announcements box gets a steady width, so its title fits on one line.
-   The space between the two stays empty on very wide screens, which reads
-   calmer than stretched lines. Below 960px NDE's own stacked layout applies. */
+/* ===== Welcome / announcements balance (desktop): golden ratio ===============
+   The two columns share the row in the golden ratio, φ ≈ 1.618 : 1, so the
+   welcome column takes ~61.8% and the announcements box ~38.2% of the width
+   (minus the gap). How: both start from flex-basis 0 and grow in proportion
+   to their flex-grow, 1.618 and 1 — the widths are then exactly φ : 1 at any
+   screen width, without fixed sizes.
+     - The welcome TEXT stays at a comfortable reading width (about 72
+       characters per line) inside its wider column.
+     - The announcements box never gets narrower than 18rem, so its title and
+       button fit; on a screen where that would break the ratio, the box wins.
+   Below 960px NDE's own stacked layout applies. */
 @media (min-width: 960px) {
   .main-landing-page .welcome-announcements-container {
     gap: 3rem;
     align-items: flex-start;
   }
   .main-landing-page .welcome-announcements-container > .welcome {
-    flex: 1 1 0;
-    max-width: 50rem;
+    flex: 1.618 1 0;   /* φ */
+    min-width: 0;      /* allow shrinking below the text's natural width */
   }
   .main-landing-page .welcome .welcome-content {
     max-width: 72ch;
   }
   .main-landing-page .welcome-announcements-container > .announcements {
-    flex: 0 0 24rem;
+    flex: 1 1 0;
+    min-width: 18rem;
   }
 }
+

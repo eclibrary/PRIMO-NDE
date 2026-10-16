@@ -1,0 +1,41 @@
+<!--
+  ============================================================================
+  EXAMPLE HEADER — EC Library NDE kit
+  ============================================================================
+  A thin bar at the very top of every Primo page, above NDE's own menu:
+  a line of text with links on the left, one "pill" link on the right.
+
+  WHERE IT GOES
+    In your customization package: assets/header-footer/header.html
+    (English / default). Other languages: header_fr.html, header_de.html, …
+    NDE shows the file of the page language and falls back to header.html.
+    Change it the same way as the home page (see README.txt, "YOUR HOME PAGE").
+
+  COLOURS: the bar takes the colour theme picked for the view in Alma
+  (Manage Customization Package › Color Theme) — background in the theme's
+  main colour, text in the matching light or dark colour. To force another
+  colour, add to your custom.css:   :root { --ec-blue: #7a003c; --ec-on-blue: #fff; }
+
+  KEEP THE CLASS NAMES (ec-header, ec-header__text, ec-header__link,
+  ec-header__privacy, ec-header__sr): the kit's styles are attached to them.
+  No <script> (NDE removes it).
+  ============================================================================
+-->
+<div class="ec-header" lang="en">
+  <!-- Left: a sentence with links. "ec-header__sr" = text only screen readers
+       hear; keep "(opens in a new tab)" on links that open a new tab. -->
+  <p class="ec-header__text">
+    Welcome to the catalogue of
+    <a class="ec-header__link" href="https://www.example.org/" target="_blank" rel="noopener">Example Library<span class="ec-header__sr"> (opens in a new tab)</span></a>.
+  </p>
+
+  <!-- Optional: shown only on reading room PCs (kiosk mode, switched on with
+       &ec_kiosk=1 added to the Primo address once on that PC; &ec_kiosk=0
+       switches it off again — see the "Reading room PCs" settings).
+       The kit fills in the minutes. Remove the whole <span> if you do not
+       use kiosk mode. -->
+  <span class="ec-header__kiosk" data-ec-kiosk><span class="material-symbols-outlined" aria-hidden="true">desktop_windows</span><span>Reading room PC · session cleared after <span data-ec-kiosk-minutes>60</span> min without activity</span></span>
+
+  <!-- Right: one link shown as an outlined pill (ec-header__privacy). -->
+  <a class="ec-header__link ec-header__privacy" href="https://www.example.org/privacy" target="_blank" rel="noopener">Privacy statement<span class="ec-header__sr"> (opens in a new tab)</span></a>
+</div>

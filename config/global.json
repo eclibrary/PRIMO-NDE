@@ -112,24 +112,6 @@
     "pingUrl": "https://intragate.ec.europa.eu/eclibrarytools/ping",
     "timeoutMs": 3000
   },
-  "kiosk": {
-    "idleMinutes": 60,
-    "warningTitle": {
-      "en": "Are you still there?",
-      "fr": "Êtes-vous toujours là ?",
-      "de": "Sind Sie noch da?"
-    },
-    "warningText": {
-      "en": "For your privacy, this session will be cleared in {s} seconds.",
-      "fr": "Pour protéger votre vie privée, cette session sera effacée dans {s} secondes.",
-      "de": "Zum Schutz Ihrer Privatsphäre wird diese Sitzung in {s} Sekunden gelöscht."
-    },
-    "continueLabel": {
-      "en": "Continue",
-      "fr": "Continuer",
-      "de": "Weiter"
-    }
-  },
   "welcomeMessage": {
     "enabled": false,
     "title": {
@@ -152,40 +134,76 @@
       "de": "Schließen"
     }
   },
+  "noticeBanners": {
+    "enabled": false,
+    "banners": [],
+    "closeLabel": {
+      "en": "Close this notice",
+      "fr": "Fermer cet avis",
+      "de": "Diesen Hinweis schließen"
+    },
+    "regionLabel": {
+      "en": "Notices",
+      "fr": "Avis",
+      "de": "Hinweise"
+    }
+  },
   "libraryOnTheGo": {
     "enabled": true,
-    "collectionId": "8183322120004061",
-    "label": {
-      "en": "Library on the Go"
-    },
-    "color": "#00727a",
-    "infoButtonLabel": {
-      "en": "What is Library on the Go?",
-      "fr": "Qu'est-ce que Library on the Go ?",
-      "de": "Was ist Library on the Go?"
-    },
-    "dialogTitle": {
-      "en": "Library on the Go"
-    },
-    "dialogHtml": {
-      "en": "<p>Titles marked <strong>Library on the Go</strong> can be read outside the European Commission network.</p><p>Sign in with your EU Login when asked and you can use them from anywhere, on any device.</p>"
-    },
+    "badges": [
+      {
+        "collectionId": "8183322120004061",
+        "label": {
+          "en": "Library on the Go"
+        },
+        "color": "#00727a",
+        "infoButtonLabel": {
+          "en": "What is Library on the Go?",
+          "fr": "Qu'est-ce que Library on the Go ?",
+          "de": "Was ist Library on the Go?"
+        },
+        "dialogTitle": {
+          "en": "Library on the Go"
+        },
+        "dialogHtml": {
+          "en": "<p>Titles marked <strong>Library on the Go</strong> can be read outside the European Commission network.</p><p>Sign in with your EU Login when asked and you can use them from anywhere, on any device.</p>"
+        }
+      }
+    ],
     "closeLabel": {
       "en": "Close",
       "fr": "Fermer",
       "de": "Schließen"
-    },
-    "pnxEndpoint": "/primaws/rest/pub/pnxs/L/{recordId}?vid={vid}&lang={lang}"
+    }
   },
-  "noResultsHelp": {
-    "enabled": true,
-    "title": {
-      "en": "Still can't find it?",
-      "fr": "Toujours rien trouvé ?",
-      "de": "Immer noch nichts gefunden?"
+  "openAccess": {
+    "enabled": false,
+    "email": "",
+    "onlyWithoutFullText": true,
+    "linkLabel": {
+      "en": "Free version",
+      "fr": "Version gratuite",
+      "de": "Kostenlose Version"
     },
-    "html": {
-      "en": "<ul><li><a href=\"https://ec-europa-eu.libguides.com/finder_guide\" target=\"_blank\">Read the search tips</a> for ways to widen or sharpen your search.</li><li><a href=\"https://ec.europa.eu/libraries/pages/askalibrarian/en/\">Ask a librarian</a>: we can help you find it, or get it for you from another library.</li></ul>"
+    "publishedLabel": {
+      "en": "published version",
+      "fr": "version publiée",
+      "de": "Verlagsversion"
+    },
+    "acceptedLabel": {
+      "en": "author manuscript",
+      "fr": "manuscrit de l’auteur",
+      "de": "Autorenmanuskript"
+    },
+    "submittedLabel": {
+      "en": "preprint",
+      "fr": "prépublication",
+      "de": "Preprint"
+    },
+    "linkTitle": {
+      "en": "Free legal copy found by Unpaywall — opens in a new tab",
+      "fr": "Copie légale gratuite trouvée par Unpaywall — s’ouvre dans un nouvel onglet",
+      "de": "Kostenlose legale Kopie, gefunden von Unpaywall — öffnet in einem neuen Tab"
     }
   },
   "loansDue": {
@@ -246,54 +264,93 @@
     "favoritesEndpoint": "/primaws/rest/priv/favorites?lang={lang}&vid={vid}",
     "savedSearchesEndpoint": "/primaws/rest/priv/savedSearches?inst_code={inst}&patron_id={patronId}&lang={lang}&vid={vid}"
   },
-  "resourceSharing": {
-    "forceFormat": "digital",
-    "hideFormatField": true,
-    "autoCheckAvailability": true,
-    "formatFieldSelector": "[data-qa=\"almaResourceSharing.format\"]",
-    "checkAvailabilitySelector": "nde-formly-check-availability-button button",
-    "formatValues": {
-      "physical": {
-        "values": [
-          "PHYSICAL",
-          "physical",
-          "PHYSICAL_NON_RETURNABLE"
-        ],
-        "labels": [
-          "Physical",
-          "Physique",
-          "Physisch"
-        ],
-        "position": 0
-      },
-      "digital": {
-        "values": [
-          "DIGITAL",
-          "digital",
-          "ELECTRONIC"
-        ],
-        "labels": [
-          "Digital",
-          "Elektronisch",
-          "Numérique",
-          "Électronique"
-        ],
-        "position": 1
-      },
-      "photocopy": {
-        "values": [
-          "PHOTOCOPY",
-          "photocopy",
-          "COPY"
-        ],
-        "labels": [
-          "Fotokopie",
-          "Kopie",
-          "Photocopie",
-          "Photocopy"
-        ],
-        "position": 2
-      }
+  "printReturnLabel": {
+    "enabled": false,
+    "showOnPastLoans": false,
+    "label": {
+      "en": "Print return label",
+      "fr": "Imprimer l'étiquette de retour",
+      "de": "Rücksendeetikett drucken"
+    }
+  },
+  "customDialogs": {
+    "dialogs": [],
+    "closeLabel": {
+      "en": "Close",
+      "fr": "Fermer",
+      "de": "Schließen"
+    }
+  },
+  "openingHours": {
+    "enabled": false,
+    "week": {
+      "monday": "09:00-17:00",
+      "tuesday": "09:00-17:00",
+      "wednesday": "09:00-17:00",
+      "thursday": "09:00-17:00",
+      "friday": "09:00-17:00",
+      "saturday": "",
+      "sunday": ""
+    },
+    "exceptions": [],
+    "todayLabel": {
+      "en": "Today: {hours}",
+      "fr": "Aujourd’hui : {hours}",
+      "de": "Heute: {hours}"
+    },
+    "closedLabel": {
+      "en": "Closed",
+      "fr": "Fermé",
+      "de": "Geschlossen"
+    },
+    "openNowLabel": {
+      "en": "Open now",
+      "fr": "Ouvert",
+      "de": "Jetzt geöffnet"
+    },
+    "closedNowLabel": {
+      "en": "Closed now",
+      "fr": "Fermé actuellement",
+      "de": "Jetzt geschlossen"
+    },
+    "weekLinkLabel": {
+      "en": "All opening hours",
+      "fr": "Tous les horaires",
+      "de": "Alle Öffnungszeiten"
+    },
+    "dialogTitle": {
+      "en": "Opening hours",
+      "fr": "Horaires d’ouverture",
+      "de": "Öffnungszeiten"
+    },
+    "exceptionsTitle": {
+      "en": "Special opening hours",
+      "fr": "Horaires exceptionnels",
+      "de": "Abweichende Öffnungszeiten"
+    },
+    "closeLabel": {
+      "en": "Close",
+      "fr": "Fermer",
+      "de": "Schließen"
+    },
+    "timeZone": "Europe/Brussels"
+  },
+  "kiosk": {
+    "idleMinutes": 60,
+    "warningTitle": {
+      "en": "Are you still there?",
+      "fr": "Êtes-vous toujours là ?",
+      "de": "Sind Sie noch da?"
+    },
+    "warningText": {
+      "en": "For your privacy, this session will be cleared in {s} seconds.",
+      "fr": "Pour protéger votre vie privée, cette session sera effacée dans {s} secondes.",
+      "de": "Zum Schutz Ihrer Privatsphäre wird diese Sitzung in {s} Sekunden gelöscht."
+    },
+    "continueLabel": {
+      "en": "Continue",
+      "fr": "Continuer",
+      "de": "Weiter"
     }
   }
 }

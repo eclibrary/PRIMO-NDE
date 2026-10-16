@@ -33,7 +33,7 @@
     gap: 1rem;
     padding: .75rem 1rem .75rem 1.25rem;
     background: var(--ec-blue, #{ec.$ec-blue});
-    color: #fff;
+    color: var(--ec-on-blue, #fff); // text on the bar/button: the theme's "on primary" colour in the noob kit
   }
 
   // !important: NDE's global h2 typography otherwise wins and renders the
@@ -56,8 +56,8 @@
     color: inherit;
     cursor: pointer;
 
-    &:hover { background: rgba(255, 255, 255, .15); }
-    &:focus-visible { outline: 3px solid var(--ec-yellow, #{ec.$ec-yellow}); outline-offset: 2px; }
+    &:hover { background: color-mix(in srgb, var(--ec-on-blue, #fff) 15%, transparent); } // tint of the bar text colour
+    &:focus-visible { outline: 3px solid var(--ec-focus, #{ec.$ec-yellow}); outline-offset: 2px; } // focus ring on the bar
   }
 
   &__body {

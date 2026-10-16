@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "ec-nde-views-config",
   "title": "EC Library NDE customization settings",
-  "description": "Every value in config/global.json (all views) and config/views/<view>.json (overrides for one view). Per-view files may contain any subset of the same keys; they are deep-merged over global.json at build time (objects merge, arrays and scalars replace). Descriptions double as help text in the settings UI.",
+  "description": "Every value in config/global.json (all views) and config/views/<view>.json (overrides for one view). Per-view files may contain any subset of the same keys; they are deep-merged over global.json at build time (objects merge, arrays and scalars replace). Descriptions double as help text in the settings UI. Properties marked \"x-advanced\": true are technical; the settings editor in the package (assets/editor/) hides them unless \"Show advanced settings\" is ticked.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -26,19 +26,23 @@
         "jwtStorageKey": {
           "type": "string",
           "title": "JWT storage key",
-          "description": "sessionStorage key where Primo keeps the session JWT. Do not change unless Ex Libris renames it."
+          "description": "sessionStorage key where Primo keeps the session JWT. Do not change unless Ex Libris renames it.",
+          "x-advanced": true
         },
         "jwtNameClaim": {
           "type": "string",
           "title": "JWT name claim",
-          "description": "Claim in the JWT payload that holds the display name (EC: displayName)."
+          "description": "Claim in the JWT payload that holds the display name (EC: displayName).",
+          "x-advanced": true
         },
         "endpoint": {
           "type": "string",
           "title": "Personal details endpoint",
-          "description": "Private Primo REST path returning the patron's contact details. {vid} and {lang} are substituted at call time."
+          "description": "Private Primo REST path returning the patron's contact details. {vid} and {lang} are substituted at call time.",
+          "x-advanced": true
         }
-      }
+      },
+      "x-advanced": true
     },
     "lastSearch": {
       "type": "object",
@@ -49,17 +53,20 @@
         "storageKeyPrefix": {
           "type": "string",
           "title": "localStorage key prefix",
-          "description": "The view id is appended, so each view remembers its own search."
+          "description": "The view id is appended, so each view remembers its own search.",
+          "x-advanced": true
         },
         "resultsPath": {
           "type": "string",
           "title": "Results route",
-          "description": "Router path of the results page, relative to /nde."
+          "description": "Router path of the results page, relative to /nde.",
+          "x-advanced": true
         },
         "homePath": {
           "type": "string",
           "title": "Landing route",
-          "description": "Router path of the landing page, where the link is rendered."
+          "description": "Router path of the landing page, where the link is rendered.",
+          "x-advanced": true
         },
         "stripParams": {
           "type": "array",
@@ -67,7 +74,8 @@
             "type": "string"
           },
           "title": "Parameters not to store",
-          "description": "Query parameters removed before saving (dev switches, cache-busters)."
+          "description": "Query parameters removed before saving (dev switches, cache-busters).",
+          "x-advanced": true
         },
         "maxAgeDays": {
           "type": "integer",
@@ -84,12 +92,14 @@
           "type": "integer",
           "minimum": 1,
           "title": "Results per page (default)",
-          "description": "NDE's default page size. The results URL only carries an offset (offset=30), so the page number is offset / page size + 1. When the patron picks another page size it is detected from the number of results on screen; this value is used until then."
+          "description": "NDE's default page size. The results URL only carries an offset (offset=30), so the page number is offset / page size + 1. When the patron picks another page size it is detected from the number of results on screen; this value is used until then.",
+          "x-advanced": true
         },
         "fullDisplayPath": {
           "type": "string",
           "title": "Full record route",
-          "description": "Router path of the full record page, relative to /nde. Opening a record there marks it as the last viewed one."
+          "description": "Router path of the full record page, relative to /nde. Opening a record there marks it as the last viewed one.",
+          "x-advanced": true
         },
         "lastViewedLabel": {
           "$ref": "#/definitions/localised",
@@ -111,19 +121,22 @@
             "format": "uri"
           },
           "title": "Trigger link prefixes",
-          "description": "Any link whose href starts with one of these opens the modal. Prefix match (language variants and query strings included)."
+          "description": "Any link whose href starts with one of these opens the modal. Prefix match (language variants and query strings included).",
+          "x-advanced": true
         },
         "formfillScriptUrl": {
           "type": "string",
           "format": "uri",
           "title": "Prefill helper script",
-          "description": "URL of libanswers.script.js on Europa. Loaded before the widget; its CSS is resolved relative to it."
+          "description": "URL of libanswers.script.js on Europa. Loaded before the widget; its CSS is resolved relative to it.",
+          "x-advanced": true
         },
         "libanswersHost": {
           "type": "string",
           "format": "uri",
           "title": "LibAnswers host",
-          "description": "Widget scripts are loaded from <host>/1.0/widgets/<id>."
+          "description": "Widget scripts are loaded from <host>/1.0/widgets/<id>.",
+          "x-advanced": true
         },
         "widgetId": {
           "$ref": "#/definitions/localised",
@@ -145,7 +158,8 @@
             ]
           },
           "title": "Prefill from user",
-          "description": "LibAnswers form field name → patron property. Field names come from the rendered form (pname, pemail, custom5, …)."
+          "description": "LibAnswers form field name → patron property. Field names come from the rendered form (pname, pemail, custom5, …).",
+          "x-advanced": true
         },
         "prefillStatic": {
           "type": "object",
@@ -153,7 +167,8 @@
             "type": "string"
           },
           "title": "Static prefill",
-          "description": "Field name → fixed value, always applied (e.g. a hidden 'source' field)."
+          "description": "Field name → fixed value, always applied (e.g. a hidden 'source' field).",
+          "x-advanced": true
         },
         "context": {
           "type": "object",
@@ -195,7 +210,8 @@
                 "en"
               ]
             }
-          }
+          },
+          "x-advanced": true
         },
         "title": {
           "$ref": "#/definitions/localised",
@@ -217,7 +233,8 @@
         "resetOnClose": {
           "type": "boolean",
           "title": "Reset form on close",
-          "description": "Discard the form when the modal closes so every open starts empty."
+          "description": "Discard the form when the modal closes so every open starts empty.",
+          "x-advanced": true
         },
         "hideFields": {
           "type": "array",
@@ -225,12 +242,14 @@
             "type": "string"
           },
           "title": "Hidden form fields",
-          "description": "Form field names whose row is hidden (typically set per view). A hidden required field must be filled via static prefill instead."
+          "description": "Form field names whose row is hidden (typically set per view). A hidden required field must be filled via static prefill instead.",
+          "x-advanced": true
         },
         "formCssPath": {
           "type": "string",
           "title": "Form stylesheet path",
-          "description": "Package-relative CSS injected into the widget's shadow root; per-view assets overlay applies. Missing file = ignored."
+          "description": "Package-relative CSS injected into the widget's shadow root; per-view assets overlay applies. Missing file = ignored.",
+          "x-advanced": true
         }
       }
     },
@@ -243,7 +262,8 @@
         "libanswersHost": {
           "type": "string",
           "format": "uri",
-          "title": "LibAnswers host"
+          "title": "LibAnswers host",
+          "x-advanced": true
         },
         "hash": {
           "type": "string",
@@ -258,11 +278,13 @@
         "floatButtonSelector": {
           "type": "string",
           "title": "Floating button selector",
-          "description": "CSS selector of LibChat's button; only change if LibAnswers changes its markup."
+          "description": "CSS selector of LibChat's button; only change if LibAnswers changes its markup.",
+          "x-advanced": true
         },
         "iframeSelector": {
           "type": "string",
-          "title": "Chat iframe selector"
+          "title": "Chat iframe selector",
+          "x-advanced": true
         }
       },
       "required": [
@@ -273,8 +295,8 @@
     "network": {
       "type": "object",
       "additionalProperties": false,
-      "title": "EC network check",
-      "description": "Tells whether the visitor is on the EC network by requesting a URL that only answers there. Used to show/hide content (data-ec-network=\"ec\" / \"external\" in homepage, header and footer HTML — e.g. the lock after the Intracomm link in the footer) and by components. Runs once per browser tab. Outside the network, while checking, or when switched off, visitors count as external.",
+      "title": "Network check",
+      "description": "Tells whether the visitor is on your organisation's internal network, by requesting an address that only answers there (for the EC: intragate). Used to show/hide content — data-ec-network=\"ec\" (inside) / \"external\" (outside) in homepage, header and footer HTML, e.g. the lock after an intranet link in the footer — and by components. Runs once per browser tab. Outside the network, while checking, or when switched off, visitors count as outside. The server answering the ping must allow cross-origin use of its reply (header Cross-Origin-Resource-Policy: cross-origin).",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -283,55 +305,21 @@
         "pingUrl": {
           "type": "string",
           "format": "uri",
-          "title": "Ping URL",
-          "description": "Technical. Must only be reachable from the EC network. Any answer counts as 'on the EC network'."
+          "title": "Address to ping",
+          "description": "A web address that only answers from inside your network (any answer counts as \"inside\"). Example: https://intragate.ec.europa.eu/eclibrarytools/ping"
         },
         "timeoutMs": {
           "type": "integer",
           "minimum": 500,
           "title": "Timeout (ms)",
-          "description": "No answer within this time = external."
+          "description": "No answer within this time = external.",
+          "x-advanced": true
         }
       },
       "required": [
         "enabled",
         "pingUrl",
         "timeoutMs"
-      ]
-    },
-    "kiosk": {
-      "type": "object",
-      "additionalProperties": false,
-      "title": "Reading room PCs (kiosk mode)",
-      "description": "Kiosk mode is switched on per PC by opening a view once with &ec_kiosk=1 in the URL (and off with &ec_kiosk=0). On such a PC no feature stores anything in the browser (no 'Pick up where you left off', no remembered account counts, no 'don't show again'), and the tab is reset after a period without activity.",
-      "properties": {
-        "idleMinutes": {
-          "type": "integer",
-          "minimum": 0,
-          "title": "Reset after (minutes without activity)",
-          "description": "After this many minutes without mouse/keyboard/touch activity the session is cleared (the patron is signed out in this browser) and the home page is reloaded; a warning with a countdown appears one minute before. 0 = no automatic reset. Also shown in the reading room badge in the header."
-        },
-        "warningTitle": {
-          "$ref": "#/definitions/localised",
-          "title": "Warning title",
-          "description": "Title of the 'are you still there?' dialog shown one minute before the reset."
-        },
-        "warningText": {
-          "$ref": "#/definitions/localised",
-          "title": "Warning text",
-          "description": "{s} is replaced by the seconds left."
-        },
-        "continueLabel": {
-          "$ref": "#/definitions/localised",
-          "title": "Continue button",
-          "description": ""
-        }
-      },
-      "required": [
-        "idleMinutes",
-        "warningTitle",
-        "warningText",
-        "continueLabel"
       ]
     },
     "welcomeMessage": {
@@ -380,92 +368,124 @@
         "closeLabel"
       ]
     },
-    "libraryOnTheGo": {
+    "noticeBanners": {
       "type": "object",
       "additionalProperties": false,
-      "title": "Library on the Go",
-      "description": "Badge on records of the 'Library on the Go' digital collection (titles readable outside the EC network with EU Login), at the end of the record's top line in the results list and the full record, with an (i) button that opens an explanation.",
+      "title": "Notice banners",
+      "description": "Short messages in a coloured bar on every page — a closure, a new service, a maintenance window. Add as many as you need; each has its own text, position, colour and dates.",
       "properties": {
         "enabled": {
           "type": "boolean",
-          "title": "Show the badge"
+          "title": "Show the banners"
         },
-        "collectionId": {
-          "type": "string",
-          "title": "Collection ID",
-          "description": "Alma ID of the Library on the Go collection — the number after $$D in the record's PNX field control.colldiscovery, also visible in the URL when filtering on the collection (facet=digital_collection,include,<ID>)."
+        "banners": {
+          "type": "array",
+          "title": "Banners",
+          "items": {
+            "$ref": "#/definitions/noticeBanner"
+          }
         },
-        "label": {
+        "closeLabel": {
           "$ref": "#/definitions/localised",
-          "title": "Badge text"
+          "title": "Close button label",
+          "description": "Read by screen readers on the × button; not visible."
         },
-        "color": {
-          "type": "string",
-          "title": "Badge colour",
-          "description": "Any CSS colour, e.g. #00727a. Used for the text and the (i) icon."
-        },
-        "infoButtonLabel": {
+        "regionLabel": {
           "$ref": "#/definitions/localised",
-          "title": "(i) button label",
-          "description": "Read by screen readers; not visible."
+          "title": "Region label",
+          "description": "Read by screen readers before the banners; not visible."
+        }
+      },
+      "required": [
+        "enabled",
+        "banners",
+        "closeLabel",
+        "regionLabel"
+      ]
+    },
+    "libraryOnTheGo": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Collection badges",
+      "description": "Badges on records that belong to an Alma collection — e.g. e-books readable from home — shown at the end of the record's top line in the results list and in the full record, with an (i) button that opens an explanation. Add a badge per collection. (For the EC: 'Library on the Go'.)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Show the badges"
         },
-        "dialogTitle": {
-          "$ref": "#/definitions/localised",
-          "title": "Dialog title"
-        },
-        "dialogHtml": {
-          "$ref": "#/definitions/localised",
-          "format": "html",
-          "title": "Dialog text (HTML)",
-          "description": "Explanation shown when the (i) is clicked, as HTML markup per language (English is used when a language is empty). Scripts, inline style and data-* attributes are removed on display."
+        "badges": {
+          "type": "array",
+          "title": "Badges",
+          "items": {
+            "$ref": "#/definitions/collectionBadge"
+          }
         },
         "closeLabel": {
           "$ref": "#/definitions/localised",
           "title": "Close button label"
-        },
-        "pnxEndpoint": {
-          "type": "string",
-          "title": "PNX endpoint (fallback)",
-          "description": "Technical. Used only when the record data cannot be read from the NDE component: Primo endpoint returning one record's PNX. Placeholders: {recordId}, {vid}, {lang}."
         }
       },
       "required": [
         "enabled",
-        "collectionId",
-        "label",
-        "color",
-        "infoButtonLabel",
-        "dialogTitle",
-        "dialogHtml",
-        "closeLabel",
-        "pnxEndpoint"
+        "badges",
+        "closeLabel"
       ]
     },
-    "noResultsHelp": {
+    "openAccess": {
       "type": "object",
       "additionalProperties": false,
-      "title": "No results help",
-      "description": "Help block shown under NDE's 'No records found' message: the library's own ways out (search guide, Ask a librarian, ...).",
+      "title": "Free versions (Unpaywall)",
+      "description": "On records with a DOI (mostly journal articles), adds a \"Free version\" link when Unpaywall (unpaywall.org, a free non-profit service) knows a legal free copy — the publisher's open-access version or the author's manuscript in a repository. Privacy: for each such record the visitor's browser asks api.unpaywall.org about the DOI, so Unpaywall sees the DOI and the visitor's IP address — mention it in your privacy notice.",
       "properties": {
         "enabled": {
           "type": "boolean",
-          "title": "Show the help block"
+          "title": "Look for free versions"
         },
-        "title": {
-          "$ref": "#/definitions/localised",
-          "title": "Title"
+        "email": {
+          "type": "string",
+          "title": "Contact e-mail",
+          "description": "Required by Unpaywall to identify who is asking — a library address, e.g. library@example.org. Nothing is looked up while this is empty."
         },
-        "html": {
+        "onlyWithoutFullText": {
+          "type": "boolean",
+          "title": "Only when you have no online access",
+          "description": "Skip records that already have online access through your library."
+        },
+        "linkLabel": {
           "$ref": "#/definitions/localised",
-          "format": "html",
-          "title": "Text (HTML)",
-          "description": "Body as HTML markup per language (English is used when a language is empty; empty English = no block). A link to the Ask-a-librarian page opens the modal. Scripts, inline style and data-* attributes are removed on display."
+          "title": "Link text",
+          "description": "e.g. \"Free version\". The kind of copy is added after it (texts below)."
+        },
+        "publishedLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Text for the published version",
+          "description": "Added in brackets, e.g. \"published version\". Empty = nothing added."
+        },
+        "acceptedLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Text for the author manuscript",
+          "description": "Accepted manuscript (after peer review, before the publisher's layout), e.g. \"author manuscript\"."
+        },
+        "submittedLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Text for the preprint",
+          "description": "Submitted manuscript (before peer review), e.g. \"preprint\"."
+        },
+        "linkTitle": {
+          "$ref": "#/definitions/localised",
+          "title": "Link tooltip",
+          "description": "Shown on hover and read by screen readers, e.g. \"Free legal copy found by Unpaywall — opens in a new tab\"."
         }
       },
       "required": [
         "enabled",
-        "title",
-        "html"
+        "email",
+        "onlyWithoutFullText",
+        "linkLabel",
+        "publishedLabel",
+        "acceptedLabel",
+        "submittedLabel",
+        "linkTitle"
       ]
     },
     "loansDue": {
@@ -496,12 +516,14 @@
         "testWithPastLoans": {
           "type": "boolean",
           "title": "TEST ONLY: use past loans",
-          "description": "Reads the loan history instead of the active loans, so every past loan counts as overdue and the line can be seen without having an active loan. Never leave this ticked in production."
+          "description": "Reads the loan history instead of the active loans, so every past loan counts as overdue and the line can be seen without having an active loan. Never leave this ticked in production.",
+          "x-advanced": true
         },
         "endpoint": {
           "type": "string",
           "title": "Loans endpoint",
-          "description": "Technical. Primo endpoint the library card itself uses. Placeholders: {type} (active/history), {lang}, {inst}, {patronId}, {vid}."
+          "description": "Technical. Primo endpoint the library card itself uses. Placeholders: {type} (active/history), {lang}, {inst}, {patronId}, {vid}.",
+          "x-advanced": true
         }
       },
       "required": [
@@ -546,7 +568,8 @@
             "route": {
               "type": "string",
               "title": "NDE page",
-              "description": "Technical. NDE route the link opens, e.g. account/loans; vid and lang are added automatically."
+              "description": "Technical. NDE route the link opens, e.g. account/loans; vid and lang are added automatically.",
+              "x-advanced": true
             }
           },
           "required": [
@@ -567,7 +590,8 @@
             "route": {
               "type": "string",
               "title": "NDE page",
-              "description": "Technical. NDE route the link opens, e.g. account/favorites; vid and lang are added automatically."
+              "description": "Technical. NDE route the link opens, e.g. account/favorites; vid and lang are added automatically.",
+              "x-advanced": true
             }
           },
           "required": [
@@ -588,7 +612,8 @@
             "route": {
               "type": "string",
               "title": "NDE page",
-              "description": "Technical. NDE route the link opens, e.g. account/savedSearches; vid and lang are added automatically."
+              "description": "Technical. NDE route the link opens, e.g. account/savedSearches; vid and lang are added automatically.",
+              "x-advanced": true
             }
           },
           "required": [
@@ -599,27 +624,32 @@
         "testWithPastLoans": {
           "type": "boolean",
           "title": "TEST ONLY: count past loans",
-          "description": "Counts the loan history instead of the active loans, so the loans link can be seen without having an active loan. Never leave this ticked in production."
+          "description": "Counts the loan history instead of the active loans, so the loans link can be seen without having an active loan. Never leave this ticked in production.",
+          "x-advanced": true
         },
         "storageKeyPrefix": {
           "type": "string",
           "title": "Storage key prefix",
-          "description": "Technical. localStorage key = prefix + vid."
+          "description": "Technical. localStorage key = prefix + vid.",
+          "x-advanced": true
         },
         "loansEndpoint": {
           "type": "string",
           "title": "Loans endpoint",
-          "description": "Technical. Placeholders: {type} (active/history), {lang}, {inst}, {patronId}, {vid}."
+          "description": "Technical. Placeholders: {type} (active/history), {lang}, {inst}, {patronId}, {vid}.",
+          "x-advanced": true
         },
         "favoritesEndpoint": {
           "type": "string",
           "title": "Saved records endpoint",
-          "description": "Technical. Placeholders: {lang}, {vid}."
+          "description": "Technical. Placeholders: {lang}, {vid}.",
+          "x-advanced": true
         },
         "savedSearchesEndpoint": {
           "type": "string",
           "title": "Saved searches endpoint",
-          "description": "Technical. Placeholders: {lang}, {inst}, {patronId}, {vid}."
+          "description": "Technical. Placeholders: {lang}, {inst}, {patronId}, {vid}.",
+          "x-advanced": true
         }
       },
       "required": [
@@ -640,25 +670,12 @@
       "type": "object",
       "additionalProperties": false,
       "title": "Print return label",
-      "description": "Link under each active loan — and, when switched on below, under past (returned) loans too. Only on views whose mappings mount the component.",
+      "description": "A \"Print return label\" link under each loan in the library card (My Library Card → Loans). It opens a printable label with the return address of the loan's library; the addresses are kept under \"Return labels\".",
       "properties": {
-        "labelPagePath": {
-          "type": "string",
-          "title": "Label page path",
-          "description": "Package-relative path of the label page."
-        },
-        "codePaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "Library code property paths",
-          "description": "Dot paths tried on the loan host component to find the library code, in order."
-        },
-        "returnedMarker": {
-          "type": "string",
-          "title": "Returned-loan marker",
-          "description": "CSS selector present only on returned (history) loan rows. Those rows get no label unless 'Also show on past loans' is ticked."
+        "enabled": {
+          "type": "boolean",
+          "title": "Activate",
+          "description": "Show the \"Print return label\" link in this view."
         },
         "showOnPastLoans": {
           "type": "boolean",
@@ -671,160 +688,203 @@
         }
       },
       "required": [
-        "labelPagePath",
-        "codePaths",
-        "returnedMarker",
+        "enabled",
+        "showOnPastLoans",
         "label"
       ]
     },
-    "resourceSharing": {
+    "customDialogs": {
       "type": "object",
       "additionalProperties": false,
-      "title": "Resource sharing request",
-      "description": "Force the request format per view and hide the choice (EC views: digital; EU union catalogue: physical).",
+      "title": "Custom dialogs",
+      "description": "Pop-up windows with your own text — and, if you like, a widget such as a form or a booking tool — opened by clicking an element in your home page, header or footer. Add as many as you need; \"Opens from\" says which element opens each one.",
       "properties": {
-        "forceFormat": {
-          "type": "string",
-          "enum": [
-            "",
-            "digital",
-            "physical",
-            "photocopy"
-          ],
-          "title": "Force format",
-          "description": "Format applied when the resource-sharing form opens. Empty = leave the choice to the patron."
+        "dialogs": {
+          "type": "array",
+          "title": "Dialogs",
+          "items": {
+            "$ref": "#/definitions/customDialog"
+          }
         },
-        "hideFormatField": {
+        "closeLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Close button text"
+        }
+      },
+      "required": [
+        "dialogs",
+        "closeLabel"
+      ]
+    },
+    "openingHours": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Opening hours",
+      "description": "Your weekly opening hours plus exceptions (holidays, closures). Shows today's hours with \"Open now\" / \"Closed now\" where your home page, header or footer has <span data-ec-opening-hours></span>, the full week where it has <div data-ec-opening-hours=\"week\"></div>, and a pop-up with the full week from any link to #ec-opening-hours.",
+      "properties": {
+        "enabled": {
           "type": "boolean",
-          "title": "Hide the Format field",
-          "description": "Move the field off screen once forced, so it cannot be changed (it is still submitted)."
+          "title": "Show opening hours"
         },
-        "autoCheckAvailability": {
-          "type": "boolean",
-          "title": "Re-check availability",
-          "description": "Click 'Check availability' after forcing the format, as the VE script did."
-        },
-        "formatFieldSelector": {
-          "type": "string",
-          "title": "Format field selector",
-          "description": "CSS selector of the Format field inside the dialog. Only change if NDE changes its markup."
-        },
-        "checkAvailabilitySelector": {
-          "type": "string",
-          "title": "Check-availability button selector"
-        },
-        "formatValues": {
+        "week": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "digital",
-            "physical",
-            "photocopy"
-          ],
-          "title": "How to recognise each format",
+          "title": "Regular opening hours",
+          "description": "Per day: 09:00-17:00, or several periods: 09:00-12:30, 13:30-17:00. Leave a day empty when closed.",
           "properties": {
-            "digital": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "values",
-                "labels",
-                "position"
-              ],
-              "properties": {
-                "values": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "title": "Candidate values",
-                  "description": "Values Alma may use for this format in the form definition (matched case-insensitively)."
-                },
-                "labels": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "title": "Candidate labels",
-                  "description": "Displayed labels in any language, as a secondary match."
-                },
-                "position": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "title": "Position in the option list",
-                  "description": "0-based index in Alma's fixed order (Physical, Digital, Photocopy) — the last-resort match."
-                }
-              }
+            "monday": {
+              "type": "string",
+              "pattern": "^\\s*$|^\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*(,\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*)*$",
+              "x-patternHint": "Times as 09:00-17:00; several periods separated by commas (09:00-12:30, 13:30-17:00); empty = closed.",
+              "title": "Monday"
             },
-            "physical": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "values",
-                "labels",
-                "position"
-              ],
-              "properties": {
-                "values": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "title": "Candidate values",
-                  "description": "Values Alma may use for this format in the form definition (matched case-insensitively)."
-                },
-                "labels": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "title": "Candidate labels",
-                  "description": "Displayed labels in any language, as a secondary match."
-                },
-                "position": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "title": "Position in the option list",
-                  "description": "0-based index in Alma's fixed order (Physical, Digital, Photocopy) — the last-resort match."
-                }
-              }
+            "tuesday": {
+              "type": "string",
+              "pattern": "^\\s*$|^\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*(,\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*)*$",
+              "x-patternHint": "Times as 09:00-17:00; several periods separated by commas (09:00-12:30, 13:30-17:00); empty = closed.",
+              "title": "Tuesday"
             },
-            "photocopy": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "values",
-                "labels",
-                "position"
-              ],
-              "properties": {
-                "values": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "title": "Candidate values",
-                  "description": "Values Alma may use for this format in the form definition (matched case-insensitively)."
-                },
-                "labels": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "title": "Candidate labels",
-                  "description": "Displayed labels in any language, as a secondary match."
-                },
-                "position": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "title": "Position in the option list",
-                  "description": "0-based index in Alma's fixed order (Physical, Digital, Photocopy) — the last-resort match."
-                }
-              }
+            "wednesday": {
+              "type": "string",
+              "pattern": "^\\s*$|^\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*(,\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*)*$",
+              "x-patternHint": "Times as 09:00-17:00; several periods separated by commas (09:00-12:30, 13:30-17:00); empty = closed.",
+              "title": "Wednesday"
+            },
+            "thursday": {
+              "type": "string",
+              "pattern": "^\\s*$|^\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*(,\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*)*$",
+              "x-patternHint": "Times as 09:00-17:00; several periods separated by commas (09:00-12:30, 13:30-17:00); empty = closed.",
+              "title": "Thursday"
+            },
+            "friday": {
+              "type": "string",
+              "pattern": "^\\s*$|^\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*(,\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*)*$",
+              "x-patternHint": "Times as 09:00-17:00; several periods separated by commas (09:00-12:30, 13:30-17:00); empty = closed.",
+              "title": "Friday"
+            },
+            "saturday": {
+              "type": "string",
+              "pattern": "^\\s*$|^\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*(,\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*)*$",
+              "x-patternHint": "Times as 09:00-17:00; several periods separated by commas (09:00-12:30, 13:30-17:00); empty = closed.",
+              "title": "Saturday"
+            },
+            "sunday": {
+              "type": "string",
+              "pattern": "^\\s*$|^\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*(,\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*)*$",
+              "x-patternHint": "Times as 09:00-17:00; several periods separated by commas (09:00-12:30, 13:30-17:00); empty = closed.",
+              "title": "Sunday"
             }
+          },
+          "required": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ]
+        },
+        "exceptions": {
+          "type": "array",
+          "title": "Exceptions",
+          "description": "Days with other hours or closed, e.g. public holidays. They replace the regular hours on those days. Past exceptions are ignored, so you can leave them.",
+          "items": {
+            "$ref": "#/definitions/openingHoursException"
           }
+        },
+        "todayLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Today\" text",
+          "description": "{hours} = today's hours, e.g. \"Today: {hours}\"."
+        },
+        "closedLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Closed\" text",
+          "description": "Shown instead of hours on a closed day."
+        },
+        "openNowLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Open now\" text"
+        },
+        "closedNowLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Closed now\" text"
+        },
+        "weekLinkLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Link to the full week",
+          "description": "After today's hours, opens the pop-up. Empty = no link."
+        },
+        "dialogTitle": {
+          "$ref": "#/definitions/localised",
+          "title": "Pop-up title"
+        },
+        "exceptionsTitle": {
+          "$ref": "#/definitions/localised",
+          "title": "Heading of the exceptions",
+          "description": "Above the coming exceptions in the pop-up and the week view."
+        },
+        "closeLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Close button label"
+        },
+        "timeZone": {
+          "type": "string",
+          "title": "Time zone",
+          "x-advanced": true,
+          "description": "The library's time zone, e.g. Europe/Brussels, so \"Open now\" is right for visitors elsewhere. Empty = the visitor's computer clock."
         }
-      }
+      },
+      "required": [
+        "enabled",
+        "week",
+        "exceptions",
+        "todayLabel",
+        "closedLabel",
+        "openNowLabel",
+        "closedNowLabel",
+        "weekLinkLabel",
+        "dialogTitle",
+        "exceptionsTitle",
+        "closeLabel",
+        "timeZone"
+      ]
+    },
+    "kiosk": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Reading room PCs (kiosk mode)",
+      "description": "Kiosk mode is switched on per PC by opening a view once with &ec_kiosk=1 in the URL (and off with &ec_kiosk=0). On such a PC no feature stores anything in the browser (no 'Pick up where you left off', no remembered account counts, no 'don't show again'), and the tab is reset after a period without activity.",
+      "properties": {
+        "idleMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "title": "Reset after (minutes without activity)",
+          "description": "After this many minutes without mouse/keyboard/touch activity the session is cleared (the patron is signed out in this browser) and the home page is reloaded; a warning with a countdown appears one minute before. 0 = no automatic reset. Also shown in the reading room badge in the header."
+        },
+        "warningTitle": {
+          "$ref": "#/definitions/localised",
+          "title": "Warning title",
+          "description": "Title of the 'are you still there?' dialog shown one minute before the reset."
+        },
+        "warningText": {
+          "$ref": "#/definitions/localised",
+          "title": "Warning text",
+          "description": "{s} is replaced by the seconds left."
+        },
+        "continueLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Continue button",
+          "description": ""
+        }
+      },
+      "required": [
+        "idleMinutes",
+        "warningTitle",
+        "warningText",
+        "continueLabel"
+      ]
     }
   },
   "definitions": {
@@ -872,6 +932,220 @@
         "recordId",
         "searchTerms",
         "link"
+      ]
+    },
+    "customDialog": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Dialog",
+      "properties": {
+        "selector": {
+          "type": "string",
+          "format": "css-selector",
+          "title": "Opens from",
+          "description": "What opens the dialog. A plain word (letters, digits, - and _, starting with a letter), e.g. dialog-borrowing: then a link to #dialog-borrowing — <a href=\"#dialog-borrowing\">Borrowing rules</a> — and any element with the class dialog-borrowing open it. Starting it with dialog- avoids clashes with your own classes. Anything else is used as a CSS selector, for elements you cannot edit, e.g. a[href*=\"calendly.com\"]."
+        },
+        "title": {
+          "$ref": "#/definitions/localised",
+          "title": "Title"
+        },
+        "html": {
+          "$ref": "#/definitions/localised",
+          "format": "html",
+          "title": "Text",
+          "description": "The content of the dialog, per language (English is used when a language is empty)."
+        },
+        "widget": {
+          "type": "string",
+          "format": "code",
+          "title": "Widget code",
+          "description": "Optional: the embed code of a widget (a form, chat, booking tool …) exactly as its provider gives it — <div>s and <script>s. It is put below the text and loaded the first time the dialog opens. Unlike the text, this code RUNS inside Primo: paste only code from providers you trust."
+        }
+      },
+      "required": [
+        "selector",
+        "title",
+        "html"
+      ]
+    },
+    "noticeBanner": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Banner",
+      "properties": {
+        "text": {
+          "$ref": "#/definitions/localised",
+          "title": "Text",
+          "description": "What the banner says, per language (English is used when a language is empty). Keep it short: one or two sentences, a link if needed.",
+          "format": "html"
+        },
+        "position": {
+          "type": "string",
+          "default": "belowMenu",
+          "enum": [
+            "top",
+            "belowMenu",
+            "belowSearch",
+            "bottom"
+          ],
+          "x-enumNames": [
+            "Above the menu",
+            "Under the menu",
+            "Under the search area",
+            "Fixed at the bottom of the window"
+          ],
+          "title": "Position",
+          "description": "\"Under the search area\" shows under the menu on pages without a search area. \"Fixed at the bottom of the window\" stays visible while scrolling, below everything else (also below your footer)."
+        },
+        "style": {
+          "type": "string",
+          "default": "theme",
+          "enum": [
+            "theme",
+            "info",
+            "warning",
+            "success",
+            "custom"
+          ],
+          "x-enumNames": [
+            "Theme colour",
+            "Information (light blue)",
+            "Warning (amber)",
+            "Success (green)",
+            "My own colour (below)"
+          ],
+          "title": "Style",
+          "description": "Background colour and icon. The text colour (black or white) is chosen automatically so it stays readable."
+        },
+        "color": {
+          "type": "string",
+          "format": "color",
+          "pattern": "^(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})?$",
+          "x-patternHint": "A colour as #RRGGBB (e.g. #00727a), or empty.",
+          "title": "Own colour",
+          "description": "Background colour when the style is \"My own colour\"."
+        },
+        "from": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$",
+          "x-patternHint": "A date as YYYY-MM-DD, or empty.",
+          "title": "Show from",
+          "description": "First day the banner is shown. Empty = from now on."
+        },
+        "until": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$",
+          "x-patternHint": "A date as YYYY-MM-DD, or empty.",
+          "title": "Show until",
+          "description": "Last day the banner is shown (included). Empty = until you remove it."
+        },
+        "dismissible": {
+          "type": "boolean",
+          "default": true,
+          "title": "Can be closed",
+          "description": "Show a × button. A closed banner stays closed in that browser until you change its text or dates."
+        }
+      },
+      "required": [
+        "text",
+        "position",
+        "style",
+        "color",
+        "from",
+        "until",
+        "dismissible"
+      ]
+    },
+    "collectionBadge": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Badge",
+      "properties": {
+        "collectionId": {
+          "type": "string",
+          "title": "Collection ID",
+          "description": "Alma ID of the collection — the number after $$D in the record's PNX field control.colldiscovery, also visible in the address when you filter on the collection (facet=digital_collection,include,<ID>) or open its collection page (collectionId=<ID>)."
+        },
+        "label": {
+          "$ref": "#/definitions/localised",
+          "title": "Badge text",
+          "description": "Text of the badge, e.g. the name of the collection."
+        },
+        "color": {
+          "type": "string",
+          "format": "color",
+          "pattern": "^(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})?$",
+          "x-patternHint": "A colour as #RRGGBB (e.g. #00727a), or empty.",
+          "title": "Badge colour",
+          "description": "Colour of the badge text and its (i) icon, on the white record background — pick a dark enough colour. Empty = the theme colour."
+        },
+        "infoButtonLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "(i) button label",
+          "description": "Read by screen readers; not visible."
+        },
+        "dialogTitle": {
+          "$ref": "#/definitions/localised",
+          "title": "Dialog title",
+          "description": "Heading of the explanation dialog."
+        },
+        "dialogHtml": {
+          "$ref": "#/definitions/localised",
+          "title": "Explanation",
+          "description": "What the collection is and how to use it — shown when the (i) is clicked. Per language; English is used when a language is empty. Empty = no (i) button.",
+          "format": "html"
+        }
+      },
+      "required": [
+        "collectionId",
+        "label",
+        "color",
+        "infoButtonLabel",
+        "dialogTitle",
+        "dialogHtml"
+      ]
+    },
+    "openingHoursException": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Exception",
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$",
+          "x-patternHint": "A date as YYYY-MM-DD, or empty.",
+          "title": "From",
+          "description": "First day (YYYY-MM-DD)."
+        },
+        "until": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$",
+          "x-patternHint": "A date as YYYY-MM-DD, or empty.",
+          "title": "Until",
+          "description": "Last day, included. Empty = only the \"From\" day."
+        },
+        "hours": {
+          "type": "string",
+          "pattern": "^\\s*$|^\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*(,\\s*\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2}\\s*)*$",
+          "x-patternHint": "Times as 09:00-17:00; several periods separated by commas (09:00-12:30, 13:30-17:00); empty = closed.",
+          "title": "Hours",
+          "description": "Opening hours on those days, e.g. 10:00-14:00. Empty = closed."
+        },
+        "note": {
+          "$ref": "#/definitions/localised",
+          "title": "Note",
+          "description": "Shown with the hours, e.g. \"Christmas holidays\". Optional."
+        }
+      },
+      "required": [
+        "from",
+        "until",
+        "hours",
+        "note"
       ]
     }
   }

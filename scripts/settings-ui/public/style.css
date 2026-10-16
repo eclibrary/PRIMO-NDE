@@ -106,3 +106,21 @@ table.views input { width: 100%; padding: .3rem .5rem; border: 1px solid var(--l
 dialog { width: min(60rem, 95vw); border: 0; border-radius: .75rem; padding: 1.25rem; }
 dialog::backdrop { background: rgba(0,0,0,.4); }
 dialog pre { max-height: 60vh; overflow: auto; background: #111; color: #eee; padding: 1rem; border-radius: .5rem; font-size: .8rem; }
+
+/* Lists of objects (custom dialogs): the field spans the full width, one card per item. */
+.field.wide { grid-template-columns: 1fr; }
+.field.wide > label { padding-top: 0; }
+.objlist-item > legend { display: flex; gap: 1rem; align-items: baseline; }
+.objlist-item > legend .link { font-size: .85rem; font-weight: 400; }
+.hint.error { color: #b3261e; }
+.hint code { background: #eef1f6; padding: .05rem .3rem; border-radius: .25rem; }
+button.link { background: none; border: 0; padding: 0; color: var(--blue); text-decoration: underline; cursor: pointer; font: inherit; }
+
+/* Colour and date fields (schema "format": "color" / "date"): input + Clear. */
+.field .control .colour { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.field .control .colour > * { flex: none; margin: 0; }
+.field .control .colour input[type=color] { width: 3rem; height: 2.1rem; padding: .1rem; border: 1px solid var(--line); border-radius: .375rem; cursor: pointer; }
+/* More specific than the full-width text input rule above. */
+.field .control .colour input[type="text"] { width: 8rem; font-family: ui-monospace, Consolas, monospace; }
+.field .control .colour input[type="date"] { padding: .3rem .5rem; border: 1px solid var(--line); border-radius: .375rem; }
+.colour .hint { margin: 0; }

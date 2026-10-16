@@ -9,13 +9,19 @@
 // columns (one column on narrow screens). White on #004494 ≈ 9:1 contrast;
 // keyboard focus shows an EC-yellow ring, as in the header.
 //
+// COLOURS come from three variables, so the same rules serve both builds:
+//   --ec-blue     bar background          (EC views: EC blue, pinned in _shared-theme.scss;
+//   --ec-on-blue  text/links on the bar    noob kit: the Alma colour theme, src/noob/core/theme.scss)
+//   --ec-focus    keyboard focus ring on the bar
+// The fallbacks after the commas are the EC values, used when a variable is unset.
+//
 // !important on the properties NDE's global typography overrides (link colour,
 // heading/list margins and sizes) — same reason as in _ec-header.scss.
 // =============================================================================
 
 .ec-footer {
-  background: #004494 !important;
-  color: #fff !important;
+  background: var(--ec-blue, #004494) !important;
+  color: var(--ec-on-blue, #fff) !important;
   padding: 2rem 1rem !important;
   font-size: .9375rem !important;
   line-height: 1.5 !important;
@@ -30,8 +36,8 @@
 .ec-footer .ec-footer__title {
   margin: 0 0 1rem !important;
   padding: 0 0 .75rem !important;
-  border-bottom: 1px solid rgba(255, 255, 255, .35);
-  color: #fff !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--ec-on-blue, #fff) 35%, transparent);
+  color: var(--ec-on-blue, #fff) !important;
   font-size: 1rem !important;
   font-weight: 700 !important;
   line-height: 1.4 !important;
@@ -57,7 +63,7 @@
 
 // ECL "standalone, inverted" link: white, no underline until hover/focus.
 .ec-footer a.ec-footer__link {
-  color: #fff !important;
+  color: var(--ec-on-blue, #fff) !important;
   font-size: inherit !important;
   text-decoration: none !important;
 
@@ -66,7 +72,7 @@
     text-underline-offset: 3px;
   }
   &:focus-visible {
-    outline: 2px solid #ffd617;   // EC yellow, visible on the blue band
+    outline: 2px solid var(--ec-focus, #ffd617);   // EC yellow, visible on the blue band
     outline-offset: 2px;
     border-radius: 2px;
   }

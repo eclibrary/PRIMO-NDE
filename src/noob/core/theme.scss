@@ -1,0 +1,157 @@
+// src/noob/core/theme.scss
+//
+// Global styles of the NOOB ZIP's core. Compiled by the "noob" build
+// configuration (bundle "custom"), then MOVED by scripts/build-noob.cjs to
+// assets/core/ec-core.css — NOT left as custom.css:
+//   custom.css belongs to the institution (their own colours and tweaks). The
+//   package maker keeps theirs on every install/update. Our styles are loaded by
+//   the module itself (src/app/shared/core-styles.ts) right BEFORE their
+//   custom.css, so their rules win wherever both style the same thing.
+//
+// Only FUNCTIONAL rules live here — the ones our components and settings rely
+// on. The EC look (header, footer, logo, colours, EC-specific tweaks) stays in
+// src/app/shared/styles/_shared-theme.scss and is not part of the noob zip.
+// Keep the rules below in step with their twins in _shared-theme.scss.
+@use '../../app/shared/styles/ec-tokens' as ec;
+@use '../../app/shared/styles/ec-dialogs'; // heading sizes in our dialogs
+@use '../../app/shared/styles/ec-network'; // footer lock icons (network check)
+@use '../../app/shared/styles/ec-header';  // .ec-header bar for the library's header.html (example in examples/)
+@use '../../app/shared/styles/ec-footer';  // .ec-footer band for the library's footer.html (example in examples/)
+@use '../../app/shared/styles/ec-conditional'; // guest/user, last search, kiosk, network: hidden until decided
+@use '../../app/shared/styles/ec-features'; // notice banners, opening hours (plain-DOM features)
+
+// Material Symbols icon font (Google Fonts CDN) — any icon from
+// https://fonts.google.com/icons: <span class="material-symbols-outlined">mail</span>
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block');
+
+// COLOURS FOLLOW THE ALMA COLOUR THEME. The theme picked for the view in Alma
+// (Manage Customization Package › Color Theme) is a stylesheet NDE loads, e.g.
+// /nde/assets/color-themes/custom-color-theme-denim_blue.css, that sets
+// Angular Material M3 tokens on <html>. Every theme has the same tokens; for
+// "Denim blue": --sys-primary #3f608a, --sys-on-primary #ffffff,
+// --sys-primary-container #d3e3ff, --sys-on-primary-container #001c39.
+// Our styles only use the --ec-* names below, mapped onto those tokens, so
+// dialog title bars, buttons, header and footer bars, headings in dialogs and
+// the homepage pills take the theme's colour. The fallbacks are the EC
+// colours, used if NDE ever stops providing the tokens.
+//   --ec-blue          main colour: bars, buttons, links, headings
+//   --ec-on-blue       text and icons ON the main colour (white for dark themes)
+//   --ec-blue-soft     light tint: pills, hover backgrounds
+//   --ec-on-blue-soft  text on the light tint
+//   --ec-focus         keyboard focus ring on the main colour
+// A library can still force its own colour in custom.css, which wins:
+//   :root { --ec-blue: #7a003c; --ec-on-blue: #fff; }
+// (The EC views pin EC blue instead, in src/app/shared/styles/_shared-theme.scss.)
+:root {
+  --ec-blue: var(--sys-primary, #{ec.$ec-blue});
+  --ec-on-blue: var(--sys-on-primary, #fff);
+  --ec-blue-soft: var(--sys-primary-container, #e3ecf8);
+  --ec-on-blue-soft: var(--sys-on-primary-container, #{ec.$ec-blue});
+  --ec-focus: var(--sys-on-primary, #{ec.$ec-yellow});
+  --ec-yellow: #{ec.$ec-yellow}; // SANDBOX marker only
+  --ec-grey: #{ec.$ec-grey};
+}
+
+// Sandbox marker on *-psb hosts (class set by EcSessionComponent).
+html.ec-env-sandbox body::before {
+  content: 'SANDBOX';
+  position: fixed;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  padding: .1rem 1rem;
+  border-radius: 0 0 .5rem .5rem;
+  background: var(--ec-yellow);
+  color: #000;
+  font: 700 .75rem/1.6 sans-serif;
+  letter-spacing: .1em;
+  pointer-events: none;
+}
+
+// ============================================================================
+// HOME PAGE BLOCKS — the welcome / loans-due / account-counts / last-search
+// blocks of the example home page (src/noob/examples/homepage_en.html, shipped
+// as examples/ in the kit). Twins of the Find-eR rules in
+// src/views/finder/assets/homepage/homepage.css — keep both in step.
+// Scoped to .main-landing-page (Ex Libris' home page template class).
+// ============================================================================
+
+// The button of each block: kit colour, no wider than its text.
+.main-landing-page .welcome a[data-ec-nav],
+.main-landing-page .welcome a[data-ec-last-search-link] {
+  background-color: var(--ec-blue, #004494);
+  color: var(--ec-on-blue, #fff);
+  align-self: flex-start;
+}
+
+// "Loans due soon": hidden until EcLoansDueComponent adds --show;
+// --overdue = at least one overdue loan (red).
+.main-landing-page .ec-loans-due {
+  display: none;
+  align-items: center;
+  gap: .375rem;
+  margin: 1rem 0 0;
+  color: var(--ec-blue, #004494);
+}
+.main-landing-page .ec-loans-due.ec-loans-due--show { display: flex; }
+.main-landing-page .ec-loans-due.ec-loans-due--overdue { color: #b3261e; }
+// A text link, not a button: `all: unset` drops NDE's .welcome link styling
+// (more specific than anything we could write, hence !important).
+.main-landing-page .welcome .ec-loans-due a {
+  all: unset !important;
+  cursor: pointer !important;
+  color: inherit !important;
+  font-weight: 600 !important;
+  text-decoration: underline !important;
+}
+.main-landing-page .welcome .ec-loans-due a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.main-landing-page .ec-loans-due .material-symbols-outlined { font-size: 1.25rem; line-height: 1; margin: 0; color: inherit; }
+
+// Account counts: EcAccountCountsComponent fills the <nav> with
+//   <p class="ec-account-counts__welcome">You have:</p>
+//   <a class="ec-account-counts__item …"><span class="material-symbols-outlined">icon</span>
+//     <span class="ec-account-counts__text">2 loans</span></a> …
+// and adds --show when at least one count is above 0.
+.main-landing-page .ec-account-counts {
+  display: none;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1rem 0 0;
+}
+.main-landing-page .ec-account-counts.ec-account-counts--show { display: flex; }
+// Light pills in the theme's light tint (`all: unset` + !important: NDE's
+// .welcome link rules would otherwise make them big buttons).
+.main-landing-page .welcome .ec-account-counts a {
+  all: unset !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .375rem !important;
+  padding: .25rem .75rem .25rem .5rem !important;
+  border-radius: 999px !important;
+  background-color: var(--ec-blue-soft, #e3ecf8) !important;
+  color: var(--ec-on-blue-soft, #004494) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+}
+.main-landing-page .welcome .ec-account-counts a:hover {
+  background-color: color-mix(in srgb, var(--ec-blue-soft, #e3ecf8) 80%, var(--ec-blue, #004494)) !important;
+}
+.main-landing-page .welcome .ec-account-counts a:hover .ec-account-counts__text { text-decoration: underline; }
+.main-landing-page .welcome .ec-account-counts a:focus-visible {
+  outline: 2px solid var(--ec-blue, #004494) !important;
+  outline-offset: 2px !important;
+}
+.main-landing-page .ec-account-counts .ec-account-counts__welcome {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--ec-blue, #004494);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.main-landing-page .ec-account-counts .material-symbols-outlined { font-size: 1.25rem; line-height: 1; margin: 0; color: inherit; }
+
+// Tile icons: size and colour inside NDE's tile circle (follows NDE's theme colour).
+.main-landing-page .material-symbols-outlined {
+  font-size: 28px;
+  color: var(--sys-primary, #004494);
+}

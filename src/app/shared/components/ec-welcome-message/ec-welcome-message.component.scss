@@ -34,7 +34,7 @@
   &__bar {
     padding: .9rem 1.25rem;
     background: var(--ec-blue, #{ec.$ec-blue});
-    color: #fff;
+    color: var(--ec-on-blue, #fff); // text on the bar/button: the theme's "on primary" colour in the noob kit
   }
 
   // Title bar. NDE's global heading typography (h2 is display-sized there)
@@ -128,7 +128,7 @@
     border: 0;
     border-radius: 1.25rem;
     background: var(--ec-blue, #{ec.$ec-blue});
-    color: #fff;
+    color: var(--ec-on-blue, #fff); // text on the bar/button: the theme's "on primary" colour in the noob kit
     font: 600 .95rem/1.3 #{ec.$ec-font};
     cursor: pointer;
 

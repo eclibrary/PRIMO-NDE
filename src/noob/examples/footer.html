@@ -1,0 +1,42 @@
+<!--
+  ============================================================================
+  EXAMPLE FOOTER — EC Library NDE kit
+  ============================================================================
+  A band at the bottom of every Primo page: a heading and a list of links,
+  in one to three columns depending on the screen width.
+
+  WHERE IT GOES
+    In your customization package: assets/header-footer/footer.html
+    (English / default). Other languages: footer_fr.html, footer_de.html, …
+    Change it the same way as the home page (see README.txt, "YOUR HOME PAGE").
+
+  COLOURS: like the header, the band takes the colour theme picked for the
+  view in Alma. Force another colour in custom.css:
+      :root { --ec-blue: #7a003c; --ec-on-blue: #fff; }
+
+  KEEP THE CLASS NAMES (ec-footer, ec-footer__section, ec-footer__title,
+  ec-footer__list, ec-footer__item, ec-footer__link). No <script>.
+  ============================================================================
+-->
+<footer class="ec-footer" lang="en">
+  <!-- aria-labelledby points at the heading's id, so screen readers announce
+       the list as "Our other sites". Keep both in step if you rename. -->
+  <nav class="ec-footer__section" aria-labelledby="ec-footer-title">
+    <h2 class="ec-footer__title" id="ec-footer-title">Our other sites</h2>
+    <ul class="ec-footer__list">
+      <!-- One <li> per link; add or remove as many as you like. -->
+      <li class="ec-footer__item">
+        <a class="ec-footer__link" href="https://www.example.org/">Library website</a>
+      </li>
+      <li class="ec-footer__item">
+        <a class="ec-footer__link" href="https://www.example.org/contact">Contact us</a>
+      </li>
+      <li class="ec-footer__item">
+        <!-- Network example: two icons after the link text — a closed lock for
+             visitors OUTSIDE your network, an open lock ON it. Needs the
+             setting "Network check". Remove both spans if you do not use it. -->
+        <a class="ec-footer__link" href="https://intranet.example.org/library">Staff intranet<span class="material-symbols-outlined ec-network-lock" data-ec-network="external" aria-hidden="true" title="Only available on our network">lock</span><span class="material-symbols-outlined ec-network-lock" data-ec-network="ec" aria-hidden="true" title="You are on our network">lock_open</span></a>
+      </li>
+    </ul>
+  </nav>
+</footer>

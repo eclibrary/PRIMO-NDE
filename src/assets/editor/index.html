@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<!--
+  SETTINGS EDITOR — ships in every view's customization package.
+
+  For whom: library staff who change texts, links and switches of their view
+  WITHOUT Node, npm, Git or a build. Open it from the live package:
+      https://<primo host>/nde/custom/<INST>-<VIEW>/assets/editor/index.html
+  or, offline, from an unzipped package (double-click this file).
+
+  What it does:
+    1. reads the CURRENT settings next to it (../settings.js) and the schema
+       (schema.js, generated at build time — titles, descriptions, field types);
+    2. shows them as a form, grouped in collapsible sections; technical fields
+       (schema "x-advanced": true) only with "Show advanced settings"; HTML
+       messages get a small WYSIWYG editor (rich-text.js, also used by the
+       local settings UI);
+       The Languages panel adds/removes languages (authoritative at runtime);
+       the Return labels panel edits the label addresses per library code
+       (settings.js "libraries", read by assets/return-label/label.js);
+    3. checks the input and offers "Download settings.js";
+    4. the user replaces assets/settings.js in the package with that file and
+       uploads the package in Alma (instructions in the page).
+  Another settings.js can also be loaded with "Open a settings.js file…".
+
+  MAKER MODE (the noob zip, scripts/build-noob.cjs): the same page, saved as
+  "START HERE.html" next to maker/kit.js (window.EC_KIT: schema, neutral
+  defaults, our compiled code). Then it does not edit a settings.js but builds a
+  whole customization package: the library drops the package downloaded from
+  Alma, adjusts the settings, clicks "Make package" and uploads the result.
+  See the MAKER section in the script below; everything else is shared.
+
+  No external resources, no network calls, nothing stored: plain HTML/CSS/JS so it
+  also works from file://. The custom module reads settings.js as data (never
+  executes it) — see src/app/shared/runtime-settings.ts. The file format is the
+  same as written by scripts/config-generate.cjs (writeSettingsJs).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings editor</title>
+<style>
+  :root { --blue:#004494; --ink:#1b1b1b; --muted:#6b6b6b; --line:#d9d9d9; --bg:#f6f7f9; --ok:#1a7f37; --err:#b3261e; --warn:#8a5a00; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; color:var(--ink); background:var(--bg); padding-bottom:6rem; }
+  header { background:var(--blue); color:#fff; padding:1rem 2rem; }
+  header h1 { margin:0; font-size:1.3rem; font-weight:600; }
+  header p { margin:.25rem 0 0; opacity:.85; font-size:.9rem; }
+  main { max-width:62rem; margin:0 auto; padding:1.5rem 1rem; }
+  .bar { position:fixed; inset:auto 0 0 0; display:flex; gap:1rem; align-items:center; flex-wrap:wrap; padding:.75rem 2rem; background:#fff; border-top:1px solid var(--line); }
+  .bar .status { flex:1; font-size:.9rem; color:var(--muted); }
+  .bar .status.err { color:var(--err); white-space:pre-line; }
+  button { font:inherit; cursor:pointer; padding:.5rem 1.1rem; border-radius:.5rem; border:1px solid var(--blue); background:var(--blue); color:#fff; }
+  button.secondary { background:#fff; color:var(--blue); }
+  button.link { border:0; background:none; color:var(--blue); padding:0; text-decoration:underline; }
+  label.toggle { display:inline-flex; gap:.4rem; align-items:center; font-size:.9rem; }
+  .intro, .help { background:#fff; border:1px solid var(--line); border-radius:.75rem; padding:1rem 1.25rem; margin-bottom:1rem; }
+  .help ol { margin:.25rem 0 0; padding-left:1.25rem; }
+  .help code, .intro code { background:#eef1f6; padding:.05rem .3rem; border-radius:.25rem; }
+  details.section { background:#fff; border:1px solid var(--line); border-radius:.75rem; margin-bottom:.5rem; }
+  details.section > summary { display:flex; gap:.6rem; align-items:center; padding:.75rem 1.25rem; cursor:pointer; list-style:none; }
+  details.section > summary::-webkit-details-marker { display:none; }
+  details.section > summary::before { content:'▸'; color:var(--blue); transition:transform .15s; }
+  details.section[open] > summary::before { transform:rotate(90deg); }
+  details.section > summary h2 { margin:0; font-size:1.05rem; font-weight:600; }
+  details.section[open] > summary { border-bottom:1px solid #eee; }
+  .section-body { padding:.5rem 1.25rem 1rem; }
+  .desc { color:var(--muted); font-size:.9rem; margin:.5rem 0; max-width:75ch; }
+  .chip { font-size:.72rem; font-weight:600; padding:.1rem .5rem; border-radius:999px; background:#eceef2; color:var(--muted); text-transform:uppercase; }
+  .chip.on { background:#dcf3e2; color:var(--ok); }
+  .chip.changed { background:#fff1d6; color:var(--warn); text-transform:none; }
+  .chip.new { background:#e3ecfa; color:var(--blue); margin-left:.35rem; }
+  /* Maker mode (noob kit) */
+  .maker-box { background:#fff; border:1px solid var(--line); border-radius:.75rem; padding:1rem 1.25rem; margin-bottom:1rem; }
+  .maker-box h2 { margin:0 0 .5rem; font-size:1.1rem; }
+  .maker-box.warn { border-color:#e0a800; background:#fffaf0; }
+  .maker-box.ok { border-color:#9ad3a8; background:#f3fbf5; }
+  .maker-box dl { display:grid; grid-template-columns:12rem 1fr; gap:.25rem 1rem; margin:.5rem 0 0; }
+  .maker-box dt { color:var(--muted); }
+  .maker-box dd { margin:0; }
+  .maker-box ol { margin:.25rem 0 0; padding-left:1.25rem; }
+  .maker-box ol li { margin:.2rem 0; }
+  .maker-vid { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-top:.5rem; }
+  .maker-vid input { width:18rem; }
+  .steps { counter-reset: step; list-style:none; padding:0; margin:.5rem 0 0; }
+  .steps > li { counter-increment: step; position:relative; padding-left:2.2rem; margin:.6rem 0; }
+  .steps > li::before { content: counter(step); position:absolute; left:0; top:-.05rem; width:1.6rem; height:1.6rem; border-radius:50%;
+    background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem; }
+  .field { display:grid; grid-template-columns:15rem 1fr; gap:.5rem 1rem; padding:.6rem 0; border-top:1px solid #f0f0f0; }
+  .field:first-child { border-top:0; }
+  .field > .name { font-weight:500; }
+  .field > .name small { display:block; font-weight:400; color:var(--muted); font-size:.8rem; line-height:1.35; }
+  .field.changed > .name > label::after { content:' •'; color:var(--warn); font-weight:700; }
+  .field.invalid input, .field.invalid textarea { border-color:var(--err); }
+  .field .error { color:var(--err); font-size:.8rem; margin:.25rem 0 0; }
+  input[type=text], input[type=url], input[type=number], select, textarea { width:100%; padding:.4rem .6rem; border:1px solid var(--line); border-radius:.375rem; font:inherit; background:#fff; }
+  textarea { min-height:4rem; resize:vertical; }
+  textarea.html { min-height:12rem; font-family:ui-monospace,Consolas,monospace; font-size:.85rem; }
+  textarea.json { min-height:6rem; font-family:ui-monospace,Consolas,monospace; font-size:.85rem; }
+  .lang { display:grid; grid-template-columns:5.5rem 1fr; gap:.5rem; align-items:start; margin-bottom:.35rem; }
+  .lang > span { color:var(--muted); font-size:.85rem; padding-top:.45rem; }
+  fieldset { border:1px solid var(--line); border-radius:.5rem; margin:.5rem 0; padding:.25rem .9rem .6rem; }
+  legend { font-weight:600; padding:0 .25rem; }
+  .advanced-hidden .adv { display:none; }
+  .adv-tag { font-size:.7rem; color:var(--muted); border:1px solid var(--line); border-radius:.25rem; padding:0 .3rem; margin-left:.35rem; }
+  .langs { display:flex; flex-wrap:wrap; gap:.4rem; margin:.5rem 0; }
+  .lang-chip { display:inline-flex; gap:.35rem; align-items:center; padding:.2rem .6rem; border:1px solid var(--line); border-radius:999px; background:#f6f7f9; font-size:.9rem; }
+  .lang-chip small { color:var(--muted); }
+  .lang-add { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+  .lang-add input { width:auto; }
+  /* Return labels: one card per library (code + remove | name + address lines). */
+  .lib { display:grid; grid-template-columns:9rem 1fr; gap:.5rem 1rem; padding:.6rem 0; border-top:1px solid #f0f0f0; }
+  .lib:first-of-type { border-top:0; }
+  .lib .code { font-weight:600; font-family:ui-monospace,Consolas,monospace; padding-top:.4rem; }
+  .lib .code button { display:block; margin-top:.35rem; font-size:.8rem; font-family:inherit; font-weight:400; }
+  .lib textarea { margin-top:.35rem; min-height:5.5rem; }
+  .lib.changed .code::after { content:' •'; color:var(--warn); font-weight:700; }
+  .lib.invalid input { border-color:var(--err); }
+  .lib .error { color:var(--err); font-size:.8rem; margin:.25rem 0 0; }
+  /* Lists of objects (custom dialogs): one card per item. */
+  .field.wide { grid-template-columns:1fr; }
+  .objlist__item { margin:.25rem 0 .75rem; }
+  .objlist__item > legend { display:flex; gap:1rem; align-items:baseline; }
+  .objlist__remove { font-size:.85rem; font-weight:400; }
+  .objlist__hint code { background:#eef1f6; padding:.05rem .3rem; border-radius:.25rem; }
+  /* Colour fields (schema "format": "color"): swatch + #code + Clear. */
+  .colour { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+  .colour input[type=color] { width:3rem; height:2.1rem; padding:.1rem; border:1px solid var(--line); border-radius:.375rem; background:#fff; cursor:pointer; }
+  .colour input[type=text] { width:8rem; font-family:ui-monospace,Consolas,monospace; }
+  .colour .unset { color:var(--muted); font-size:.85rem; }
+  input[type=date] { padding:.35rem .5rem; border:1px solid var(--line); border-radius:.375rem; font:inherit; background:#fff; }
+  .drop { border:2px dashed var(--blue); border-radius:.75rem; padding:2rem; text-align:center; background:#fff; }
+  @media (max-width: 700px) { .field, .lib { grid-template-columns:1fr; } header, .bar { padding-left:1rem; padding-right:1rem; } }
+</style>
+<!-- ec:scripts -->
+<!-- This block is REPLACED in the noob zip's "START HERE.html"
+     (scripts/build-noob.cjs) by maker/kit.js + maker/zip.js + maker/rich-text.js.
+     Keep the two marker comments. -->
+<!-- The current settings and the schema. Both are optional at load: without
+     settings.js the page offers to open one; without schema.js it explains. -->
+<script src="../settings.js"></script>
+<script src="schema.js"></script>
+<!-- WYSIWYG for the HTML messages (shared with the local settings UI). -->
+<script src="rich-text.js"></script>
+<!-- /ec:scripts -->
+</head>
+<body>
+<header>
+  <h1 id="title">Settings editor</h1>
+  <p id="subtitle">Loading…</p>
+</header>
+<main id="main"></main>
+<div class="bar">
+  <span id="status" class="status"></span>
+  <label class="toggle"><input type="checkbox" id="advanced"> Show advanced settings</label>
+  <button type="button" class="secondary" id="open">Open a settings.js file…</button>
+  <button type="button" id="download">Download settings.js</button>
+  <input type="file" id="file" accept=".js,text/javascript" hidden>
+</div>
+
+<script>
+'use strict';
+/* ------------------------------------------------------------------ state */
+/** The noob kit (maker/kit.js) — present only in "START HERE.html" = maker mode. */
+const KIT = window.EC_KIT || null;
+const schema = KIT ? KIT.schema : window.EC_SCHEMA || null;
+// UI languages: from settings.js when it has them (the editor can add/remove
+// languages), else the list the package was built with (schema.js / kit.js).
+let languages = (KIT ? KIT.languages : window.EC_LANGUAGES) || [{ code: 'en', name: 'English' }];
+let originalLanguages = clone(languages);
+let envelope = KIT ? null : window.EC_SETTINGS || null;   // { format, vid, view, label, savedAt, savedBy, languages, values, libraries }
+// Return addresses per Alma library code, for the "Print return label" page
+// (assets/return-label/, which reads them from settings.js). null = this
+// settings.js has none (made by an older package): the panel then only explains.
+let libraries = null;
+let originalLibraries = null;
+let original = null;                          // values as loaded (to show what changed)
+let values = null;                            // working copy, edited by the form
+const errors = new Map();                     // path → message (invalid fields)
+
+const $ = (s) => document.querySelector(s);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== undefined && v !== null && v !== false) n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return n;
+};
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const getPath = (o, p) => p.reduce((x, k) => (x == null ? undefined : x[k]), o);
+function setPath(o, p, v) { let x = o; for (const k of p.slice(0, -1)) { if (x[k] == null || typeof x[k] !== 'object') x[k] = {}; x = x[k]; } x[p[p.length - 1]] = v; }
+
+/* ----------------------------------------------------------- schema utils */
+/** Follow $ref; keys next to the $ref (title, description, format, x-advanced) win. */
+function resolve(s) {
+  if (!s || !s.$ref) return s || {};
+  const target = s.$ref.replace('#/', '').split('/').reduce((o, k) => o && o[k], schema);
+  const { $ref, ...extra } = s;
+  return { ...resolve(target), ...extra };
+}
+const langCodes = () => languages.map((l) => l.code);
+/**
+ * Object schema whose properties are language codes = a translated value.
+ * Recognised by the keys being two-letter codes incl. "en" — not by comparing
+ * with the current language list, which the user can change in this editor.
+ */
+function isLocalised(s) {
+  const keys = Object.keys(s.properties || {});
+  return s.type === 'object' && keys.length > 0 && keys.includes('en') && keys.every((k) => /^[a-z]{2}$/.test(k));
+}
+function kind(s) {
+  if (s.type === 'boolean') return 'boolean';
+  if (s.type === 'integer' || s.type === 'number') return 'number';
+  if (s.type === 'string' && s.enum) return 'enum';
+  // "format" picks a special input; the value stays a plain string in settings.js.
+  if (s.type === 'string' && s.format === 'color') return 'color'; // colour picker ("#rrggbb" or "")
+  if (s.type === 'string' && s.format === 'date') return 'date';   // date picker ("YYYY-MM-DD" or "")
+  if (s.type === 'string' && s.format === 'code') return 'code';   // embed code: big monospace box
+  if (s.type === 'string') return 'string';
+  if (s.type === 'array' && resolve(s.items || {}).type === 'string') return 'list';
+  // A list of objects (e.g. custom dialogs): cards with Add / Remove.
+  if (s.type === 'array' && resolve(s.items || {}).type === 'object') return 'objlist';
+  if (s.type === 'object' && isLocalised(s)) return 'localised';
+  if (s.type === 'object' && s.properties) return 'object';
+  return 'json'; // free-form maps and anything else: edited as JSON (advanced)
+}
+
+/* --------------------------------------------------------------- loading */
+function start() {
+  if (!schema) {
+    $('#subtitle').textContent = 'schema.js is missing next to this page.';
+    $('#main').append(el('div', { class: 'intro' },
+      'This editor needs the file schema.js in the same folder. It is created when the package is built. ',
+      'Open the editor from the package (assets/editor/index.html), not from a copy of this page on its own.'));
+    $('#download').disabled = true;
+    return;
+  }
+  if (KIT) return makerStart();      // noob kit: build a package (MAKER section)
+  if (!envelope) return showDropZone();
+  load(envelope);
+}
+
+/**
+ * Bring settings from an OLDER package into today's shape (in place). Twin of
+ * migrateLegacySettings in src/app/shared/runtime-settings.ts (what Primo does
+ * when it reads settings.js) and in scripts/settings-ui/server.cjs — keep the
+ * three in step.
+ */
+function migrateLegacySettings(v) {
+  // Oct 2026 — one collection badge → a list of badges (libraryOnTheGo.badges).
+  const lotg = v && v.libraryOnTheGo;
+  if (isObj(lotg) && !('badges' in lotg) && 'collectionId' in lotg) {
+    const badge = {};
+    for (const k of ['collectionId', 'label', 'color', 'infoButtonLabel', 'dialogTitle', 'dialogHtml']) {
+      if (k in lotg) badge[k] = lotg[k];
+      delete lotg[k];
+    }
+    delete lotg.pnxEndpoint; // a constant in the module now
+    lotg.badges = [badge];
+  }
+
+  // Oct 2026 — custom dialogs: `name` (plain word) became `selector` ("Opens from").
+  const dialogs = v && v.customDialogs && v.customDialogs.dialogs;
+  if (Array.isArray(dialogs)) {
+    for (const d of dialogs) {
+      if (!d || typeof d !== 'object' || !('name' in d)) continue;
+      const name = String(d.name ?? '').trim();
+      const sel = String(d.selector ?? '').trim();
+      d.selector = name && sel ? `a[href="#${name}"], .${name}, ${sel}` : (sel || name);
+      delete d.name;
+    }
+  }
+  return v;
+}
+
+function load(env) {
+  migrateLegacySettings(env.values);
+  envelope = env;
+  original = clone(env.values || {});
+  values = clone(env.values || {});
+  if (Array.isArray(env.languages) && env.languages.length) languages = clone(env.languages);
+  originalLanguages = clone(languages);
+  const libs = env.libraries;
+  libraries = libs && typeof libs === 'object' && !Array.isArray(libs) ? clone(libs) : null;
+  originalLibraries = clone(libraries);
+  errors.clear();
+  $('#title').textContent = `Settings — ${env.label || env.view || 'view'}`;
+  $('#subtitle').textContent = `${env.vid || 'unknown view'} · last saved by ${env.savedBy || '?'}, ${formatDate(env.savedAt)}`;
+  document.title = `Settings — ${env.label || env.view || ''}`;
+  render();
+}
+
+function showDropZone() {
+  $('#subtitle').textContent = 'No settings loaded.';
+  const zone = el('div', { class: 'drop' },
+    el('p', {}, el('strong', {}, 'Open the settings.js of the view you want to change.')),
+    el('p', { class: 'desc' }, 'It is in the package, in the folder assets. Drop it here or use "Open a settings.js file…".'));
+  zone.addEventListener('dragover', (e) => e.preventDefault());
+  zone.addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); });
+  $('#main').replaceChildren(zone);
+}
+
+/** Same parser as the custom module: the JSON between the first "{" after EC_SETTINGS and the last "}". */
+function parseSettings(text) {
+  const start = text.indexOf('{', text.indexOf('EC_SETTINGS'));
+  const end = text.lastIndexOf('}');
+  if (start < 0 || end <= start) throw new Error('This is not a settings.js file.');
+  const env = JSON.parse(text.slice(start, end + 1));
+  if (!env || typeof env.values !== 'object') throw new Error('The file has no settings in it.');
+  return env;
+}
+function readFile(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    try { load(parseSettings(String(r.result))); setStatus(`Opened ${file.name}.`); }
+    catch (e) { setStatus(`Could not open ${file.name}: ${e.message}`, true); }
+  };
+  r.readAsText(file);
+}
+
+/* ------------------------------------------------------------- rendering */
+function render() {
+  const main = $('#main');
+  const pkg = (envelope.vid || '<INST>:<VIEW>').replace(':', '-');
+  if (KIT) main.replaceChildren(...makerPanels(), languagesPanel());
+  else main.replaceChildren(
+    el('div', { class: 'intro' },
+      el('p', { style: 'margin:0' }, 'Change the settings below, then click ', el('strong', {}, 'Download settings.js'),
+        '. Nothing changes in Primo until the new file is in the package and the package is uploaded again.'),
+    ),
+    el('details', { class: 'help' },
+      el('summary', {}, el('strong', {}, 'How to put the new settings live')),
+      el('ol', {},
+        el('li', {}, 'In Alma, download the current customization package of this view (a zip file).'),
+        el('li', {}, 'Unzip it. You get a folder ', el('code', {}, pkg), '.'),
+        el('li', {}, 'Replace the file ', el('code', {}, `${pkg}/assets/settings.js`), ' with the settings.js you downloaded here.'),
+        el('li', {}, 'Zip the folder ', el('code', {}, pkg), ' again (right-click the folder → Send to → Compressed (zipped) folder).'),
+        el('li', {}, 'Upload that zip in Alma as the view\'s customization package. Changes show after a few minutes (reload the page).'))),
+    languagesPanel(),
+  );
+  for (const [key, sub] of Object.entries(schema.properties || {})) {
+    const s = resolve(sub);
+    if (!(key in values)) continue; // section this view does not have
+    if (KIT && KIT.hiddenSections.includes(key)) continue; // feature not in the noob kit
+    if (kind(s) === 'object') main.append(section(key, s));
+    else main.append(el('div', { class: 'section-body intro' + (s['x-advanced'] ? ' adv' : '') }, field([key], s)));
+    // The addresses belong with the feature that prints them.
+    if (key === 'printReturnLabel') main.append(librariesPanel());
+  }
+  if (!KIT && !('printReturnLabel' in values)) main.append(librariesPanel()); // older package: still at the end
+  applyAdvanced();
+  refreshStatus();
+}
+
+/**
+ * Languages of this view: add (two-letter code + name) or remove. English is
+ * the fallback and stays. Adding gives every text a line for the language;
+ * removing deletes its texts. Saved in settings.js ("languages"), which the
+ * package reads (runtime-settings.ts) — no build needed.
+ */
+function languagesPanel() {
+  const list = el('div', { class: 'langs' });
+  for (const l of languages) {
+    list.append(el('span', { class: 'lang-chip' }, `${l.name} (${l.code})`,
+      l.code === 'en'
+        ? el('small', {}, ' — fallback')
+        : el('button', { type: 'button', class: 'link', title: `Remove ${l.name}`, 'aria-label': `Remove ${l.name}`, onclick: () => removeLanguage(l) }, '✕')));
+  }
+  const code = el('input', { type: 'text', placeholder: 'code, e.g. it', maxlength: '2', size: '6', 'aria-label': 'Language code' });
+  const name = el('input', { type: 'text', placeholder: 'name, e.g. Italiano', 'aria-label': 'Language name' });
+  const msg = el('p', { class: 'error' });
+  const add = () => {
+    const c = code.value.trim().toLowerCase(), n = name.value.trim();
+    if (!/^[a-z]{2}$/.test(c)) { msg.textContent = 'The code is two letters, as in the address (lang=it).'; return; }
+    if (languages.some((l) => l.code === c)) { msg.textContent = `${c} is already there.`; return; }
+    if (!n) { msg.textContent = 'Give the language a name.'; return; }
+    languages.push({ code: c, name: n });
+    render();
+  };
+  return el('details', { class: 'section' },
+    el('summary', {}, el('h2', {}, 'Languages'), el('span', { class: 'chip' }, String(languages.length))),
+    el('div', { class: 'section-body' },
+      el('p', { class: 'desc' }, 'The languages of this view. Adding one gives every text below a line for it (empty = the English text is shown). ',
+        'Also needed, outside this editor: switch the language on for the view in Alma, and add its home page, header and footer files (copy homepage_en.html to homepage_xx.html and translate it).'),
+      list,
+      el('div', { class: 'lang-add' }, code, name, el('button', { type: 'button', class: 'secondary', onclick: add }, 'Add language')),
+      msg));
+}
+
+function removeLanguage(lang) {
+  if (!confirm(`Remove ${lang.name}? All ${lang.name} texts in these settings are deleted.`)) return;
+  const codes = languages.map((l) => l.code);
+  languages = languages.filter((l) => l.code !== lang.code);
+  // Delete the language from every translated value (objects whose keys are languages).
+  (function walk(node) {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) return;
+    const keys = Object.keys(node);
+    if (keys.length && keys.includes('en') && keys.every((k) => codes.includes(k))) { delete node[lang.code]; return; }
+    Object.values(node).forEach(walk);
+  })(values);
+  render();
+}
+
+/**
+ * Return labels: the address printed on the label for each library, keyed by
+ * the Alma library code (BCB, BCENT, …). Saved in settings.js ("libraries"),
+ * read by the label page (assets/return-label/label.js) — no build needed.
+ * Same data as data/return-labels.json in the developers' repository; importing
+ * this settings.js there (npm run settings → Import settings.js…) copies it back.
+ */
+function librariesPanel() {
+  const d = el('details', { class: 'section' });
+  const changed = el('span', { class: 'chip changed', hidden: true });
+  d.dataset.key = '__libraries';
+  d._changed = changed;
+  const body = el('div', { class: 'section-body' });
+  d.append(el('summary', {}, el('h2', {}, 'Return labels'),
+    el('span', { class: 'chip' }, libraries ? String(Object.keys(libraries).length) : '—'), changed), body);
+
+  if (!libraries) {
+    body.append(el('p', { class: 'desc' },
+      'This settings.js has no return addresses — it was made by an older package. The label page uses the addresses built into the package. ',
+      'To edit them here, open the settings.js of a package built after October 2026.'));
+    return d;
+  }
+  body.append(el('p', { class: 'desc' },
+    'The address printed on the return label, per library. The code is the Alma library code of the loan (e.g. BCB). ',
+    'Lines are printed in this order, one per line; a library without lines gets no label. ',
+    'Used only when "Print return label" is activated.'));
+
+  const codes = Object.keys(libraries).filter((c) => !c.startsWith('_'));
+  for (const code of codes) body.append(libraryRow(code));
+
+  // Add a library: code + name. The lines are filled in afterwards in its card.
+  const code = el('input', { type: 'text', placeholder: 'code, e.g. BCB', size: '12', 'aria-label': 'Library code' });
+  const name = el('input', { type: 'text', placeholder: 'library name', 'aria-label': 'Library name' });
+  const msg = el('p', { class: 'error' });
+  const add = () => {
+    const c = code.value.trim(), n = name.value.trim();
+    if (!/^[A-Za-z0-9_-]+$/.test(c)) { msg.textContent = 'The code is the Alma library code: letters, digits, _ or - (e.g. BCB).'; return; }
+    if (libraries[c]) { msg.textContent = `${c} is already there.`; return; }
+    if (!n) { msg.textContent = 'Give the library a name.'; return; }
+    libraries[c] = { name: n, returnAddress: [n] };
+    render();
+    openPanel('__libraries');
+  };
+  body.append(el('div', { class: 'lang-add', style: 'margin-top:.75rem' }, code, name,
+    el('button', { type: 'button', class: 'secondary', onclick: add }, 'Add library')), msg);
+  return d;
+}
+
+/** One library: code (+ remove) on the left; name and address lines on the right. */
+function libraryRow(code) {
+  const lib = libraries[code];
+  const row = el('div', { class: 'lib' });
+  const errBox = el('p', { class: 'error' });
+  const errKey = `libraries.${code}`;
+  const mark = () => {
+    const err = !lib.name || !lib.name.trim() ? 'The name is required.' : null;
+    if (err) errors.set(errKey, err); else errors.delete(errKey);
+    errBox.textContent = err || '';
+    row.classList.toggle('invalid', !!err);
+    row.classList.toggle('changed', !same(lib, originalLibraries && originalLibraries[code]));
+    refreshStatus();
+  };
+  const remove = () => {
+    if (!confirm(`Remove ${code} (${lib.name})? Loans from this library then get no return label.`)) return;
+    delete libraries[code];
+    errors.delete(errKey);
+    render();
+    openPanel('__libraries');
+  };
+  const name = el('input', { type: 'text', value: lib.name || '', 'aria-label': `Name of ${code}`,
+    oninput: (e) => { lib.name = e.target.value; mark(); } });
+  const lines = el('textarea', { rows: Math.max(4, (lib.returnAddress || []).length + 1), 'aria-label': `Return address of ${code}, one line per line`,
+    placeholder: 'No lines = no label for this library',
+    oninput: (e) => {
+      const list = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean);
+      if (list.length) lib.returnAddress = list; else delete lib.returnAddress;
+      mark();
+    } }, (lib.returnAddress || []).join('\n'));
+  row.append(
+    el('div', { class: 'code' }, code, el('button', { type: 'button', class: 'link', onclick: remove }, 'Remove')),
+    el('div', {}, name, lines, errBox));
+  row.classList.toggle('changed', !same(lib, originalLibraries && originalLibraries[code]));
+  return row;
+}
+
+/** Re-open a panel after render() rebuilt the page (render closes all panels). */
+function openPanel(key) {
+  const d = document.querySelector(`details.section[data-key="${key}"]`);
+  if (d) { d.open = true; d.scrollIntoView({ block: 'nearest' }); }
+}
+
+/** Number of libraries added, removed or edited. */
+function librariesChanged() {
+  if (!libraries && !originalLibraries) return 0;
+  const a = libraries || {}, b = originalLibraries || {};
+  let n = 0;
+  for (const c of new Set([...Object.keys(a), ...Object.keys(b)])) if (!same(a[c], b[c])) n++;
+  return n;
+}
+
+/**
+ * LIST OF OBJECTS (schema: array whose items are objects), e.g. the custom
+ * dialogs: one card per item with its own fields (texts get the WYSIWYG), a
+ * Remove button per card and "Add" at the bottom. Items that have a `name`
+ * property must use distinct names (it is how they are found on the page).
+ */
+function objectList(path, s) {
+  const itemS = resolve(s.items);
+  const what = (itemS.title || 'item').toLowerCase();
+  const items = () => getPath(values, path) || [];
+  const box = el('div', { class: 'objlist' });
+  const sectionKey = path[0];
+
+  /**
+   * "Opens from" of a custom dialog (the item's `selector`): required, and not
+   * the same as another item's (the first would always win).
+   */
+  const triggerCheck = (i) => (v) => {
+    const t = (v || '').trim();
+    if (!t) return 'Say what opens the dialog, e.g. dialog-borrowing.';
+    const clash = items().some((it, j) => j !== i && (it?.selector || '').trim() === t);
+    return clash ? `Another ${what} already opens from "${t}".` : null;
+  };
+
+  items().forEach((item, i) => {
+    const card = el('fieldset', { class: 'objlist__item' },
+      el('legend', {}, `${itemS.title || 'Item'} ${i + 1}`,
+        el('button', { type: 'button', class: 'link objlist__remove', onclick: () => {
+          if (!confirm(`Remove ${what} ${i + 1}${item?.selector ? ` (${item.selector})` : ''}?`)) return;
+          const next = clone(items()); next.splice(i, 1);
+          // Drop errors of this list; they are re-evaluated when it is drawn again.
+          for (const k of [...errors.keys()]) if (k.startsWith(path.join('.') + '.')) errors.delete(k);
+          setPath(values, path, next);
+          render(); openPanel(sectionKey);
+        } }, 'Remove')));
+    for (const [k, sub] of Object.entries(itemS.properties || {})) {
+      const r = resolve(sub);
+      // A custom dialog's "Opens from" (the only list item with a css-selector field).
+      const isTrigger = k === 'selector' && r.format === 'css-selector';
+      card.append(field([...path, i, k], r, isTrigger ? { check: triggerCheck(i) } : {}));
+      // Show what opens it, filled in with the current value.
+      if (isTrigger) card.append(triggerHint([...path, i, k]));
+    }
+    box.append(card);
+  });
+  box.append(el('button', { type: 'button', class: 'secondary', onclick: () => {
+    setPath(values, path, [...clone(items()), blankFor(itemS)]);
+    render(); openPanel(sectionKey);
+  } }, `+ Add ${what}`));
+  return box;
+}
+
+/**
+ * What opens the dialog, kept up to date while typing "Opens from":
+ *   plain word → <a href="#WORD">…</a>  or  class="WORD"
+ *   otherwise  → elements matching the CSS selector
+ * Same plain-word rule as the module (PLAIN_WORD in ec-custom-dialogs.component.ts).
+ */
+function triggerHint(valuePath) {
+  const code = el('code', {});
+  const label = el('span', {});
+  const update = () => {
+    // The page is redrawn on Add/Remove: a hint no longer in the page stops listening.
+    if (!code.isConnected && code.textContent) { document.removeEventListener('input', update); return; }
+    const v = (getPath(values, valuePath) || '').trim() || 'dialog-name';
+    const word = /^[A-Za-z][A-Za-z0-9_-]*$/.test(v);
+    label.textContent = word ? 'Opens with: ' : 'Opens with: elements matching the CSS selector ';
+    code.textContent = word ? `<a href="#${v}">…</a>  or  class="${v}"` : v;
+  };
+  update();
+  document.addEventListener('input', update); // re-read the name while it is typed
+  return el('p', { class: 'desc objlist__hint' }, label, code);
+}
+
+/** An empty value for a schema: '' / false / minimum / [] / { en: '' } / object of blanks. */
+function blankFor(s) {
+  s = resolve(s);
+  // The schema's "default" first (e.g. a new banner: under the menu, theme colour,
+  // can be closed); a choice list without one starts at its first option.
+  if (s.default !== undefined) return JSON.parse(JSON.stringify(s.default));
+  if (s.enum) return s.enum[0];
+  if (s.type === 'boolean') return false;
+  if (s.type === 'integer' || s.type === 'number') return s.minimum ?? 0;
+  if (s.type === 'array') return [];
+  if (s.type === 'object' && isLocalised(s)) return { en: '' };
+  if (s.type === 'object') {
+    const o = {};
+    for (const [k, sub] of Object.entries(s.properties || {})) o[k] = blankFor(sub);
+    return o;
+  }
+  return '';
+}
+
+function section(key, s) {
+  const d = el('details', { class: 'section' + (s['x-advanced'] ? ' adv' : '') });
+  const chips = [];
+  if (s.properties && s.properties.enabled) {
+    const on = values[key] && values[key].enabled === true;
+    chips.push(el('span', { class: 'chip' + (on ? ' on' : '') }, on ? 'on' : 'off'));
+  }
+  if (isNew([key])) chips.push(el('span', { class: 'chip new' }, 'new'));
+  const changed = el('span', { class: 'chip changed', hidden: true });
+  d.append(el('summary', {}, el('h2', {}, s.title || key), ...chips, changed),
+    el('div', { class: 'section-body' },
+      s.description ? el('p', { class: 'desc' }, s.description) : null,
+      ...fields([key], s)));
+  d.dataset.key = key;
+  d._changed = changed;
+  return d;
+}
+
+function fields(path, s) {
+  return Object.entries(s.properties || {}).map(([k, sub]) => {
+    const r = resolve(sub);
+    const p = [...path, k];
+    if (getPath(values, p) === undefined && getPath(original, p) === undefined) return null; // not in this view
+    if (kind(r) === 'object') {
+      return el('fieldset', { class: r['x-advanced'] ? 'adv' : '' },
+        el('legend', {}, r.title || k),
+        r.description ? el('p', { class: 'desc' }, r.description) : null,
+        ...fields(p, r));
+    }
+    return field(p, r);
+  });
+}
+
+function field(path, s, opts = {}) {
+  const k = kind(s);
+  const id = 'f_' + path.join('_');
+  const wrap = el('div', { class: 'field' + (s['x-advanced'] ? ' adv' : '') });
+  const name = el('div', { class: 'name' }, el('label', { for: id }, s.title || path[path.length - 1]),
+    s['x-advanced'] ? el('span', { class: 'adv-tag' }, 'advanced') : null,
+    isNew(path) && !isNew([path[0]]) ? el('span', { class: 'chip new' }, 'new') : null,
+    s.description ? el('small', {}, s.description) : null);
+  const control = el('div', {});
+  const value = getPath(values, path);
+  const set = (v, err) => {
+    setPath(values, path, v);
+    const key = path.join('.');
+    if (err) errors.set(key, err); else errors.delete(key);
+    wrap.classList.toggle('invalid', !!err);
+    errBox.textContent = err || '';
+    wrap.classList.toggle('changed', !same(getPath(values, path), getPath(original, path)));
+    refreshStatus();
+  };
+  var errBox = el('p', { class: 'error' }); // var: used by the string branch's initial check below
+
+  if (k === 'boolean') {
+    control.append(el('input', { type: 'checkbox', id, checked: !!value, onchange: (e) => set(e.target.checked) }));
+  } else if (k === 'number') {
+    control.append(el('input', { type: 'number', id, value: value ?? '', min: s.minimum, step: s.type === 'integer' ? 1 : 'any',
+      oninput: (e) => {
+        const v = e.target.value === '' ? NaN : Number(e.target.value);
+        let err = null;
+        if (Number.isNaN(v)) err = 'Enter a number.';
+        else if (s.type === 'integer' && !Number.isInteger(v)) err = 'Enter a whole number.';
+        else if (s.minimum !== undefined && v < s.minimum) err = `At least ${s.minimum}.`;
+        set(Number.isNaN(v) ? value : v, err);
+      } }));
+  } else if (k === 'enum') {
+    // "x-enumNames" (same order as "enum") = what the user sees; the value stays the code.
+    const names = Array.isArray(s['x-enumNames']) ? s['x-enumNames'] : [];
+    control.append(el('select', { id, onchange: (e) => set(e.target.value) },
+      s.enum.map((opt, i) => el('option', { value: opt, selected: opt === value }, names[i] || (opt === '' ? '(none)' : opt)))));
+  } else if (k === 'string') {
+    // Schema "pattern" (e.g. a custom dialog's name): checked on every key
+    // stroke and right away, so an empty new item blocks the download/package.
+    // "x-patternHint" in the schema says what is expected; the default fits names.
+    const patternError = (v) => (s.pattern && !new RegExp(s.pattern).test(v || '')
+      ? (s['x-patternHint'] || 'Letters, digits, - and _ only, starting with a letter (no spaces).') : null);
+    // "format": "css-selector": the browser itself says whether it is a valid selector.
+    const selectorError = (v) => {
+      if (s.format !== 'css-selector' || !v || !v.trim()) return null;
+      try { document.createDocumentFragment().querySelector(v); return null; } catch { return 'Not a valid CSS selector.'; }
+    };
+    control.append(el('input', { type: s.format === 'uri' ? 'url' : 'text', id, value: value ?? '',
+      spellcheck: s.format === 'css-selector' ? 'false' : null,
+      oninput: (e) => set(e.target.value, s.format === 'uri' && e.target.value && !isUrl(e.target.value)
+        ? 'Enter a full web address (https://…).' : patternError(e.target.value) || selectorError(e.target.value) || (opts.check ? opts.check(e.target.value) : null)) }));
+    const initial = patternError(value) || selectorError(value) || (opts.check ? opts.check(value) : null);
+    if (initial) { errors.set(path.join('.'), initial); errBox.textContent = initial; wrap.classList.add('invalid'); }
+  } else if (k === 'color') {
+    // COLOUR: the browser's colour picker + the code (#rrggbb) to type or paste
+    // + Clear. Empty = "not set" (the feature then uses its default, e.g. the
+    // theme colour) — a colour input itself cannot be empty, hence the text box.
+    const ok = (v) => !v || /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v);
+    const full = (v) => (/^#[0-9a-f]{3}$/i.test(v) ? '#' + v.slice(1).split('').map((c) => c + c).join('') : v);
+    const swatch = el('input', { type: 'color', value: ok(value) && value ? full(value) : '#ffffff', 'aria-label': `${s.title || ''} — pick` });
+    const code = el('input', { type: 'text', id, value: value ?? '', placeholder: 'not set', spellcheck: 'false' });
+    const unset = el('span', { class: 'unset' }, value ? '' : 'not set — default colour');
+    const apply = (v) => {
+      code.value = v; unset.textContent = v ? '' : 'not set — default colour';
+      if (ok(v) && v) swatch.value = full(v);
+      set(v, ok(v) ? null : (s['x-patternHint'] || 'A colour as #RRGGBB.'));
+    };
+    swatch.addEventListener('input', () => apply(swatch.value));
+    code.addEventListener('input', () => apply(code.value.trim()));
+    control.append(el('div', { class: 'colour' }, swatch, code,
+      el('button', { type: 'button', class: 'link', onclick: () => apply('') }, 'Clear'), unset));
+  } else if (k === 'code') {
+    // CODE (e.g. a widget's embed code): kept exactly as pasted — never run or
+    // cleaned here; the module runs it in Primo (see ec-custom-dialogs.component.ts).
+    control.append(el('textarea', { class: 'json', id, rows: 6, spellcheck: 'false', placeholder: 'Paste the embed code here (optional)',
+      oninput: (e) => set(e.target.value) }, value ?? ''));
+  } else if (k === 'date') {
+    // DATE: the browser's date picker; the value is "YYYY-MM-DD" ("" = no date).
+    control.append(el('input', { type: 'date', id, value: value ?? '', oninput: (e) => set(e.target.value) }),
+      el('button', { type: 'button', class: 'link', style: 'margin-left:.5rem', onclick: (e) => {
+        e.target.previousElementSibling.value = ''; set('');
+      } }, 'Clear'));
+  } else if (k === 'objlist') {
+    control.append(objectList(path, s));
+    wrap.classList.add('wide');
+  } else if (k === 'list') {
+    control.append(el('textarea', { id, rows: Math.max(2, (value || []).length + 1),
+      oninput: (e) => set(e.target.value.split('\n').map((x) => x.trim()).filter(Boolean)) }, (value || []).join('\n')),
+      el('p', { class: 'desc', style: 'margin:.2rem 0 0' }, 'One per line.'));
+  } else if (k === 'localised') {
+    // One input per language. HTML messages (schema "format": "html") get the
+    // WYSIWYG editor from rich-text.js; plain texts a one-line input.
+    const html = s.format === 'html';
+    const current = () => getPath(values, path) || {};
+    for (const lang of languages) {
+      const v = current()[lang.code] ?? '';
+      const label = `${s.title || ''} (${lang.name})`;
+      const update = (text) => {
+        const next = { ...current() };
+        if (text === '' && lang.code !== 'en') delete next[lang.code]; else next[lang.code] = text;
+        // English is the fallback for every language: warn when it is empty while others are not.
+        const err = !next.en && Object.keys(next).some((c) => c !== 'en' && next[c]) ? 'English is used whenever a language is missing — fill it in too.' : null;
+        set(next, err);
+      };
+      let input;
+      if (html) {
+        input = el('textarea', { class: 'html', 'aria-label': label }, v);
+        const holder = el('div', {}, input);
+        control.append(el('div', { class: 'lang' }, el('span', {}, lang.name), holder));
+        if (window.EcRichText) window.EcRichText.create(input, { onChange: update });
+        else input.addEventListener('input', () => update(input.value)); // rich-text.js missing: plain HTML box
+      } else {
+        input = el('input', { type: 'text', value: v, 'aria-label': label });
+        input.addEventListener('input', () => update(input.value));
+        control.append(el('div', { class: 'lang' }, el('span', {}, lang.name), el('div', {}, input)));
+      }
+    }
+  } else {
+    // Free-form structures (maps, nested lists): JSON — advanced users only.
+    control.append(el('textarea', { class: 'json', id,
+      oninput: (e) => { try { set(JSON.parse(e.target.value)); } catch { set(value, 'Not valid JSON — check commas, quotes and brackets.'); } } },
+      JSON.stringify(value, null, 2)));
+  }
+  control.append(errBox);
+  wrap.append(name, control);
+  wrap.classList.toggle('changed', !same(value, getPath(original, path)));
+  return wrap;
+}
+
+/* --------------------------------------------------------------- status */
+function changedCount() {
+  let n = 0;
+  (function walk(a, b) {
+    if (a && b && typeof a === 'object' && typeof b === 'object' && !Array.isArray(a) && !Array.isArray(b)) {
+      for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) walk(a[k], b[k]);
+    } else if (!same(a, b)) n++;
+  })(values, original);
+  return n;
+}
+function refreshStatus() {
+  const n = changedCount() + (same(languages, originalLanguages) ? 0 : 1) + librariesChanged();
+  if (KIT) $('#download').textContent = 'Make package';
+  else $('#download').textContent = n ? `Download settings.js (${n} change${n === 1 ? '' : 's'})` : 'Download settings.js';
+  document.querySelectorAll('details.section').forEach((d) => {
+    if (!d._changed) return; // the Languages panel has no per-section counter
+    const c = d.dataset.key === '__libraries' ? librariesChanged() : sameSection(d.dataset.key);
+    d._changed.hidden = c === 0;
+    d._changed.textContent = `${c} changed`;
+  });
+  if (errors.size) setStatus(`${errors.size} field${errors.size === 1 ? ' needs' : 's need'} attention before ${KIT ? 'making the package' : 'downloading'}.`, true);
+  else if (KIT) setStatus(maker.done && !n ? `${maker.done} downloaded — upload it in Alma.` : 'Check the settings, then click "Make package".');
+  else setStatus(n ? 'Not downloaded yet.' : 'No changes yet.');
+}
+function sameSection(key) {
+  let n = 0;
+  (function walk(a, b) {
+    if (a && b && typeof a === 'object' && typeof b === 'object' && !Array.isArray(a) && !Array.isArray(b)) {
+      for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) walk(a[k], b[k]);
+    } else if (!same(a, b)) n++;
+  })(values[key], original[key]);
+  return n;
+}
+function setStatus(text, isError) { const s = $('#status'); s.textContent = text; s.className = 'status' + (isError ? ' err' : ''); }
+function applyAdvanced() { document.body.classList.toggle('advanced-hidden', !$('#advanced').checked); }
+function isUrl(v) { try { const u = new URL(v); return u.protocol === 'https:' || u.protocol === 'http:'; } catch { return false; } }
+function formatDate(iso) { const d = iso ? new Date(iso) : null; return d && !isNaN(d) ? d.toLocaleString() : 'unknown date'; }
+
+/* -------------------------------------------------------------- download */
+/**
+ * settings.js text — the same layout as scripts/config-generate.cjs
+ * (writeSettingsJs), so all writers produce the same file. `how` = the
+ * "to change them" sentence for the header comment.
+ */
+function settingsJsText(out, how) {
+  return `/*\n  Settings of the ${out.label || out.view} view (${out.vid}).\n` +
+    `  Read by the custom module every time a page opens; values here override the\n` +
+    `  ones built into the package. ${how}\n` +
+    `  Do not edit by hand unless you know JSON.\n` +
+    `  Saved by: ${out.savedBy}, ${out.savedAt}\n*/\n` +
+    `window.EC_SETTINGS = ${JSON.stringify(out, null, 2)};\n`;
+}
+
+function download() {
+  if (KIT) return makePackage(); // maker mode: the button makes the whole package
+  if (!envelope) return;
+  if (errors.size) { setStatus(`Fix the ${errors.size} field(s) marked in red first:\n${[...errors.keys()].join(', ')}`, true); return; }
+  const out = { ...envelope, format: envelope.format || 1, savedAt: new Date().toISOString(), savedBy: 'settings editor', languages, values };
+  if (libraries) out.libraries = libraries; // else keep whatever the file had (none)
+  const text = settingsJsText(out,
+    'To change them, use the settings editor in this\n' +
+    '  package — assets/editor/index.html — then replace this file with the one it\n' +
+    '  downloads and upload the package again.');
+  const a = el('a', { href: URL.createObjectURL(new Blob([text], { type: 'text/javascript' })), download: 'settings.js' });
+  document.body.append(a); a.click(); a.remove();
+  setStatus('Downloaded. Now replace assets/settings.js in the package with it and upload the package (see "How to put the new settings live").');
+}
+
+/* ================================================================== MAKER
+   Noob kit only ("START HERE.html" next to maker/kit.js). Builds a complete
+   customization package from:
+     - the package the library downloaded from Alma (their files: custom.css,
+       homepage, header/footer, images … and assets/settings.js if the kit was
+       installed before) — or nothing, for a brand-new package;
+     - our code from the kit (KIT.files, replaced as a whole on every update);
+     - the settings edited on this page (→ assets/settings.js).
+   Everything happens in this browser (zip.js); nothing is uploaded anywhere.
+
+   WHAT IS "OURS" in a package = KIT.coreRule (built by scripts/build-noob.cjs):
+   the compiled .js/.css files at the top of the package folder (except
+   custom.css) and assets/core/. Those are REMOVED before the kit's files are
+   added, so files of an older version cannot pile up (their names change with
+   every build). Everything else is kept untouched.
+
+   ANOTHER CUSTOM MODULE: NDE loads one custom module per view. A package with
+   a remoteEntry.js but without our assets/core/version.js was made by someone
+   else (a developer, a vendor — or Ex Libris' empty template). The library must
+   tick "replace it" before a package is made, because theirs is removed.
+   ========================================================================= */
+const maker = {
+  sourceName: '',          // the zip the library dropped ('' = new package, none dropped)
+  files: new Map(),        // their package: path inside the package folder → Uint8Array
+  installed: null,         // { version, builtAt } of the kit already in their package, or null
+  foreignModule: false,    // remoteEntry.js present but not ours
+  replaceConfirmed: false, // "replace it" ticked
+  settingsFrom: '',        // where the settings came from (shown in the summary)
+  newPaths: new Set(),     // settings absent from their settings.js (dot paths) → "new" tag
+  vid: '',                 // INST:VIEW
+  done: '',                // file name of the last package made ('' = none yet)
+};
+
+/** Is this setting new for this package (not in its settings.js)? Always false outside maker mode. */
+function isNew(path) { return !!KIT && maker.newPaths.has(path.join('.')); }
+
+/** Plain object (not array/null)? */
+const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+const VID_RE = /^[A-Za-z0-9_]+:[A-Za-z0-9_-]+$/;
+
+/** First screen: what this is, the steps, and where to drop the zip. */
+function makerStart() {
+  Object.assign(maker, { sourceName: '', files: new Map(), installed: null, foreignModule: false, replaceConfirmed: false,
+    settingsFrom: '', newPaths: new Set(), vid: '', done: '' });
+  envelope = null; values = null; original = null;
+  errors.clear();
+  document.title = 'Package maker — NOOB: NDE Out Of the Box';
+  $('#title').textContent = 'Package maker — NOOB: NDE Out Of the Box';
+  $('#subtitle').textContent = `EC Library NDE kit · version ${KIT.version}`;
+  $('#open').textContent = 'Start again';
+  $('#download').textContent = 'Make package';
+  $('#download').disabled = true;
+  setStatus('Drop the customization package from Alma to begin.');
+
+  if (!window.EcZip || !EcZip.supported()) {
+    $('#main').replaceChildren(el('div', { class: 'maker-box warn' },
+      el('h2', {}, 'This browser is too old'),
+      el('p', {}, 'The package maker needs a recent Microsoft Edge, Google Chrome or Firefox (2023 or later). Open "START HERE.html" in one of those.')));
+    return;
+  }
+
+  const zone = el('div', { class: 'drop', tabindex: '0', role: 'button', 'aria-label': 'Choose the package zip' },
+    el('p', {}, el('strong', {}, 'Drop the zip you downloaded from Alma here')),
+    el('p', { class: 'desc' }, 'or click to choose it. Do not unzip it first.'));
+  const input = el('input', { type: 'file', accept: '.zip,application/zip', hidden: true,
+    onchange: (e) => { if (e.target.files[0]) loadPackageZip(e.target.files[0]); e.target.value = ''; } });
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+  zone.addEventListener('dragover', (e) => e.preventDefault());
+  zone.addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) loadPackageZip(e.dataTransfer.files[0]); });
+
+  $('#main').replaceChildren(
+    el('div', { class: 'maker-box' },
+      el('h2', {}, 'What this does'),
+      el('p', { style: 'margin:0' }, 'It adds the EC Library features to your Primo NDE view — or updates them — and lets you set them up, ',
+        'without any technical tools. You end up with one zip file to upload in Alma. Your own files in the package ',
+        '(styles, home page, header, footer, images) are kept as they are.')),
+    el('div', { class: 'maker-box' },
+      el('h2', {}, 'Steps'),
+      el('ol', { class: 'steps' },
+        el('li', {}, el('strong', {}, 'Download your view\'s customization package from Alma. '),
+          'In Alma, open your Primo NDE view, tab "Manage Customization Package". Under "Download Package", click "Download" ',
+          'next to "Current View Customization Package" (a zip file). If the page says "No Package Loaded", ',
+          'use "Start without a package" below.'),
+        el('li', {}, el('strong', {}, 'Drop that zip below. '), 'The page reads it; nothing is sent anywhere.'),
+        el('li', {}, el('strong', {}, 'Check the settings, then click "Make package" '), '(bottom right). A new zip is downloaded.'),
+        el('li', {}, el('strong', {}, 'Upload the new zip in Alma: '), 'same tab, "Upload Package", choose the zip next to ',
+          '"Customization Package" and click "Upload". Primo shows the changes after a few minutes (reload the page).')),
+      el('p', { class: 'desc' }, 'To change settings later, or to install a newer kit: do the same again with the package from Alma.'),
+      el('p', { class: 'desc' }, 'Home page features (last search, loans due, account counts, parts for guests, signed-in visitors or your network), ',
+        'and a header and footer: see the examples in the kit\'s "examples" folder and README.txt, "Your home page". ',
+        'Colours follow the Color Theme picked for the view in Alma.')),
+    zone, input,
+    el('p', {}, el('button', { type: 'button', class: 'link', onclick: () => startWithoutPackage() }, 'Start without a package'),
+      ' — for a view that has no customization package yet.'));
+}
+
+/** Read the dropped zip and work out what is in it. */
+async function loadPackageZip(file) {
+  setStatus(`Reading ${file.name}…`);
+  let entries;
+  try { entries = await EcZip.read(file); }
+  catch (e) { setStatus(`Could not open ${file.name}: ${e.message}`, true); return; }
+  // Leftovers of macOS zipping are never part of a package.
+  entries = entries.filter((f) => !f.name.startsWith('__MACOSX/') && !/(^|\/)\.DS_Store$/.test(f.name));
+  if (!entries.length) { setStatus(`${file.name} is empty.`, true); return; }
+
+  // Alma packages hold one folder, <INST>-<VIEW>/. Tolerate zips made of the
+  // folder's CONTENT (files at the top) too: then the folder name comes from the view code.
+  const tops = new Set(entries.map((f) => f.name.split('/')[0]));
+  const root = tops.size === 1 && entries.every((f) => f.name.includes('/')) ? [...tops][0] : '';
+  const files = new Map(entries.map((f) => [root ? f.name.slice(root.length + 1) : f.name, f.data]));
+
+  // A zip of a whole kit or of anything else: refuse early, with a hint.
+  if (files.has('START HERE.html') || files.has('maker/kit.js')) {
+    setStatus('That is the kit itself. Drop the customization package downloaded from Alma.', true); return;
+  }
+
+  const text = (p) => new TextDecoder('utf-8').decode(files.get(p));
+  let installed = null;
+  if (files.has('assets/core/version.js')) {
+    try { const t = text('assets/core/version.js'); installed = JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)); }
+    catch { installed = { version: 'unknown' }; }
+  }
+  let env = null;
+  if (files.has('assets/settings.js')) {
+    try { env = parseSettings(text('assets/settings.js')); }
+    catch (e) { setStatus(`The settings in this package could not be read (${e.message}); starting from the default settings.`, true); }
+  }
+
+  // View code: settings.js > folder name "INST-VIEW" > zip name "INST-VIEW.zip".
+  const fromName = (n) => { const m = /^([A-Za-z0-9_]+)-([A-Za-z0-9_-]+)$/.exec(n || ''); return m ? `${m[1]}:${m[2]}` : ''; };
+  const vid = (env && VID_RE.test(env.vid || '') && env.vid) || fromName(root) || fromName(file.name.replace(/\.zip$/i, '').replace(/\s*\(\d+\)$/, '')) || '';
+
+  Object.assign(maker, { sourceName: file.name, files, installed, foreignModule: files.has('remoteEntry.js') && !installed,
+    replaceConfirmed: false, done: '' });
+  maker.settingsFrom = env ? `from your package (last saved ${formatDate(env.savedAt)})` : 'default settings (first installation)';
+  begin(env, vid);
+}
+
+function startWithoutPackage() {
+  Object.assign(maker, { sourceName: '', files: new Map(), installed: null, foreignModule: false, replaceConfirmed: false, done: '',
+    settingsFrom: 'default settings (new package)' });
+  begin(null, '');
+}
+
+/** Settings = kit defaults, with the package's own values on top; then show the form. */
+function begin(env, vid) {
+  maker.newPaths = new Set();
+  if (env) migrateLegacySettings(env.values); // older package: today's shape first
+  const merged = env ? mergeDefaults(KIT.defaults, env.values, []) : clone(KIT.defaults);
+  if (!env) maker.newPaths.clear(); // first installation: everything is "new", no point in tagging it
+  languages = env && Array.isArray(env.languages) && env.languages.length ? clone(env.languages) : clone(KIT.languages);
+  // Texts in languages the package does not use (defaults are in en/fr/de) are dropped.
+  const codes = languages.map((l) => l.code);
+  (function strip(node) {
+    if (!isObj(node)) return;
+    const keys = Object.keys(node);
+    if (keys.length && keys.includes('en') && keys.every((k) => /^[a-z]{2}$/.test(k))) { for (const k of keys) if (!codes.includes(k)) delete node[k]; return; }
+    Object.values(node).forEach(strip);
+  })(merged);
+
+  maker.vid = vid;
+  envelope = { format: 1, vid, view: vid.split(':')[1] || '', label: vid.split(':')[1] || '', values: merged };
+  original = clone(merged);
+  values = merged;
+  originalLanguages = clone(languages);
+  libraries = null; originalLibraries = null; // return labels are not part of the noob kit
+  errors.clear();
+  if (!VID_RE.test(vid)) errors.set('view code', 'Enter the view code.');
+  $('#download').disabled = false;
+  render();
+  if (errors.has('view code')) setStatus('Enter the view code at the top (as in the Primo address after vid=).', true);
+  else setStatus(maker.foreignModule ? 'Read the warning at the top before making the package.' : 'Check the settings, then click "Make package".');
+}
+
+/**
+ * Kit defaults with the package's values on top. Only settings the kit knows
+ * are kept (an old package may have settings that no longer exist); a value
+ * of the wrong type falls back to the default. Settings missing from the
+ * package are collected in maker.newPaths ("new" tag in the form).
+ */
+function mergeDefaults(def, have, path) {
+  if (have === undefined) { if (path.length) maker.newPaths.add(path.join('.')); return clone(def); }
+  if (isObj(def)) {
+    if (!isObj(have)) return clone(def);
+    const out = {};
+    for (const k of Object.keys(def)) out[k] = mergeDefaults(def[k], have[k], [...path, k]);
+    // Translated texts: keep languages the package has and the defaults do not (e.g. "it").
+    const isText = Object.keys(def).length && Object.keys(def).every((k) => /^[a-z]{2}$/.test(k));
+    if (isText) for (const [k, v] of Object.entries(have)) if (!(k in out) && /^[a-z]{2}$/.test(k) && typeof v === 'string') out[k] = v;
+    return out;
+  }
+  if (Array.isArray(def) ? Array.isArray(have) : typeof def === typeof have) return clone(have);
+  return clone(def);
+}
+
+/** The boxes above the settings: summary, view code, warnings, next steps. */
+function makerPanels() {
+  const panels = [];
+  const kept = [...maker.files.keys()].filter((p) => !isCorePath(p) && p !== 'assets/settings.js');
+  const kit = maker.installed
+    ? (maker.installed.version === KIT.version ? `version ${KIT.version} is installed — only the settings change`
+      : `version ${maker.installed.version} is installed → will be updated to ${KIT.version}`)
+    : `not installed yet → version ${KIT.version} will be installed`;
+
+  if (maker.done) {
+    panels.push(el('div', { class: 'maker-box ok' },
+      el('h2', {}, `Done: ${maker.done} is in your Downloads folder`),
+      el('ol', { class: 'steps' },
+        el('li', {}, 'In Alma, open the view ', el('code', {}, maker.vid), ', tab "Manage Customization Package" › "Upload Package": choose ',
+          el('strong', {}, maker.done), ' and click "Upload".'),
+        el('li', {}, 'Wait a few minutes, then open the view in Primo and reload the page (Ctrl+F5).'),
+        el('li', {}, 'Something wrong? Upload the zip you downloaded from Alma at the start again — that restores the previous state.')),
+      el('p', { class: 'desc' }, 'Changed your mind about a setting? Change it below and click "Make package" again.')));
+  }
+
+  const vidInput = el('input', { type: 'text', value: maker.vid, placeholder: 'e.g. 44ABC_INST:MAIN', 'aria-label': 'View code', spellcheck: 'false' });
+  const vidErr = el('p', { class: 'error' }, errors.get('view code') || '');
+  vidInput.addEventListener('input', () => {
+    const v = vidInput.value.trim();
+    maker.vid = v; envelope.vid = v; envelope.view = envelope.label = v.split(':')[1] || '';
+    const err = VID_RE.test(v) ? '' : 'Two parts separated by a colon: institution code, then view code (e.g. 44ABC_INST:MAIN).';
+    if (err) errors.set('view code', err); else errors.delete('view code');
+    vidErr.textContent = err;
+    refreshStatus();
+  });
+  panels.push(el('div', { class: 'maker-box' },
+    el('h2', {}, 'Your package'),
+    el('dl', {},
+      el('dt', {}, 'Package from Alma'), el('dd', {}, maker.sourceName || 'none — a new package is made'),
+      el('dt', {}, 'Your own files kept'), el('dd', {}, kept.length ? `${kept.length} (styles, pages, images …)` : 'none'),
+      el('dt', {}, 'EC Library kit'), el('dd', {}, kit),
+      el('dt', {}, 'Settings'), el('dd', {}, maker.settingsFrom,
+        maker.newPaths.size ? ` — ${maker.newPaths.size} new setting${maker.newPaths.size === 1 ? '' : 's'} in this version, marked "new" below` : '')),
+    el('div', { class: 'maker-vid' },
+      el('label', {}, el('strong', {}, 'View code '), el('span', { class: 'desc' }, '(as in the Primo address after vid=)')),
+      vidInput),
+    vidErr));
+
+  if (maker.foreignModule) {
+    const box = el('input', { type: 'checkbox', id: 'replace-module', checked: maker.replaceConfirmed,
+      onchange: (e) => { maker.replaceConfirmed = e.target.checked; refreshStatus(); } });
+    panels.push(el('div', { class: 'maker-box warn', id: 'foreign' },
+      el('h2', {}, 'This package already contains a custom module'),
+      el('p', {}, 'Primo NDE can run only one custom module per view. The package you dropped has one that was not made with this kit ',
+        '(file remoteEntry.js). Making the package REMOVES it and puts the EC Library kit in its place.'),
+      el('p', {}, 'If nobody built anything for your view, this is most likely the empty example that Ex Libris provides — then replacing it is fine. ',
+        'If a developer or a company made it for you, ask them first: their features would disappear.'),
+      el('p', {}, box, ' ', el('label', { for: 'replace-module' }, el('strong', {}, 'Replace it with the EC Library kit')))));
+  }
+  return panels;
+}
+
+/** Part of OUR code (removed before the kit's files are added)? Path is inside the package folder. */
+function isCorePath(p) {
+  const rule = KIT.coreRule;
+  return (!p.includes('/') && new RegExp(rule.rootFiles).test(p)) || rule.folders.some((f) => p.startsWith(f));
+}
+
+/** Starter custom.css for a package that has none: the library's own styles go here. */
+const STARTER_CSS =
+  '/* custom.css — YOUR OWN styles for this Primo view.\n' +
+  '   The EC Library package maker never changes this file once it exists.\n' +
+  '   Example — another colour for the kit\'s links and badges:\n' +
+  '     :root { --ec-blue: #7a003c; }\n' +
+  '*/\n';
+
+async function makePackage() {
+  if (!values) return;
+  if (errors.size) { setStatus(`Fix the field(s) marked in red first: ${[...errors.keys()].join(', ')}`, true); return; }
+  if (maker.foreignModule && !maker.replaceConfirmed) {
+    setStatus('Tick "Replace it with the EC Library kit" in the warning at the top first, or stop here.', true);
+    $('#foreign')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  const folder = maker.vid.replace(':', '-');
+  setStatus('Making the package…');
+  $('#download').disabled = true;
+  try {
+    const out = [];
+    for (const [p, data] of maker.files) {
+      if (p === 'assets/settings.js' || isCorePath(p)) continue; // old settings / old or foreign code
+      out.push({ name: `${folder}/${p}`, data });
+    }
+    for (const [p, b64] of Object.entries(KIT.files)) {
+      out.push({ name: `${folder}/${p}`, data: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)) });
+    }
+    if (!maker.files.has('custom.css')) out.push({ name: `${folder}/custom.css`, data: STARTER_CSS });
+    const env = { ...envelope, format: 1, vid: maker.vid, savedAt: new Date().toISOString(), savedBy: 'package maker',
+      kitVersion: KIT.version, languages, values };
+    out.push({ name: `${folder}/assets/settings.js`, data: settingsJsText(env,
+      'To change them, run the package maker of the EC Library NDE kit ("START HERE.html")\n' +
+      '  again with the package downloaded from Alma.') });
+
+    const blob = await EcZip.write(out);
+    const name = `${folder}.zip`;
+    const a = el('a', { href: URL.createObjectURL(blob), download: name });
+    document.body.append(a); a.click(); a.remove();
+    maker.done = name;
+    original = clone(values); originalLanguages = clone(languages);
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setStatus(`${name} downloaded — upload it in Alma (see the green box at the top).`);
+  } catch (e) {
+    setStatus(`The package could not be made: ${e.message}`, true);
+  } finally {
+    $('#download').disabled = false;
+  }
+}
+
+/* ------------------------------------------------------------------ boot */
+$('#advanced').addEventListener('change', applyAdvanced);
+$('#download').addEventListener('click', download);
+$('#open').addEventListener('click', () => (KIT ? makerStart() : $('#file').click())); // maker: "Start again"
+$('#file').addEventListener('change', (e) => { if (e.target.files[0]) readFile(e.target.files[0]); e.target.value = ''; });
+window.addEventListener('beforeunload', (e) => {
+  if (KIT ? values && !maker.done : values && (changedCount() || librariesChanged() || !same(languages, originalLanguages))) e.preventDefault();
+});
+start();
+</script>
+</body>
+</html>

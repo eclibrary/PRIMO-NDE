@@ -44,7 +44,7 @@
  *   - Alma: the language must be enabled for the view (Discovery > Display
  *     Configuration > Languages / the view's Language settings), otherwise NDE
  *     never sends lang=<code>. NDE's own labels are translated in Alma too.
- *   - The return-label page (src/views/finder/assets/return-label/label.js) has
+ *   - The return-label page (src/assets/return-label/label.js) has
  *     its own small text table; a language missing there shows English.
  *   - dist/ build output: rebuild after a change.
  */
@@ -226,7 +226,10 @@ function applyLanguages(next, { dryRun = false } = {}) {
   for (const d of deletes) lines.push(`  delete ${rel(d)}`);
 
   // Settings files: count what would be stripped.
-  const settingsFiles = [GLOBAL_FILE, ...(fs.existsSync(VIEWS_DIR) ? fs.readdirSync(VIEWS_DIR).filter((f) => f.endsWith('.json')).map((f) => path.join(VIEWS_DIR, f)) : [])];
+  // config/noob.json = the neutral defaults of the noob zip (scripts/build-noob.cjs);
+  // its texts follow the same language list, or the noob build would fail validation.
+  const NOOB_FILE = path.join(CONFIG_DIR, 'noob.json');
+  const settingsFiles = [GLOBAL_FILE, ...(fs.existsSync(NOOB_FILE) ? [NOOB_FILE] : []), ...(fs.existsSync(VIEWS_DIR) ? fs.readdirSync(VIEWS_DIR).filter((f) => f.endsWith('.json')).map((f) => path.join(VIEWS_DIR, f)) : [])];
   const stripped = [];
   if (removed.length) {
     for (const f of settingsFiles) {

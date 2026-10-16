@@ -11,6 +11,12 @@
 // On narrow screens the pill wraps under the credits.
 // White on #004494 gives a contrast of about 9:1; keyboard focus shows an
 // EC-yellow ring.
+//
+// COLOURS come from three variables, so the same rules serve both builds:
+//   --ec-blue     bar background          (EC views: EC blue, pinned in _shared-theme.scss;
+//   --ec-on-blue  text/links on the bar    noob kit: the Alma colour theme, src/noob/core/theme.scss)
+//   --ec-focus    keyboard focus ring on the bar
+// The fallbacks after the commas are the EC values, used when a variable is unset.
 // =============================================================================
 
 // WHY THE !important AND DOUBLE CLASSES: NDE's global typography wins over
@@ -25,8 +31,8 @@
   align-items: center !important;
   justify-content: space-between;
   gap: .25rem 1.5rem;
-  background: #004494 !important;
-  color: #fff !important;
+  background: var(--ec-blue, #004494) !important;
+  color: var(--ec-on-blue, #fff) !important;
   padding: .375rem 1rem !important;
   font-size: .8125rem !important;
   line-height: 1.4 !important;
@@ -42,14 +48,14 @@
 
 // All header links: white, underlined; thicker underline on hover.
 .ec-header a.ec-header__link {
-  color: #fff !important;
+  color: var(--ec-on-blue, #fff) !important;
   font-size: inherit !important;
   text-decoration: underline !important;
   text-underline-offset: 2px;
 
   &:hover { text-decoration-thickness: 2px; }
   &:focus-visible {
-    outline: 2px solid #ffd617;   // EC yellow, visible on the blue bar
+    outline: 2px solid var(--ec-focus, #ffd617);   // EC yellow, visible on the blue bar
     outline-offset: 2px;
     border-radius: 2px;
   }
@@ -60,14 +66,14 @@
 .ec-header a.ec-header__privacy {
   white-space: nowrap;
   padding: .125rem .75rem !important;
-  border: 1px solid rgba(255, 255, 255, .85) !important;
+  border: 1px solid color-mix(in srgb, var(--ec-on-blue, #fff) 85%, transparent) !important;
   border-radius: 999px !important;
   line-height: 1.4 !important;
   text-decoration: none !important;
 
   &:hover {
-    background: #fff !important;
-    color: #004494 !important;
+    background: var(--ec-on-blue, #fff) !important;
+    color: var(--ec-blue, #004494) !important;
     text-decoration: none !important;
   }
   &:focus-visible { border-radius: 999px; }
@@ -94,7 +100,7 @@ html.ec-kiosk .ec-header [data-ec-kiosk] {
   margin-left: auto;
   padding: .125rem .75rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, .16); // light tint: reads as a status, not a link
+  background: color-mix(in srgb, var(--ec-on-blue, #fff) 16%, transparent); // light tint: reads as a status, not a link
   white-space: nowrap;
 }
 .ec-header .ec-header__kiosk .material-symbols-outlined {

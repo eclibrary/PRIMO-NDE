@@ -18,6 +18,7 @@
     "build": "node scripts/build.cjs",
     "build:all": "node scripts/build.cjs --all",
     "build:dev": "node scripts/build.cjs --dev",
+    "build:noob": "node scripts/build-noob.cjs",
     "test": "ng test",
     "run:all": "node node_modules/@angular-architects/module-federation/src/server/mf-dev-server.js"
   },

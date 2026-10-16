@@ -11,13 +11,10 @@
  * NOTE: the map holds ONE component per selector. Shared page-level features
  * therefore hang off EcSharedRootComponent rather than each taking a slot.
  */
-// Reading room (kiosk) mode: imported for its start-up code (URL switch +
-// idle reset), which must run on every page — see kiosk.ts.
-import './kiosk';
 import { EcSharedRootComponent } from './components/ec-shared-root/ec-shared-root.component';
 import { EcResourceSharingFormatComponent } from './components/ec-resource-sharing-format/ec-resource-sharing-format.component';
-import { EcNoResultsHelpComponent } from './components/ec-no-results-help/ec-no-results-help.component';
-import { EcLibraryOnTheGoComponent } from './components/ec-library-on-the-go/ec-library-on-the-go.component';
+import { EcPrintReturnLabelComponent } from './components/ec-print-return-label/ec-print-return-label.component';
+import { EcRecordLineComponent } from './components/ec-record-line/ec-record-line.component';
 // import { EcNoticeComponent } from './components/ec-notice/ec-notice.component';
 
 export const sharedSelectorMappings: Array<[string, any]> = [
@@ -27,20 +24,22 @@ export const sharedSelectorMappings: Array<[string, any]> = [
   // move this to a slot that exists everywhere — `nde-header` is a candidate to verify.
   ['nde-search-bar-container-after', EcSharedRootComponent],
 
-  // Resource-sharing request dialog: force the Format per view (config resourceSharing.*).
+  // Resource-sharing request dialog: force the Format (rules in the component, not in the settings).
   // Renders inside the request dialog; hostComponent is the Formly-driven form.
   ['nde-base-request-form-after', EcResourceSharingFormatComponent],
 
-  // "Library on the Go" badge at the end of a record's top line (results list
-  // and full record share the markup). nde-record-type is the first element of
-  // that line and exists on every record; the component moves itself to the end
-  // of the line. Settings: libraryOnTheGo.* (on/off, collection id, texts).
-  ['nde-record-type-after', EcLibraryOnTheGoComponent],
+  // Our additions at the end of a record's top line (results list and full
+  // record share the markup): collection badges ("Library on the Go"; settings
+  // libraryOnTheGo) and the "Free version" link (settings openAccess, Unpaywall).
+  // nde-record-type is the first element of that line and exists on every
+  // record; EcRecordLineComponent moves itself to the end of the line and hosts both.
+  ['nde-record-type-after', EcRecordLineComponent],
 
-  // "Still can't find it?" help under NDE's "No records found" message.
-  // nde-search-no-results only exists on a results page without hits.
-  // Settings: noResultsHelp.* (on/off, title, HTML text).
-  ['nde-search-no-results-after', EcNoResultsHelpComponent],
+  // "Print return label" link under each loan in the library card. Mounted in
+  // every view, but renders nothing unless the view's setting
+  // printReturnLabel.enabled ("Activate") is on — Find-eR only for now.
+  // hostComponent is the nde-loan-item instance (the library code is read from it).
+  ['nde-loan-item-after', EcPrintReturnLabelComponent],
 
   // Earlier placeholder that proved the module-federation pipeline. Kept for
   // reference; re-enable on a different slot if you still want it visible.

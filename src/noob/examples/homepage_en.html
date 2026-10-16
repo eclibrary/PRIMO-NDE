@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  EXAMPLE HOME PAGE — EC Library NDE kit
+  ============================================================================
+  An example of a Primo NDE home page (the part below the search box) that
+  uses the kit's home page features. Copy the blocks you want into YOUR OWN
+  home page, or start from this file.
+
+  WHERE YOUR HOME PAGE LIVES
+    In your customization package (the zip from Alma), in the folder
+        assets/homepage/
+    one file per language: homepage_en.html, homepage_fr.html, … NDE picks the
+    file of the page language and falls back to homepage_en.html.
+    NDE shows this file only when, in Alma, the view's Landing Page settings
+    use the HTML file (not the built-in configuration).
+
+  HOW TO CHANGE IT
+    1. Unzip the package from Alma.
+    2. Edit assets/homepage/homepage_en.html (Notepad is fine) — or replace it
+       with this file. Do the same for the other languages.
+    3. Zip the package folder again and drop that zip on "START HERE.html" as
+       usual (step 2 of the README) — the package maker keeps your home page.
+
+  WHAT THE KIT ADDS — every feature is a plain HTML element with a
+  data-ec-… attribute. No JavaScript here (NDE removes <script> anyway): the
+  kit finds the elements and fills or shows them.
+
+    data-ec-audience="guest" | "user"   show only to visitors who are NOT
+                                        signed in / who ARE signed in  (always on)
+    data-ec-network="ec" | "external"   show only on / outside your own network
+                                        (setting "Network check" must be on)
+    data-ec-kiosk="only" | "hide"       show only on / hide on reading room PCs
+                                        (kiosk mode — see section 4 below)
+    href="#<word>"  or  class="<word>"  opens the custom dialog whose "Opens from"
+                                        is that word (settings: "Custom dialogs"
+                                        — section 5)
+    data-ec-nav="…" data-ec-query="…"   link to a Primo page that keeps the
+                                        visitor's view and language     (always on)
+    data-ec-last-search …               "Pick up where you left off"   (always on)
+    data-ec-loans-due …                 "Loans due soon" line          (setting
+                                        "Loans due soon" must be on)
+    data-ec-account-counts              loans / saved records / saved searches
+                                        (setting "Account counts…" must be on)
+    data-ec-opening-hours               today's opening hours, "Open now"; with
+                                        ="week" the whole week (setting "Opening
+                                        hours" must be on — section 6)
+    href="#ec-opening-hours"            opens a pop-up with the whole week
+    data-ec-from="2026-12-20"           show only from / until a date
+    data-ec-until="2027-01-04"          (always on — section 7)
+
+  NOT IN THIS FILE: notice banners (coloured message bars on every page) and
+  collection badges / free version links (on the records) are set up entirely
+  in the package maker — no HTML needed.
+
+  The texts the kit writes (e.g. "2 loans", "Loans due within 7 days: 1") come
+  from the settings in the package maker, in every language. The texts written
+  in this file are yours — translate them in homepage_fr.html etc.
+
+  STYLES: the kit's own styles (assets/core/ec-core.css) already style the
+  blocks below. Change colours in your custom.css, e.g.
+      :root { --ec-blue: #7a003c; }
+
+  ICONS: <span class="material-symbols-outlined">NAME</span> with any icon
+  name from https://fonts.google.com/icons (e.g. schedule, help, mail).
+  ============================================================================
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library home page</title>
+</head>
+<body>
+<!-- main-landing-page / welcome / menu …: the class names of Ex Libris' own
+     home page template. Keep them: NDE's built-in styles and the kit's styles
+     rely on them. -->
+<main class="main-landing-page display-flex flex-column flex-layout-center-center">
+
+  <!-- ======================================================================
+       1. QUICK LINKS — tiles with an icon, for everyone
+       ======================================================================
+       A normal link (href="https://…") opens that address in a new tab.
+       A link with data-ec-nav stays inside Primo and keeps the visitor's view
+       and language: data-ec-nav = the Primo page, data-ec-query = extra
+       parameters ("name=value", several joined with &). Keep href="#". -->
+  <div class="menu-container width-100">
+    <ul role="list" class="menu width-100">
+      <li role="listitem">
+        <!-- External link: opens in a new tab. -->
+        <a href="https://www.example.org/opening-hours" target="_blank" rel="noopener">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">schedule</span></div>
+          <span>Opening hours</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <!-- Inside Primo: the library card, "Loans" section. -->
+        <a href="#" data-ec-nav="account" data-ec-query="section=loans">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span></div>
+          <span>My loans</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <!-- Inside Primo: the visitor's saved records (Primo calls them "favorites"). -->
+        <a href="#" data-ec-nav="account/favorites">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">push_pin</span></div>
+          <span>Saved records</span>
+        </a>
+      </li>
+
+      <!-- data-ec-audience on a tile: this one only for signed-in visitors. -->
+      <li role="listitem" data-ec-audience="user">
+        <a href="#" data-ec-nav="account/savedSearches">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">saved_search</span></div>
+          <span>Saved searches</span>
+        </a>
+      </li>
+
+      <!-- data-ec-network on a tile: only for visitors ON your network
+           (e.g. a staff intranet page that does not open from outside).
+           Needs the setting "Network check" switched on, with the address of
+           a page that only answers on your network. Outside the network, and
+           while the check is still running, the tile stays hidden. -->
+      <li role="listitem" data-ec-network="ec">
+        <a href="https://intranet.example.org/library" target="_blank" rel="noopener">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">lan</span></div>
+          <span>Library intranet</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ======================================================================
+       2. WELCOME BLOCKS — exactly ONE of these three is shown
+       ======================================================================
+         a. guest (not signed in)              data-ec-audience="guest"
+         b. signed in                          data-ec-audience="user"
+         c. "Pick up where you left off"       data-ec-last-search
+       (c) appears only when the visitor searched before in this browser, and
+       then REPLACES (a) or (b). Each block can hold the loans-due line and the
+       account counts; they only show when there is something to report. -->
+
+  <!-- ---- a. GUEST ------------------------------------------------------- -->
+  <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="guest">
+    <h2 class="welcome-title mat-headline-medium" role="heading" aria-level="2">Welcome</h2>
+    <span class="welcome-content">Sign in to see your loans and saved records.</span>
+    <!-- Sign-in button: the library card's overview page (Primo asks the
+         visitor to sign in first). -->
+    <a href="#" data-ec-nav="account" data-ec-query="section=overview" role="link">Sign in</a>
+
+    <!-- ACCOUNT COUNTS for guests: the numbers the visitor had at their last
+         signed-in visit in this browser ("You have: 2 loans · 5 saved
+         records"), so they see them before signing in again. Hidden when
+         there is nothing to show. LEAVE THE ELEMENT EMPTY — the kit fills it. -->
+    <nav class="ec-account-counts" data-ec-account-counts></nav>
+  </div>
+
+  <!-- ---- b. SIGNED IN --------------------------------------------------- -->
+  <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="user">
+    <h2 class="welcome-title mat-headline-medium" role="heading" aria-level="2">Welcome back</h2>
+    <span class="welcome-content">Your library card is one click away.</span>
+    <a href="#" data-ec-nav="account" data-ec-query="section=overview" role="link">Go to my library card</a>
+
+    <!-- LOANS DUE SOON: "Loans due within 7 days: 1" or, in red,
+         "Overdue loans: 2". Hidden when nothing is due. Keep the three parts:
+           data-ec-loans-due        the line (shown/hidden by the kit)
+           the icon                 any icon you like
+           data-ec-loans-due-text   the link; the kit writes the text
+         The number of days and the texts are settings ("Loans due soon"). -->
+    <p class="ec-loans-due" data-ec-loans-due>
+      <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
+      <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
+    </p>
+
+    <!-- ACCOUNT COUNTS for signed-in visitors: live numbers of loans, saved
+         records and saved searches, each a link to that page. Leave empty. -->
+    <nav class="ec-account-counts" data-ec-account-counts></nav>
+  </div>
+
+  <!-- ---- c. PICK UP WHERE YOU LEFT OFF ---------------------------------- -->
+  <!-- Shown when the visitor searched in this view before (remembered in this
+       browser for 30 days — setting "Pick up where you left off"). The kit:
+         - sets the link (data-ec-last-search-link) to that search,
+         - writes the search words into data-ec-last-search-terms,
+         - writes "(page 4)" into data-ec-last-search-page when they had
+           paged on, and leaves it empty otherwise.
+       Everything else in the block is yours. Loans due and account counts can
+       be repeated here, because this block replaces (a) and (b). -->
+  <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
+    <h2 class="welcome-title mat-headline-medium" role="heading" aria-level="2">Welcome back</h2>
+    <span class="welcome-content">Pick up where you left off:</span>
+    <a href="#" data-ec-last-search-link role="link">“<span data-ec-last-search-terms></span>” <span data-ec-last-search-page></span></a>
+
+    <p class="ec-loans-due" data-ec-loans-due>
+      <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
+      <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
+    </p>
+    <nav class="ec-account-counts" data-ec-account-counts></nav>
+  </div>
+
+  <!-- ======================================================================
+       3. MORE AUDIENCE AND NETWORK EXAMPLES — any element can carry them
+       ======================================================================
+       data-ec-audience and data-ec-network work on ANY element: a paragraph,
+       a link, a list item, a whole block. They can be combined (both must
+       match). They also work in your header and footer files
+       (assets/header-footer/). -->
+  <div class="announcements display-flex flex-column">
+    <header class="flex-column gap-1">
+      <h2 class="mat-title-medium" role="heading" aria-level="2">Good to know</h2>
+    </header>
+
+    <!-- Everyone (no attribute). -->
+    <p>The library is closed on public holidays.</p>
+
+    <!-- Guests only. -->
+    <p data-ec-audience="guest">New here? <a href="https://www.example.org/join" target="_blank" rel="noopener">Become a member</a>.</p>
+
+    <!-- Signed-in visitors only. -->
+    <p data-ec-audience="user">You can renew your loans from your
+      <a href="#" data-ec-nav="account" data-ec-query="section=loans">library card</a>.</p>
+
+    <!-- On your network only ("Network check" on). -->
+    <p data-ec-network="ec">You are on the organisation's network: e-books open without signing in.</p>
+
+    <!-- Outside your network only. Also shown while the check is running and
+         when "Network check" is off — so network-only content never flashes
+         up for outsiders. -->
+    <p data-ec-network="external">Outside the organisation's network? Sign in to read e-books.</p>
+
+    <!-- Combined: signed-in visitors outside the network. -->
+    <p data-ec-audience="user" data-ec-network="external">Tip: your loans can be returned by post.</p>
+  </div>
+
+  <!-- ======================================================================
+       4. READING ROOM PCs (KIOSK MODE) — a different home page there
+       ======================================================================
+       A PC in your reading room can be switched to "kiosk mode": open Primo
+       once on that PC with &ec_kiosk=1 added to the address (and &ec_kiosk=0
+       to switch it off again). In kiosk mode the kit clears what the previous
+       visitor left behind and resets the page after a while without activity
+       (settings: "Reading room PCs (kiosk mode)").
+
+       Two attributes switch content on those PCs, on ANY element (also in
+       your header and footer):
+         data-ec-kiosk="only"   shown ONLY on reading room PCs
+         data-ec-kiosk="hide"   HIDDEN on reading room PCs
+
+       A different home page in practice: put "hide" on the blocks that make
+       no sense on a shared PC (signing in, the visitor's last search, account
+       counts — e.g. on the three welcome blocks of section 2) and add a block
+       with "only" for reading room visitors, like this one: -->
+  <div class="announcements display-flex flex-column" data-ec-kiosk="only">
+    <header class="flex-column gap-1">
+      <h2 class="mat-title-medium" role="heading" aria-level="2">Welcome to the reading room</h2>
+    </header>
+    <p>Search our catalogue here. Staff at the desk are happy to help.</p>
+    <p>This is a shared computer: your session is cleared automatically after a while without activity.</p>
+  </div>
+
+  <!-- And the opposite: shown everywhere except on reading room PCs. -->
+  <p data-ec-kiosk="hide">Tip: sign in to keep your saved records between visits.</p>
+
+  <!-- ======================================================================
+       5. CUSTOM DIALOGS — your own pop-up windows
+       ======================================================================
+       In the package maker, section "Custom dialogs", add a dialog: fill in
+       "Opens from" with a word of your choice (e.g. dialog-borrowing — letters,
+       digits, - and _, no spaces), a title and the text (with the same
+       formatting toolbar as the other messages), in every language.
+       Then open it from here in either of two ways:
+         - a link to "#" + that word:  <a href="#dialog-borrowing">…</a>
+         - the word as a CLASS on any element (next to other classes is fine)
+       (For the technically minded: "Opens from" also takes a CSS selector,
+       e.g. a[href*="calendly.com"], for links you cannot edit here.)
+       Several elements may open the same dialog. Use a link or a button, so
+       keyboard users can open it too.
+       A dialog can also show a WIDGET (a form, a chat, a booking tool): paste
+       the provider's embed code in its "Widget code" box in the package
+       maker — nothing to add here. -->
+  <div class="announcements display-flex flex-column">
+    <!-- 1. A link to #dialog-borrowing — the simplest. -->
+    <p>How long can you keep a book?
+      <a href="#dialog-borrowing">Borrowing rules</a>.</p>
+
+    <!-- 2. The same dialog from a second place, by class, next to a class
+            used for styling. -->
+    <p><a href="#" class="my-button dialog-borrowing">Borrowing rules</a></p>
+  </div>
+
+  <!-- ======================================================================
+       6. OPENING HOURS — today's hours, "Open now", the whole week
+       ======================================================================
+       Fill in your hours in the package maker, section "Opening hours"
+       (every weekday, plus exceptions such as public holidays), and switch it
+       on. Then put one or more of these anywhere in your home page, header
+       or footer. They stay invisible while the setting is off.
+
+       a) Today, in one line:  Today: 09:00–17:00  [Open now]  All opening hours
+          ("All opening hours" opens a pop-up with the whole week; its text is
+          a setting — leave it empty for no link.) -->
+  <div class="announcements display-flex flex-column">
+    <header class="flex-column gap-1">
+      <h2 class="mat-title-medium" role="heading" aria-level="2">Visit us</h2>
+    </header>
+    <p data-ec-opening-hours></p>
+
+    <!-- b) The whole week as a table, plus the coming exceptions. -->
+    <div data-ec-opening-hours="week"></div>
+
+    <!-- c) Your own link that opens the pop-up with the whole week — it works
+            in the header and footer too. -->
+    <p><a href="#ec-opening-hours">Opening hours</a></p>
+  </div>
+
+  <!-- ======================================================================
+       7. SCHEDULED CONTENT — show something only between two dates
+       ======================================================================
+       Add data-ec-from and/or data-ec-until to ANY element:
+         data-ec-from="2026-12-20"    shown from that day on (from 00:00)
+         data-ec-until="2027-01-04"   shown up to and including that day
+       Only one of the two is fine too. A time is possible as well:
+         data-ec-from="2026-12-20T14:00"
+       Dates are in the form YEAR-MONTH-DAY. Outside the dates the element is
+       simply not there — you can prepare a notice weeks in advance and leave
+       an old one in the file; it never shows again.
+       (Works in this home page, the header and the footer — not inside the
+       texts of the package maker; notice banners have their own dates.) -->
+  <div class="announcements display-flex flex-column" data-ec-from="2026-12-20" data-ec-until="2027-01-04">
+    <header class="flex-column gap-1">
+      <h2 class="mat-title-medium" role="heading" aria-level="2">Christmas holidays</h2>
+    </header>
+    <p>The library is closed from 24 December to 1 January. E-books and databases remain available.</p>
+  </div>
+
+</main>
+</body>
+</html>

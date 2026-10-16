@@ -1,0 +1,73 @@
+// src/app/shared/styles/_ec-conditional.scss
+//
+// CONDITIONAL CONTENT — one rule per variant: HIDDEN, unless <html> has the
+// class that says this variant applies. So nothing shows before the module
+// has decided, and nothing is ever shown first and swapped a moment later.
+// Attributes go on any element in the home page, header or footer HTML.
+//
+//   attribute                     shown only when <html> has     set by
+//   data-ec-audience="guest"      ec-audience-guest               EcSessionComponent
+//   data-ec-audience="user"       ec-audience-user                EcSessionComponent
+//   data-ec-last-search           ec-has-last-search              EcLastSearchComponent
+//   data-ec-kiosk="only"          ec-kiosk                        kiosk.ts
+//   data-ec-kiosk="hide"          ec-no-kiosk                     kiosk.ts
+//   data-ec-network="ec"          ec-network-ec                   NetworkService
+//   data-ec-network="external"    ec-network-external             NetworkService
+// Per ELEMENT instead of <html> (each element decides for itself):
+//   data-ec-from / data-ec-until  the element has ec-in-schedule  scheduled-content.ts
+//   data-ec-opening-hours         the element has ec-oh--ready    opening-hours.ts
+// Which classes are set when (some before Angular starts): early-classes.ts.
+//
+// WHY "hide unless" AND NOT "hide, then show with display: revert": showing
+// needs a display value, and `revert` / `initial` throw away the element's own
+// layout (NDE makes .welcome a flex column; `initial` would even make every
+// block `inline`). Hiding only, the element keeps whatever display it has.
+// !important: NDE's own rules are more specific than an attribute selector.
+//
+// Loaded by _shared-theme.scss (EC views) and src/noob/core/theme.scss (noob kit).
+
+// ---- Signed in / not signed in ------------------------------------------------
+html:not(.ec-audience-guest) [data-ec-audience='guest'],
+html:not(.ec-audience-user) [data-ec-audience='user'] {
+  display: none !important;
+}
+
+// ---- "Pick up where you left off" ---------------------------------------------
+html:not(.ec-has-last-search) [data-ec-last-search] {
+  display: none !important;
+}
+// On the home page it REPLACES the welcome block (guest or user): one block at
+// a time. The welcome block therefore also waits for the answer
+// (ec-no-last-search), so it never shows first and then disappears.
+html:not(.ec-no-last-search) .main-landing-page .welcome[data-ec-audience] {
+  display: none !important;
+}
+
+// ---- Reading room PCs (kiosk mode) ---------------------------------------------
+html:not(.ec-kiosk) [data-ec-kiosk='only'],
+html:not(.ec-no-kiosk) [data-ec-kiosk='hide'] {
+  display: none !important;
+}
+
+// ---- On / outside the EC network (setting "Network check") ---------------------
+// First page of a tab: hidden while the check runs; later pages use the
+// cached answer, set before Angular starts.
+html:not(.ec-network-ec) [data-ec-network='ec'],
+html:not(.ec-network-external) [data-ec-network='external'] {
+  display: none !important;
+}
+
+// ---- Scheduled content (data-ec-from / data-ec-until) ---------------------------
+// Shown only between the dates, i.e. once scheduled-content.ts has checked the
+// element and given it ec-in-schedule. Before that, outside the dates, or on a
+// page where the module did not run: hidden.
+[data-ec-from]:not(.ec-in-schedule),
+[data-ec-until]:not(.ec-in-schedule) {
+  display: none !important;
+}
+
+// ---- Opening hours placeholders --------------------------------------------------
+// Empty until opening-hours.ts has filled them; stay hidden when the feature is off.
+[data-ec-opening-hours]:not(.ec-oh--ready) {
+  display: none !important;
+}

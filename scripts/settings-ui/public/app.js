@@ -149,7 +149,13 @@ const kindOf = (s) => {
   if (s.enum) return 'enum';
   if (s.type === 'boolean') return 'boolean';
   if (s.type === 'integer' || s.type === 'number') return 'number';
+  // "format" picks a special input; the value stays a plain string.
+  if (s.type === 'string' && s.format === 'color') return 'color'; // colour picker ("#rrggbb" or "")
+  if (s.type === 'string' && s.format === 'date') return 'date';   // date picker ("YYYY-MM-DD" or "")
+  if (s.type === 'string' && s.format === 'code') return 'code';   // embed code: big monospace box
   if (s.type === 'string') return 'string';
+  // A list of objects (e.g. custom dialogs): cards with Add / Remove.
+  if (s.type === 'array' && resolve(s.items)?.type === 'object') return 'objlist';
   if (s.type === 'array') return 'list';
   if (s.type === 'object' && s.additionalProperties && !s.properties) return 'map';
   if (s.type === 'object' && isLocalised(s)) return 'localised';
@@ -170,6 +176,20 @@ function deletePath(obj, p) {
   if (p.length > 1 && parent && Object.keys(parent).length === 0) deletePath(obj, p.slice(0, -1));
 }
 const clone = (v) => JSON.parse(JSON.stringify(v));
+/** An empty value for a schema (new list item): '' / false / minimum / [] / { en: '' } / object of blanks. */
+function blankFor(s) {
+  s = resolve(s);
+  // The schema's "default" first (e.g. a new banner: under the menu, theme colour,
+  // can be closed); a choice list without one starts at its first option.
+  if (s.default !== undefined) return JSON.parse(JSON.stringify(s.default));
+  if (s.enum) return s.enum[0];
+  if (s.type === 'boolean') return false;
+  if (s.type === 'integer' || s.type === 'number') return s.minimum ?? 0;
+  if (s.type === 'array') return [];
+  if (s.type === 'object' && isLocalised(s)) return { en: '' };
+  if (s.type === 'object') return Object.fromEntries(Object.entries(s.properties || {}).map(([k, v]) => [k, blankFor(v)]));
+  return '';
+}
 const has = (obj, p) => getPath(obj, p) !== undefined;
 
 // ------------------------------------------------------------------ rendering
@@ -194,6 +214,9 @@ function renderField(key, schema, path, ctx) {
     setPath(ctx.data, path, v);
     if (ctx.overrides) setPath(ctx.overrides, path, v);
     markDirty();
+    // Fields inside a list-of-objects card report to the list, which then
+    // stores the WHOLE list at its own path (see case 'objlist').
+    ctx.onAnyChange?.();
   };
 
   switch (kind) {
@@ -204,13 +227,101 @@ function renderField(key, schema, path, ctx) {
       control.append(el('input', { type: 'number', value: value ?? '', min: schema.minimum, oninput: (e) => onChange(e.target.value === '' ? undefined : Number(e.target.value)) }));
       break;
     case 'enum': {
-      const sel = el('select', { onchange: (e) => onChange(e.target.value) }, schema.enum.map((o) => el('option', { value: o, ...(o === value ? { selected: '' } : {}) }, o)));
+      // "x-enumNames" (same order as "enum") = what is shown; the value stays the code.
+      const names = Array.isArray(schema['x-enumNames']) ? schema['x-enumNames'] : [];
+      const sel = el('select', { onchange: (e) => onChange(e.target.value) }, schema.enum.map((o, i) => el('option', { value: o, ...(o === value ? { selected: '' } : {}) }, names[i] || o)));
       control.append(sel);
       break;
     }
-    case 'string':
-      control.append(el('input', { type: schema.format === 'uri' ? 'url' : 'text', value: value ?? '', oninput: (e) => onChange(e.target.value) }));
+    case 'string': {
+      // Schema "pattern" (e.g. a custom dialog's name): shown as a hint while
+      // typing; the server validates it again on Save.
+      const hint = el('p', { class: 'hint error' });
+      // "x-patternHint" says what is expected; the default fits names.
+      // "format": "css-selector": the browser itself says whether the selector is valid.
+      const badSelector = (v) => { if (schema.format !== 'css-selector' || !v || !v.trim()) return false; try { document.createDocumentFragment().querySelector(v); return false; } catch { return true; } };
+      const check = (v) => { hint.textContent = schema.pattern && !new RegExp(schema.pattern).test(v || '') ? (schema['x-patternHint'] || 'Letters, digits, - and _ only, starting with a letter (no spaces).') : badSelector(v) ? 'Not a valid CSS selector.' : ''; };
+      control.append(el('input', { type: schema.format === 'uri' ? 'url' : 'text', value: value ?? '', oninput: (e) => { check(e.target.value); onChange(e.target.value); } }), hint);
+      if (schema.pattern || schema.format === 'css-selector') check(value);
       break;
+    }
+    case 'color': {
+      // COLOUR: colour picker + the #code (type/paste) + Clear. Empty = not set
+      // (the feature uses its default); a colour input cannot be empty, hence the text box.
+      // Same widget as the package editor (src/assets/editor/index.html).
+      const ok = (v) => !v || /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v);
+      const full = (v) => (/^#[0-9a-f]{3}$/i.test(v) ? '#' + v.slice(1).split('').map((c) => c + c).join('') : v);
+      const hint = el('p', { class: 'hint error' });
+      const swatch = el('input', { type: 'color', value: ok(value) && value ? full(value) : '#ffffff' });
+      const code = el('input', { type: 'text', value: value ?? '', placeholder: 'not set', spellcheck: 'false' });
+      const unset = el('span', { class: 'hint' }, value ? '' : 'not set — default colour');
+      const apply = (v) => {
+        code.value = v; unset.textContent = v ? '' : 'not set — default colour';
+        if (ok(v) && v) swatch.value = full(v);
+        hint.textContent = ok(v) ? '' : (schema['x-patternHint'] || 'A colour as #RRGGBB.');
+        onChange(v);
+      };
+      swatch.addEventListener('input', () => apply(swatch.value));
+      code.addEventListener('input', () => apply(code.value.trim()));
+      control.append(el('div', { class: 'colour' }, swatch, code, el('button', { type: 'button', class: 'link', onclick: () => apply('') }, 'Clear'), unset), hint);
+      break;
+    }
+    case 'code':
+      // CODE (a widget's embed code): kept exactly as pasted; run by the module in Primo.
+      control.append(el('textarea', { rows: 6, spellcheck: 'false', placeholder: 'Paste the embed code here (optional)', oninput: (e) => onChange(e.target.value) }, value ?? ''));
+      break;
+    case 'date': {
+      // DATE: the browser's date picker; "YYYY-MM-DD" or "" (no date).
+      const input = el('input', { type: 'date', value: value ?? '', oninput: (e) => onChange(e.target.value) });
+      control.append(el('div', { class: 'colour' }, input, el('button', { type: 'button', class: 'link', onclick: () => { input.value = ''; onChange(''); } }, 'Clear')));
+      break;
+    }
+    case 'objlist': {
+      // LIST OF OBJECTS — one card per item, each with its own fields (texts
+      // get the WYSIWYG), Remove per card, Add at the bottom. The cards edit a
+      // private copy; every change stores the whole list at `path`, so a view
+      // tab overrides the list as one value (no half-merged arrays).
+      field.classList.add('wide');
+      const itemS = resolve(schema.items);
+      const what = (itemS.title || 'item').toLowerCase();
+      const items = clone(value ?? []);
+      const sub = { data: { items }, overrides: null, onAnyChange: () => onChange(clone(items)) };
+      items.forEach((item, i) => {
+        const card = el('fieldset', { class: 'objlist-item' }, el('legend', {}, `${itemS.title || 'Item'} ${i + 1} `,
+          el('button', { type: 'button', class: 'link', onclick: () => {
+            if (!confirm(`Remove ${what} ${i + 1}${item?.selector ? ` (${item.selector})` : ''}?`)) return;
+            items.splice(i, 1); onChange(clone(items)); render();
+          } }, 'Remove')));
+        for (const [k, s2] of Object.entries(itemS.properties || {})) {
+          const r = resolve(s2);
+          card.append(kindOf(r) === 'object' ? renderObject(k, r, ['items', i, k], sub) : renderField(k, r, ['items', i, k], sub));
+          if (k === 'selector' && r.format === 'css-selector') {
+            // A custom dialog's "Opens from": what opens it, kept up to date while
+            // typing. Plain word = #word link or class; anything else = CSS selector
+            // (same rule as PLAIN_WORD in ec-custom-dialogs.component.ts).
+            const code = el('code');
+            const lead = el('span');
+            const upd = () => {
+              const v = (items[i].selector || '').trim() || 'dialog-name';
+              const word = /^[A-Za-z][A-Za-z0-9_-]*$/.test(v);
+              lead.textContent = word ? 'Opens with: ' : 'Opens with: elements matching the CSS selector ';
+              code.textContent = word ? `<a href="#${v}">…</a>  or  class="${v}"` : v;
+            };
+            upd(); card.addEventListener('input', upd);
+            card.append(el('p', { class: 'hint' }, lead, code));
+          }
+        }
+        control.append(card);
+      });
+      // Two custom dialogs opening from the same thing: the first would always win.
+      const triggers = items.map((it) => (it?.selector || '').trim()).filter(Boolean);
+      const dup = triggers.find((n, i) => triggers.indexOf(n) !== i);
+      if (dup) control.append(el('p', { class: 'hint error' }, `Two ${what}s open from "${dup}" — each needs its own "Opens from".`));
+      control.append(el('button', { type: 'button', class: 'add secondary', onclick: () => {
+        items.push(blankFor(itemS)); onChange(clone(items)); render();
+      } }, `+ Add ${what}`));
+      break;
+    }
     case 'list':
       control.append(
         el('textarea', { oninput: (e) => onChange(e.target.value.split('\n').map((s) => s.trim()).filter(Boolean)) }, (value ?? []).join('\n')),
@@ -234,8 +345,14 @@ function renderField(key, schema, path, ctx) {
           ? el('textarea', { class: 'html', spellcheck: 'false', oninput }, value?.[lang] ?? '')
           : el('input', { type: 'text', value: value?.[lang] ?? '', oninput });
         control.append(el('div', { class: `row${isHtml ? ' top' : ''}` }, el('span', { class: 'lang' }, lang), input));
+        // HTML messages: WYSIWYG editor (src/assets/editor/rich-text.js — the same
+        // one as the settings editor in the packages; served by server.cjs).
+        // It keeps the textarea as the source of truth and reports every change.
+        if (isHtml && window.EcRichText) {
+          window.EcRichText.create(input, { onChange: (html) => oninput({ target: { value: html } }) });
+        }
       }
-      if (isHtml) control.append(el('p', { class: 'hint' }, 'HTML markup. Leave FR/DE empty to fall back to English.'));
+      if (isHtml) control.append(el('p', { class: 'hint' }, 'Formatted text — use "HTML" in the toolbar for the markup. Leave other languages empty to fall back to English.'));
       break;
     }
     case 'map': {
@@ -294,6 +411,50 @@ function renderObject(key, schema, path, ctx, top = false) {
   return container;
 }
 
+/**
+ * "Import settings.js…" on a view tab: take a settings.js downloaded from a
+ * live package (settings editor, assets/editor/) and make it this view's
+ * settings in the repo — so changes made in the editor are not lost at the
+ * next build. Server: POST /api/views/<key>/import (server.cjs).
+ */
+function importBar(viewKey) {
+  const input = el('input', { type: 'file', accept: '.js,text/javascript', hidden: '' });
+  const run = async (force) => {
+    const file = input.files[0];
+    if (!file) return;
+    if (dirty && !confirm('There are unsaved changes on this tab; importing replaces them. Continue?')) return;
+    const res = await fetch(`/api/views/${viewKey}/import`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: await file.text(), force }),
+    });
+    const json = await res.json();
+    if (res.status === 409 && confirm(`${json.errors[0]}\n\nImport it into this view anyway?`)) return run(true);
+    if (!res.ok) {
+      $('#status').textContent = 'Not imported:\n' + (json.errors || ['unknown error']).join('\n');
+      $('#status').className = 'status err';
+      return;
+    }
+    dirty = false;
+    await refresh();
+    const extra = json.foreignLanguages?.length
+      ? ` Texts in ${json.foreignLanguages.join(', ')} were NOT imported: add the language in the Languages tab first, then import again.`
+      : '';
+    // Return addresses edited in the package editor land in data/return-labels.json (all views).
+    const labels = json.librariesChanged
+      ? ` ${json.librariesChanged} return label${json.librariesChanged === 1 ? '' : 's'} updated (Return labels tab, shared by all views).`
+      : '';
+    // Settings that no longer exist (file from an older package) are not imported.
+    const dropped = json.droppedSettings?.length ? ` Not imported (no longer settings): ${json.droppedSettings.join(', ')}.` : '';
+    $('#status').textContent = `Imported ${file.name} (saved by ${json.savedBy || '?'}, ${json.savedAt || '?'}). Build to put it in the package.${labels}${extra}${dropped}`;
+    $('#status').className = 'status ok';
+  };
+  input.addEventListener('change', () => { run(false).finally(() => { input.value = ''; }); });
+  return el('div', { class: 'panel-tools' },
+    el('button', { type: 'button', class: 'link', onclick: () => input.click() }, 'Import settings.js…'),
+    el('span', {}, '— from a live package (settings editor download), so its changes are kept at the next build.'),
+    input);
+}
+
 function renderConfigTab(viewKey) {
   const main = $('#main'); main.replaceChildren();
   const isGlobal = viewKey === null;
@@ -303,10 +464,11 @@ function renderConfigTab(viewKey) {
   main.append(el('p', { class: 'intro' }, isGlobal
     ? 'Values for every view (config/global.json). A view tab can override any of them.'
     : `Values for this view (config/views/${viewKey}.json). Greyed fields are inherited from Global; override them here, or "Use global" to remove an override.`));
+  if (!isGlobal) main.append(importBar(viewKey));
   main.append(panelToolbar());
   for (const [k, sub] of Object.entries(state.schema.properties)) {
     const r = resolve(sub);
-    // Optional feature sections (e.g. printReturnLabel) show on views only when present,
+    // Optional feature sections (e.g. network) show on views only when present,
     // and offer an "Enable" button otherwise; on Global they are simply listed if present.
     const present = getPath(ctx.data, [k]) !== undefined;
     if (kindOf(r) === 'object' && !present) {

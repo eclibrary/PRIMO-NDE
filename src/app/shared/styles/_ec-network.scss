@@ -1,20 +1,8 @@
 // src/app/shared/styles/_ec-network.scss
 //
-// Show/hide by network — loaded for all views by _shared-theme.scss
-// (`@use 'ec-network';`). Same idea as the data-ec-audience rules there.
-//
-//   data-ec-network="ec"        only on the EC network
-//   data-ec-network="external"  only outside it — also the DEFAULT while the
-//                               check is running or when it is switched off,
-//                               so EC-only content never flashes up for outsiders
-//
-// The classes on <html> come from EcSessionComponent, which reflects
-// NetworkService (src/app/shared/network.service.ts).
-// Hide-only rules (no `display: revert`), so elements keep their own display
-// value (e.g. the inline-block of a Material Symbols icon) when shown.
-
-html:not(.ec-network-ec) [data-ec-network='ec'] { display: none !important; }
-html.ec-network-ec [data-ec-network='external'] { display: none !important; }
+// Network-related styles — loaded for all views by _shared-theme.scss
+// (`@use 'ec-network';`). The show/hide rules for data-ec-network="ec" /
+// "external" live with the other conditional content in _ec-conditional.scss.
 
 // ---- Footer: lock after "EC Library on My Intracomm" -----------------------
 // Markup (footer*.html):
@@ -26,7 +14,7 @@ html.ec-network-ec [data-ec-network='external'] { display: none !important; }
 .ec-network-lock {
   font-size: .95em !important;  // about the link text's height
   line-height: 1;
-  color: #fff !important;       // white on the blue footer band
+  color: var(--ec-on-blue, #fff) !important; // text colour of the footer band (theme-aware)
   margin-left: .3em;
   vertical-align: -0.12em;      // sit on the text baseline
   text-decoration: none;        // no underline under the glyph when the link is underlined

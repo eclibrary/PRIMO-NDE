@@ -4,8 +4,11 @@
 // (EC views: digital; the EU inter-institutional union view: physical) and hides
 // the field so patrons cannot change it — the NDE version of VE's selectFormat().
 //
-// SETTINGS: EC_CONFIG.resourceSharing (config/global.json, overridden per view in
-// config/views/<view>.json):
+// SETTINGS: the constant RESOURCE_SHARING below — deliberately NOT in the
+// settings UI / settings editor (Oct 2026): EC-specific, the same for all EC
+// views and not expected to change. (Formerly config resourceSharing.*; values
+// moved here unchanged.) The union view's "physical" rule lives in
+// src/views/finder/assets/js/unionview.js, not here.
 //   forceFormat            'digital' | 'physical' | 'photocopy' | ''  ('' = leave the choice to the patron)
 //   hideFormatField        hide the Format field once forced
 //   autoCheckAvailability  click "Check availability" after forcing, as VE did
@@ -39,9 +42,66 @@
 // MOUNT POINT: shared-mappings.ts → 'nde-base-request-form-after'
 // (if that slot turns out not to render, try 'nde-request-form-after').
 import { Component, ElementRef, Input, OnDestroy, OnInit, inject } from '@angular/core';
-import { EC_CONFIG } from '../../ec-config';
-
 type Format = 'digital' | 'physical' | 'photocopy';
+
+/** The rules for every EC view — see SETTINGS in the header. */
+const RESOURCE_SHARING: {
+  forceFormat: '' | Format;
+  hideFormatField: boolean;
+  autoCheckAvailability: boolean;
+  formatFieldSelector: string;
+  checkAvailabilitySelector: string;
+  formatValues: Record<Format, { values: string[]; labels: string[]; position: number }>;
+} = {
+  "forceFormat": "digital",
+  "hideFormatField": true,
+  "autoCheckAvailability": true,
+  "formatFieldSelector": "[data-qa=\"almaResourceSharing.format\"]",
+  "checkAvailabilitySelector": "nde-formly-check-availability-button button",
+  "formatValues": {
+    "physical": {
+      "values": [
+        "PHYSICAL",
+        "physical",
+        "PHYSICAL_NON_RETURNABLE"
+      ],
+      "labels": [
+        "Physical",
+        "Physique",
+        "Physisch"
+      ],
+      "position": 0
+    },
+    "digital": {
+      "values": [
+        "DIGITAL",
+        "digital",
+        "ELECTRONIC"
+      ],
+      "labels": [
+        "Digital",
+        "Elektronisch",
+        "Numérique",
+        "Électronique"
+      ],
+      "position": 1
+    },
+    "photocopy": {
+      "values": [
+        "PHOTOCOPY",
+        "photocopy",
+        "COPY"
+      ],
+      "labels": [
+        "Fotokopie",
+        "Kopie",
+        "Photocopie",
+        "Photocopy"
+      ],
+      "position": 2
+    }
+  }
+};
 
 /** Logged once per page load; a wrong assumption is diagnosed from the console, not by trial builds. */
 let probeLogged = false;
@@ -64,7 +124,7 @@ export class EcResourceSharingFormatComponent implements OnInit, OnDestroy {
   private tries = 0;
 
   ngOnInit(): void {
-    const cfg = EC_CONFIG.resourceSharing;
+    const cfg = RESOURCE_SHARING;
     if (!cfg?.forceFormat) { log('slot rendered, forceFormat is empty — leaving the choice to the patron'); return; }
     log(`slot rendered, forceFormat=${cfg.forceFormat}, hostComponent=${this.hostComponent?.constructor?.name ?? typeof this.hostComponent}`);
     // The form renders asynchronously after this slot; poll briefly until the
@@ -88,7 +148,7 @@ export class EcResourceSharingFormatComponent implements OnInit, OnDestroy {
   private stop(): void { if (this.timer) { window.clearInterval(this.timer); this.timer = 0; } }
 
   private apply(format: Format, dialog: HTMLElement, field: HTMLElement): void {
-    const cfg = EC_CONFIG.resourceSharing;
+    const cfg = RESOURCE_SHARING;
     const spec = cfg.formatValues[format];
 
     let done = this.setViaForm(format, spec);

@@ -49,3 +49,6 @@ src/app/state/asset-base.generated.ts
 
 # Generated from config/*.json by scripts/config-generate.cjs (prebuild)
 src/app/shared/ec-config.generated.ts
+
+src/assets/settings.js
+src/assets/editor/schema.js

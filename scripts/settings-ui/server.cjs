@@ -9,7 +9,7 @@
  * repo see and edit, through forms generated from config/schema.json:
  *   - config/global.json                 (all views)
  *   - config/views/<view>.json           (overrides per view; inherited values shown greyed)
- *   - data/return-labels.json            (Find-eR return labels)
+ *   - data/return-labels.json            (return label addresses, all views)
  *   - views.config.json                  (the views: id, label, host) + add a view
  * and start a build for a view, streaming its output.
  *
@@ -25,8 +25,9 @@ const fs = require('fs');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
 const { ROOT, CONFIG_PATH, loadConfig, readActiveKey } = require('../view-context.cjs');
-const { loadMergedConfig, validate, deepMerge, SCHEMA_FILE, GLOBAL_FILE, VIEWS_DIR } = require('../config-generate.cjs');
+const { loadMergedConfig, validate, deepMerge, parseSettingsJs, SCHEMA_FILE, GLOBAL_FILE, VIEWS_DIR } = require('../config-generate.cjs');
 const { readLanguages, applyLanguages } = require('../languages.cjs');
+const { validateLibraries } = require('../return-labels.cjs');
 
 const PORT = Number(process.argv[2]) || 4300;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -49,6 +50,81 @@ function readBody(req) {
     req.on('end', () => { try { resolve(data ? JSON.parse(data) : null); } catch (e) { reject(new Error('Body is not valid JSON')); } });
     req.on('error', reject);
   });
+}
+
+/**
+ * The part of `values` that differs from `base`: objects compared key by key,
+ * arrays and scalars as a whole (the merge rule of global + view). Returns
+ * undefined when nothing differs.
+ */
+/**
+ * Drop keys the schema does not allow (additionalProperties: false), recursively.
+ * Used on imported settings.js values: a file from an older package can still
+ * carry settings that were removed since (e.g. printReturnLabel.labelPagePath,
+ * codePaths, returnedMarker — hard-coded in the component since Oct 2026). Those
+ * must not block the import; they are simply not written. Returns the dropped
+ * dot paths so the UI can mention them.
+ */
+function pruneToSchema(node, s, root, at = '', dropped = []) {
+  const r = resolveRef(s, root);
+  if (!node || typeof node !== 'object' || Array.isArray(node) || !r || r.type !== 'object') return dropped;
+  for (const k of Object.keys(node)) {
+    const sub = r.properties?.[k];
+    if (sub) pruneToSchema(node[k], sub, root, at ? `${at}.${k}` : k, dropped);
+    else if (r.additionalProperties === false) { delete node[k]; dropped.push(at ? `${at}.${k}` : k); }
+  }
+  return dropped;
+}
+/**
+ * Bring settings from an OLDER package into today's shape (in place), before
+ * they are pruned and stored. Twin of migrateLegacySettings in
+ * src/app/shared/runtime-settings.ts (Primo) and src/assets/editor/index.html
+ * (package editor / maker) — keep the three in step.
+ */
+function migrateLegacySettings(values) {
+  // Oct 2026 — one collection badge → a list of badges (libraryOnTheGo.badges).
+  const lotg = values && values.libraryOnTheGo;
+  if (lotg && typeof lotg === 'object' && !Array.isArray(lotg) && !('badges' in lotg) && 'collectionId' in lotg) {
+    const badge = {};
+    for (const k of ['collectionId', 'label', 'color', 'infoButtonLabel', 'dialogTitle', 'dialogHtml']) {
+      if (k in lotg) badge[k] = lotg[k];
+      delete lotg[k];
+    }
+    delete lotg.pnxEndpoint; // a constant in the module now (src/app/shared/record-doc.ts)
+    lotg.badges = [badge];
+  }
+
+  // Oct 2026 — custom dialogs: `name` (plain word) became `selector` ("Opens from").
+  const dialogs = values && values.customDialogs && values.customDialogs.dialogs;
+  if (Array.isArray(dialogs)) {
+    for (const d of dialogs) {
+      if (!d || typeof d !== 'object' || !('name' in d)) continue;
+      const name = String(d.name ?? '').trim();
+      const sel = String(d.selector ?? '').trim();
+      d.selector = name && sel ? `a[href="#${name}"], .${name}, ${sel}` : (sel || name);
+      delete d.name;
+    }
+  }
+  return values;
+}
+
+function resolveRef(s, root) {
+  if (!s || !s.$ref) return s;
+  const target = s.$ref.replace('#/', '').split('/').reduce((o, k) => o && o[k], root);
+  return { ...resolveRef(target, root), ...s, $ref: undefined };
+}
+
+function diffFromBase(values, base) {
+  const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
+  if (isObj(values) && isObj(base)) {
+    const out = {};
+    for (const [k, v] of Object.entries(values)) {
+      const d = diffFromBase(v, base[k]);
+      if (d !== undefined) out[k] = d;
+    }
+    return Object.keys(out).length ? out : undefined;
+  }
+  return JSON.stringify(values) === JSON.stringify(base) ? undefined : values;
 }
 
 /** Everything the UI needs in one round trip. */
@@ -124,6 +200,75 @@ async function handleApi(req, res, url) {
     if (errors.length) return send(res, 400, { errors });
     writeJson(GLOBAL_FILE, { $schema: './schema.json', ...body });
     return send(res, 200, { ok: true, output: regenerateConfig() });
+  }
+
+  // POST /api/views/<key>/import   body = { text: "<contents of a settings.js>" }
+  // Takes a settings.js downloaded from a live package (settings editor) and makes
+  // its values this view's settings in the repo: only values that differ from
+  // global.json are written to config/views/<key>.json (same as the UI does).
+  // Refuses a file made for another view (vid mismatch) unless body.force is true.
+  if (req.method === 'POST' && resource === 'views' && key && sub === 'import') {
+    const cfg = loadConfig();
+    const view = cfg.views[key];
+    if (!view) return send(res, 404, { errors: [`unknown view ${key}`] });
+    const body = await readBody(req);
+    let envelope;
+    try { envelope = parseSettingsJs(String(body.text || '')); }
+    catch (err) { return send(res, 400, { errors: [`Could not read the file: ${err.message}`] }); }
+    const vid = `${cfg.instId}:${view.viewId}`;
+    if (envelope.vid && envelope.vid !== vid && !body.force) {
+      return send(res, 409, { errors: [`This settings.js is for ${envelope.vid}, not for ${vid}.`], vid: envelope.vid });
+    }
+    // Texts in a language this repo does not have (added in the package editor)
+    // cannot be stored — the schema only allows the repo's languages. Drop them
+    // and say so: add the language in the Languages tab, then import again.
+    const repoLangs = require('../languages.cjs').readLanguages().map((l) => l.code);
+    const foreign = new Set();
+    (function strip(node) {
+      if (!node || typeof node !== 'object' || Array.isArray(node)) return;
+      const keys = Object.keys(node);
+      if (keys.length && keys.includes('en') && keys.every((k) => /^[a-z]{2}$/.test(k))) {
+        for (const k of keys) if (!repoLangs.includes(k)) { foreign.add(k); delete node[k]; }
+        return;
+      }
+      Object.values(node).forEach(strip);
+    })(envelope.values);
+    // Older package: bring its settings into today's shape first (one collection
+    // badge → list of badges, …), then leave out what the schema no longer has.
+    migrateLegacySettings(envelope.values);
+    const dropped = pruneToSchema(envelope.values, schema, schema);
+    // Settings the file does NOT have (added after that package was built, e.g.
+    // printReturnLabel.enabled) keep this view's current value — otherwise an
+    // old file would silently reset them to the global default.
+    envelope.values = deepMerge(loadMergedConfig(key), envelope.values);
+    const globalRaw = readJson(GLOBAL_FILE); delete globalRaw.$schema;
+    const overrides = diffFromBase(envelope.values, globalRaw) || {};
+    // Keys the schema no longer knows (older package) are dropped, not written.
+    for (const k of Object.keys(overrides)) if (!schema.properties?.[k]) delete overrides[k];
+    const errors = validate(schema, deepMerge(globalRaw, overrides));
+    if (errors.length) return send(res, 400, { errors: ['The imported values do not fit the current settings:', ...errors] });
+    // Return addresses ("libraries", edited in the package editor): shared by all
+    // views, so they go to data/return-labels.json — only when they differ, and
+    // validated first. The file's _comment (and other _ keys) are kept.
+    let librariesChanged = 0;
+    if (envelope.libraries && typeof envelope.libraries === 'object') {
+      let incoming;
+      try { incoming = validateLibraries(envelope.libraries); }
+      catch (err) { return send(res, 400, { errors: [`Return labels in the file: ${err.message}`] }); }
+      const current = fs.existsSync(RETURN_LABELS_FILE) ? readJson(RETURN_LABELS_FILE) : {};
+      const codes = new Set([...Object.keys(incoming), ...Object.keys(current).filter((c) => !c.startsWith('_'))]);
+      for (const c of codes) if (JSON.stringify(incoming[c]) !== JSON.stringify(current[c])) librariesChanged++;
+      if (librariesChanged) {
+        const next = {};
+        for (const [k, v] of Object.entries(current)) if (k.startsWith('_')) next[k] = v;
+        Object.assign(next, incoming);
+        writeJson(RETURN_LABELS_FILE, next);
+        spawnSync(process.execPath, ['scripts/return-labels.cjs'], { cwd: ROOT, encoding: 'utf8' });
+      }
+    }
+    writeJson(path.join(VIEWS_DIR, `${key}.json`), { $schema: '../schema.json', ...overrides });
+    return send(res, 200, { ok: true, savedBy: envelope.savedBy, savedAt: envelope.savedAt, foreignLanguages: [...foreign],
+      droppedSettings: dropped, librariesChanged, output: regenerateConfig(key) });
   }
 
   // PUT /api/views/<key>   body = overrides only
@@ -224,6 +369,12 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   try {
     if (url.pathname.startsWith('/api/')) return await handleApi(req, res, url);
+    // The WYSIWYG editor lives with the package editor (one implementation for both).
+    if (url.pathname === '/rich-text.js') {
+      const rte = path.join(ROOT, 'src', 'assets', 'editor', 'rich-text.js');
+      res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(fs.readFileSync(rte));
+    }
     const file = path.join(PUBLIC_DIR, url.pathname === '/' ? 'index.html' : url.pathname);
     if (!file.startsWith(PUBLIC_DIR) || !fs.existsSync(file)) return send(res, 404, 'not found', 'text/plain');
     send(res, 200, fs.readFileSync(file), MIME[path.extname(file)] || 'application/octet-stream');

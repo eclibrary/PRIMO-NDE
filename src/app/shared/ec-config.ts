@@ -56,11 +56,56 @@ export interface EcAccountCountItem {
   route: string;
 }
 
+/** One notice banner (settings noticeBanners.banners[]). */
+export interface EcNoticeBanner {
+  /** HTML per language; sanitised before it is shown (sanitize.ts). */
+  text: Localised;
+  /** Where it goes: above / under the menu, under the search area, fixed at the bottom. */
+  position: 'top' | 'belowMenu' | 'belowSearch' | 'bottom';
+  /** Colour preset; 'custom' uses `color`. */
+  style: 'theme' | 'info' | 'warning' | 'success' | 'custom';
+  /** "#rrggbb" or "" — background for style 'custom'. */
+  color: string;
+  /** "YYYY-MM-DD" or "" — first / last day (included) it is shown. */
+  from: string;
+  until: string;
+  /** Show a × button; closing is remembered per browser. */
+  dismissible: boolean;
+}
+
+/** One collection badge (settings libraryOnTheGo.badges[]). */
+export interface EcCollectionBadge {
+  /** Alma collection id; matched against $$D in PNX control.colldiscovery. */
+  collectionId: string;
+  label: Localised;
+  /** "#rrggbb" or "" (= theme colour) — text and (i) icon colour. */
+  color: string;
+  /** Accessible name of the (i) button. */
+  infoButtonLabel: Localised;
+  dialogTitle: Localised;
+  /** Explanation as HTML; sanitised by Angular when rendered. Empty = no (i) button. */
+  dialogHtml: Localised;
+}
+
+/** Day keys of openingHours.week, Monday first. */
+export type EcWeekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+
+/** One exception to the weekly opening hours (holiday, closure, special hours). */
+export interface EcOpeningHoursException {
+  /** "YYYY-MM-DD". */
+  from: string;
+  /** "YYYY-MM-DD" or "" (= only `from`). */
+  until: string;
+  /** Same format as a weekday; "" = closed. */
+  hours: string;
+  note: Localised;
+}
+
 /**
  * Shape of the settings — the TypeScript twin of config/schema.json.
  * Every property here must exist in the schema and vice versa; the generated
  * file is typed against this, so a mismatch fails the build (that is the point).
- * Optional sections are features a view may not enable (e.g. printReturnLabel).
+ * Optional sections are features a view may not enable (e.g. network).
  */
 export interface EcConfigValues {
   defaultLang: EcLang;
@@ -113,6 +158,54 @@ export interface EcConfigValues {
     floatButtonSelector: string;
     iframeSelector: string;
   };
+  /**
+   * Custom dialogs — see EcCustomDialogsComponent. Each dialog opens from its
+   * `selector` ("Opens from"). Edited as a list in all three editors.
+   * Until Oct 2026 the trigger was `name` (a plain word); older settings are
+   * converted by migrateLegacySettings (runtime-settings.ts and its twins).
+   */
+  customDialogs: {
+    dialogs: Array<{
+      /**
+       * "Opens from". A plain word (letters, digits, - and _), e.g.
+       * "dialog-borrowing" = links to #dialog-borrowing + elements with that
+       * class. Anything else = a CSS selector, e.g. 'a[href*="calendly.com"]'.
+       */
+      selector: string;
+      title: Localised;
+      /** HTML, sanitised by Angular when rendered. */
+      html: Localised;
+      /**
+       * Embed code of a widget (divs + scripts), NOT sanitised: it is meant to
+       * run. Inserted below the text on first open. "" = none.
+       */
+      widget?: string;
+    }>;
+    closeLabel: Localised;
+  };
+  /**
+   * Opening hours — weekly hours + exceptions; fills [data-ec-opening-hours]
+   * placeholders and opens a week pop-up from links to #ec-opening-hours.
+   * See src/app/shared/opening-hours.ts.
+   */
+  openingHours: {
+    enabled: boolean;
+    /** "09:00-17:00" or "09:00-12:30, 13:30-17:00"; "" = closed. */
+    week: Record<EcWeekday, string>;
+    exceptions: EcOpeningHoursException[];
+    /** `{hours}` = today's hours. */
+    todayLabel: Localised;
+    closedLabel: Localised;
+    openNowLabel: Localised;
+    closedNowLabel: Localised;
+    /** Empty en = no link after today's hours. */
+    weekLinkLabel: Localised;
+    dialogTitle: Localised;
+    exceptionsTitle: Localised;
+    closeLabel: Localised;
+    /** IANA zone, e.g. "Europe/Brussels"; "" = the visitor's clock. */
+    timeZone: string;
+  };
   /** Modal shown when the view is opened — see EcWelcomeMessageComponent. */
   welcomeMessage: {
     /** false = no message on this view (or on all views when set in global.json). */
@@ -125,29 +218,50 @@ export interface EcConfigValues {
     dontShowAgainLabel: Localised;
     closeLabel: Localised;
   };
-  /** "Library on the Go" badge on records of that collection — see EcLibraryOnTheGoComponent. */
+  /**
+   * Notice banners — coloured message bars, see src/app/shared/notice-banners.ts.
+   * Plain DOM (no Angular component), started from bootstrap.ts, so they show
+   * on every page.
+   */
+  noticeBanners: {
+    enabled: boolean;
+    banners: EcNoticeBanner[];
+    /** Accessible name of the × button. */
+    closeLabel: Localised;
+    /** Accessible name of the region the banners sit in. */
+    regionLabel: Localised;
+  };
+  /**
+   * "Collection badges" (settings title): badges on records of Alma collections
+   * — the EC's "Library on the Go" — see EcLibraryOnTheGoComponent. The key
+   * keeps its original name for compatibility; until Oct 2026 the section held
+   * ONE badge (collectionId, label, color, … directly in it). Such older
+   * settings are converted to `badges[0]` when read (migrateLegacySettings in
+   * runtime-settings.ts and its twins in the editors).
+   */
   libraryOnTheGo: {
     enabled: boolean;
-    /** Alma collection id; matched against $$D in PNX control.colldiscovery. */
-    collectionId: string;
-    label: Localised;
-    /** Any CSS colour for the badge text and (i) icon. */
-    color: string;
-    /** Accessible name of the (i) button. */
-    infoButtonLabel: Localised;
-    dialogTitle: Localised;
-    /** Explanation as HTML markup; sanitised by Angular when rendered. */
-    dialogHtml: Localised;
+    badges: EcCollectionBadge[];
     closeLabel: Localised;
-    /** Fallback PNX endpoint; placeholders {recordId}, {vid}, {lang}. */
-    pnxEndpoint: string;
   };
-  /** Help block under NDE's "No records found" — see EcNoResultsHelpComponent. */
-  noResultsHelp: {
+  /**
+   * "Free versions (Unpaywall)" link on records with a DOI — see
+   * EcOpenAccessComponent. Off by default: every lookup is a request from the
+   * visitor's browser to api.unpaywall.org (privacy notice!).
+   */
+  openAccess: {
     enabled: boolean;
-    title: Localised;
-    /** Body as HTML markup; sanitised by Angular when rendered. Empty en = no block. */
-    html: Localised;
+    /** Contact address Unpaywall requires (?email=). Empty = no lookups. */
+    email: string;
+    /** true = skip records that already have online access (delivery.availability fulltext*). */
+    onlyWithoutFullText: boolean;
+    linkLabel: Localised;
+    /** Added in brackets after linkLabel, per Unpaywall "version"; empty = nothing added. */
+    publishedLabel: Localised;
+    acceptedLabel: Localised;
+    submittedLabel: Localised;
+    /** title attribute of the link (tooltip + screen readers). */
+    linkTitle: Localised;
   };
   /** "Loans due soon" line on the landing page — see EcLoansDueComponent. */
   loansDue: {
@@ -211,20 +325,18 @@ export interface EcConfigValues {
     warningText: Localised;
     continueLabel: Localised;
   };
-  resourceSharing: {
-    forceFormat: '' | 'digital' | 'physical' | 'photocopy';
-    hideFormatField: boolean;
-    autoCheckAvailability: boolean;
-    formatFieldSelector: string;
-    checkAvailabilitySelector: string;
-    formatValues: Record<'digital' | 'physical' | 'photocopy', { values: string[]; labels: string[]; position: number }>;
-  };
-  printReturnLabel?: {
-    labelPagePath: string;
-    codePaths: string[];
-    returnedMarker: string;
-    /** true = also render the link on returned (history) loans; absent/false = active loans only. */
-    showOnPastLoans?: boolean;
+  /**
+   * "Print return label" link under loans in the library card — see
+   * src/app/shared/components/ec-print-return-label. In global.json (off by
+   * default) so every view can switch it on; the technical bits (label page
+   * path, where the library code sits, how a returned loan is recognised) are
+   * constants in the component, not settings — they never change per view.
+   */
+  printReturnLabel: {
+    /** "Activate": false = the component renders nothing in this view. */
+    enabled: boolean;
+    /** true = also render the link on returned (history) loans; false = active loans only. */
+    showOnPastLoans: boolean;
     label: Localised;
   };
 }

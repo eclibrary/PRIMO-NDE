@@ -1,0 +1,249 @@
+// src/app/shared/styles/_ec-features.scss
+//
+// Styles of the page-wide features that are plain DOM (no Angular component,
+// so no component stylesheet): started from src/bootstrap.ts.
+//   - NOTICE BANNERS  src/app/shared/notice-banners.ts   (.ec-notices / .ec-notice)
+//   - OPENING HOURS   src/app/shared/opening-hours.ts    (.ec-oh / .ec-oh-dialog)
+// (Scheduled content needs no styles of its own: its hide-unless rule is in
+// _ec-conditional.scss with the other conditional content.)
+//
+// Loaded by _shared-theme.scss (EC views) and src/noob/core/theme.scss (noob kit).
+//
+// COLOURS: only our variables (--ec-blue, --ec-on-blue, …), which follow the
+// Alma colour theme in the noob kit and are EC blue in the EC views — never
+// fixed colours, except the fixed info/warning/success presets below.
+// !important where NDE's global typography wins otherwise (links, p margins),
+// as in _ec-header.scss.
+@use 'ec-tokens' as ec;
+
+// =============================================================================
+// NOTICE BANNERS
+// =============================================================================
+// One container per position (.ec-notices--top / --belowMenu / --belowSearch /
+// --bottom), each holding one .ec-notice per banner. Every banner gets its
+// colours from two variables, set by its style class — or inline by the code
+// for "My own colour" (background from the colour picker, text black or white
+// for contrast):
+//   --ec-notice-bg   background
+//   --ec-notice-fg   text, links and icons
+
+.ec-notices {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ec.$ec-font;
+}
+
+.ec-notice {
+  // Theme colour = the default.
+  --ec-notice-bg: var(--ec-blue, #{ec.$ec-blue});
+  --ec-notice-fg: var(--ec-on-blue, #fff);
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+  padding: .625rem 1rem;
+  background: var(--ec-notice-bg) !important;
+  color: var(--ec-notice-fg) !important;
+  font-size: .9375rem !important;
+  line-height: 1.45 !important;
+  // A thin line between two banners in the same place.
+  & + & { border-top: 1px solid color-mix(in srgb, var(--ec-notice-fg) 25%, transparent); }
+
+  // Fixed presets — light backgrounds with dark text, all above 7:1 contrast.
+  &--info    { --ec-notice-bg: #e3f0fc; --ec-notice-fg: #0b3a66; }
+  &--warning { --ec-notice-bg: #fff4d6; --ec-notice-fg: #4d3800; }
+  &--success { --ec-notice-bg: #e3f5e6; --ec-notice-fg: #14421d; }
+  // --custom: variables set inline by notice-banners.ts.
+}
+
+// The icon, sized to the first line of text. More specific than the global
+// .material-symbols-outlined rule (28px, theme colour).
+.ec-notice .ec-notice__icon.material-symbols-outlined {
+  flex: none;
+  font-size: 1.25rem;
+  line-height: 1.45rem;
+  color: inherit;
+}
+
+// The text from the settings (sanitised HTML: paragraphs, bold, links, lists).
+.ec-notice .ec-notice__text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+
+  p, ul, ol { margin: 0 0 .25rem !important; color: inherit !important; font-size: inherit !important; line-height: inherit !important; }
+  > :last-child { margin-bottom: 0 !important; }
+  ul, ol { padding-left: 1.25rem; }
+  a {
+    color: inherit !important;
+    text-decoration: underline !important;
+    text-underline-offset: 2px;
+    font-weight: 600;
+    &:hover { text-decoration-thickness: 2px; }
+  }
+}
+
+// × button: bare icon, comfortable click target.
+.ec-notice .ec-notice__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: -.25rem -.5rem -.25rem 0;
+  padding: .25rem;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+
+  .material-symbols-outlined { font-size: 1.25rem; line-height: 1; color: inherit; }
+  &:hover { background: color-mix(in srgb, var(--ec-notice-fg) 15%, transparent); }
+}
+
+// Keyboard focus: a ring in the text colour — visible on any background.
+.ec-notice a:focus-visible,
+.ec-notice .ec-notice__close:focus-visible {
+  outline: 2px solid var(--ec-notice-fg);
+  outline-offset: 2px;
+}
+
+// Fixed to the bottom of the window. Above the page, below dialogs (which use
+// the browser's top layer anyway). A shadow separates it from the page.
+.ec-notices--bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  box-shadow: 0 -.25rem 1rem rgba(0, 0, 0, .18);
+}
+// Room at the end of the page so the footer is not hidden behind it. Height
+// measured by notice-banners.ts.
+html.ec-has-bottom-notice body {
+  padding-bottom: var(--ec-notices-bottom-h, 0px) !important;
+}
+
+// Printing: banners are screen information.
+@media print {
+  .ec-notices { display: none !important; }
+}
+
+// =============================================================================
+// OPENING HOURS
+// =============================================================================
+// Placeholders in the library's HTML (filled by opening-hours.ts; hidden until
+// then by _ec-conditional.scss):
+//   [data-ec-opening-hours]          .ec-oh--today: one line
+//   [data-ec-opening-hours="week"]   .ec-oh--week: table + coming exceptions
+// and the pop-up .ec-oh-dialog (links to #ec-opening-hours).
+
+// ---- "Today: 09:00–17:00  [Open now]  All opening hours" ---------------------
+.ec-oh--today {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .5rem;
+}
+
+.ec-oh .ec-oh__icon.material-symbols-outlined {
+  font-size: 1.25rem;
+  line-height: 1;
+  color: inherit;
+}
+
+// Open / closed now: a small pill. Green / grey with dark text (> 7:1).
+.ec-oh .ec-oh__status {
+  display: inline-block;
+  padding: .05rem .5rem;
+  border-radius: 1rem;
+  font-size: .8125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  &--open   { background: #dff3e3; color: #14421d; }
+  &--closed { background: #ececec; color: #333; }
+}
+
+.ec-oh a.ec-oh__more {
+  color: inherit !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+}
+
+// ---- week table (in the page and in the pop-up) ------------------------------
+.ec-oh .ec-oh__table,
+.ec-oh-dialog .ec-oh__table {
+  border-collapse: collapse;
+  min-width: min(20rem, 100%);
+
+  th, td {
+    padding: .3rem .75rem .3rem 0;
+    text-align: left;
+    font-weight: normal;
+    vertical-align: top;
+    border-bottom: 1px solid var(--sys-outline-variant, #d9d9d9);
+  }
+  // Today: bold, with a bar in the theme colour.
+  .ec-oh__row--today th,
+  .ec-oh__row--today td { font-weight: 700; }
+  .ec-oh__row--today th { box-shadow: inset 3px 0 0 var(--ec-blue, #{ec.$ec-blue}); padding-left: .5rem; }
+}
+
+.ec-oh .ec-oh__exceptions-title,
+.ec-oh-dialog .ec-oh__exceptions-title {
+  margin: 1rem 0 .4rem !important;
+  font: 600 1rem/1.3 #{ec.$ec-font} !important;
+}
+
+.ec-oh .ec-oh__exceptions,
+.ec-oh-dialog .ec-oh__exceptions {
+  margin: 0 !important;
+  padding-left: 1.25rem !important;
+  li { margin: 0 0 .2rem; }
+}
+
+// ---- pop-up (same look as our other dialogs) ---------------------------------
+.ec-oh-dialog {
+  width: min(28rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 0;
+  border-radius: .75rem;
+  background: var(--sys-surface, #fff);
+  color: var(--sys-on-surface, #1b1b1b);
+  box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, .28);
+  font: 1rem/1.5 #{ec.$ec-font};
+
+  &::backdrop { background: rgba(0, 0, 0, .45); }
+
+  .ec-oh-dialog__bar {
+    padding: .9rem 1.25rem;
+    background: var(--ec-blue, #{ec.$ec-blue});
+    color: var(--ec-on-blue, #fff);
+  }
+  .ec-oh-dialog__title {
+    margin: 0 !important;
+    font: 600 1.125rem/1.3 #{ec.$ec-font} !important;
+    color: inherit !important;
+  }
+  .ec-oh-dialog__body { padding: 1.25rem; overflow: auto; }
+  .ec-oh-dialog__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: .75rem 1.25rem;
+    border-top: 1px solid var(--sys-outline-variant, #d9d9d9);
+  }
+  .ec-oh-dialog__close {
+    padding: .5rem 1.25rem;
+    border: 0;
+    border-radius: 1.25rem;
+    background: var(--ec-blue, #{ec.$ec-blue});
+    color: var(--ec-on-blue, #fff);
+    font: 600 .95rem/1.3 #{ec.$ec-font};
+    cursor: pointer;
+    &:hover { filter: brightness(1.15); }
+    &:focus-visible { outline: 3px solid var(--sys-on-surface, #1b1b1b); outline-offset: 2px; }
+  }
+}

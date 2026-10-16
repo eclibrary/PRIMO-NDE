@@ -1,23 +1,8 @@
 {
   "$schema": "../schema.json",
   "printReturnLabel": {
-    "labelPagePath": "assets/return-label/index.html",
-    "codePaths": [
-      "loan.mainlocationcode",
-      "item.mainlocationcode",
-      "loanItem.mainlocationcode",
-      "loan.mainLocationCode",
-      "item.mainLocationCode",
-      "loan.libraryCode",
-      "loan.library.code"
-    ],
-    "returnedMarker": "[translate=\"loans.return_date\"]",
-    "showOnPastLoans": true,
-    "label": {
-      "en": "Print return label",
-      "fr": "Imprimer l'étiquette de retour",
-      "de": "Rücksendeetikett drucken"
-    }
+    "enabled": true,
+    "showOnPastLoans": true
   },
   "accountCounts": {
     "enabled": true

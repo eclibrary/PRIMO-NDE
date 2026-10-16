@@ -63,7 +63,10 @@ export class NetworkService {
     // browser: which branch ran, and the result. One or two lines per tab.
     if (!cfg?.enabled || !cfg.pingUrl) {
       console.info('[ec] network: check switched off (settings: network) — treating visitor as external');
-      return; // stays 'unknown' (= external)
+      // A definite answer, so data-ec-network content shows (_ec-conditional.scss
+      // hides it while the status is 'unknown').
+      this.state.set('external');
+      return;
     }
 
     const cached = readCache();

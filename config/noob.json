@@ -1,0 +1,62 @@
+{
+  "$schema": "./schema.json",
+  "askALibrarian": {
+    "triggerUrlPrefixes": [],
+    "formfillScriptUrl": "",
+    "libanswersHost": "",
+    "widgetId": {
+      "en": "",
+      "fr": "",
+      "de": ""
+    }
+  },
+  "libchat": {
+    "libanswersHost": "",
+    "hash": ""
+  },
+  "network": {
+    "enabled": false,
+    "pingUrl": ""
+  },
+  "welcomeMessage": {
+    "enabled": false,
+    "html": {
+      "en": "<p>Welcome to our new library search.</p>",
+      "fr": "<p>Bienvenue dans notre nouvelle recherche en bibliothèque.</p>",
+      "de": "<p>Willkommen bei unserer neuen Bibliothekssuche.</p>"
+    }
+  },
+  "libraryOnTheGo": {
+    "enabled": false,
+    "badges": [
+      {
+        "collectionId": "",
+        "label": {
+          "en": "Featured collection"
+        },
+        "color": "",
+        "infoButtonLabel": {
+          "en": "What is this collection?"
+        },
+        "dialogTitle": {
+          "en": "Featured collection"
+        },
+        "dialogHtml": {
+          "en": "<p>Describe the collection here.</p>"
+        }
+      }
+    ]
+  },
+  "loansDue": {
+    "enabled": false
+  },
+  "accountCounts": {
+    "enabled": false
+  },
+  "printReturnLabel": {
+    "enabled": false
+  },
+  "openingHours": {
+    "timeZone": ""
+  }
+}

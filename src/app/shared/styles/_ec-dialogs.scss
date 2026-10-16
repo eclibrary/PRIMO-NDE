@@ -6,7 +6,7 @@
 // WHY: NDE's global typography (Angular Material M3) sizes h1/h2 like display
 // text, with its own font. Our dialogs use an <h2> in the blue title bar, and
 // editors type <h2>/<h3> in the HTML they enter in the settings UI (welcome
-// message, Library on the Go explanation, no-results help). Without these
+// message, Library on the Go explanation). Without these
 // rules those headings come out huge. !important because NDE's rules are more
 // specific than anything we can safely write.
 //
@@ -17,7 +17,6 @@
 //     (BEM: ec-welcome__title, ec-lotg-dialog__title, …);
 //   - inside it, headings in the body = any h1–h6 under an element whose class
 //     contains "__body" (the HTML from the settings);
-//   - the same for the non-dialog help block .ec-no-results-help.
 // Opt-in hook for anything else: put class "ec-dialog-title" on a title.
 //
 // A NEW DIALOG therefore only needs: <dialog class="ec-something">,
@@ -26,7 +25,6 @@
 
 // ---- Title (blue title bar) ----------------------------------------------
 dialog[class^='ec-'] [class*='__title'],
-.ec-no-results-help [class*='__title'],
 .ec-dialog-title {
   margin: 0 !important;
   font-family: #{ec.$ec-font} !important;
@@ -39,8 +37,7 @@ dialog[class^='ec-'] [class*='__title'],
 // ---- Headings in the body (HTML from the settings) ------------------------
 // Scale: h1/h2 = section title, h3 = sub-section, h4–h6 = minor. EC blue so
 // sections stand out without being big.
-dialog[class^='ec-'] [class*='__body'],
-.ec-no-results-help [class*='__body'] {
+dialog[class^='ec-'] [class*='__body'] {
   h1, h2, h3, h4, h5, h6 {
     margin: 1.25rem 0 .375rem !important;
     font-family: #{ec.$ec-font} !important;

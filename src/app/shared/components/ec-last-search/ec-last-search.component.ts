@@ -341,8 +341,10 @@ export class EcLastSearchComponent implements OnDestroy {
   private reflect(): void {
     const entry = this.load();
     const html = document.documentElement;
-    if (entry) this.renderer.addClass(html, 'ec-has-last-search');
-    else this.renderer.removeClass(html, 'ec-has-last-search');
+    // Exactly one of the two classes, always: until one is there, the block and
+    // the welcome blocks it replaces stay hidden (_ec-conditional.scss).
+    this.renderer.removeClass(html, entry ? 'ec-no-last-search' : 'ec-has-last-search');
+    this.renderer.addClass(html, entry ? 'ec-has-last-search' : 'ec-no-last-search');
 
     document.querySelectorAll<HTMLAnchorElement>('a[data-ec-last-search-link]').forEach((a) => {
       // Real href so middle-click / copy-link work; click is handled in-app below.

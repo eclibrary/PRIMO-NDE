@@ -214,7 +214,7 @@ async function main() {
 
   const cfgHint = a.scope === 'shared'
     ? 'global.json for all views, overridable per view; add new keys to config/schema.json + EcConfigValues.'
-    : `keep view-only settings in config/views/${a.scope}.json (declare them optional in the schema, like printReturnLabel).`;
+    : `keep view-only settings in config/views/${a.scope}.json (declare them optional in the schema, like network).`;
 
   console.log('');
   write(path.join(dir, `${name}.component.ts`), componentTs({ name, className, selector, slot: a.slot, scope: a.scope, kind: a.kind, cfgHint }));

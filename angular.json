@@ -66,6 +66,24 @@
               "sourceMap": true,
               "namedChunks": true
             },
+            "noob": {
+              "outputPath": "dist/noob-build",
+              "fileReplacements": [
+                {
+                  "replace": "src/app/custom1-module/customComponentMappings.ts",
+                  "with": "src/noob/core/mappings.ts"
+                }
+              ],
+              "assets": [],
+              "styles": [
+                "src/styles.scss",
+                {
+                  "input": "src/noob/core/theme.scss",
+                  "bundleName": "custom",
+                  "inject": false
+                }
+              ]
+            },
             "finder": {
               "fileReplacements": [
                 {

@@ -1,0 +1,24 @@
+// src/app/shared/styles/_ec-kiosk.scss
+//
+// Kiosk-mode content switches, for reading room PCs (kiosk mode, see
+// src/app/shared/kiosk.ts, which puts `ec-kiosk` on <html>). Same idea as
+// data-ec-audience and data-ec-network: an attribute on ANY element in the
+// home page, header or footer HTML.
+//
+//   data-ec-kiosk="only"   shown only on reading room PCs
+//   data-ec-kiosk="hide"   hidden on reading room PCs
+//
+// Example — a different home page on reading room PCs:
+//   <div data-ec-kiosk="only"> … reading room welcome … </div>
+//   <div data-ec-kiosk="hide"> … sign-in, last search, account counts … </div>
+//
+// The header badge uses the bare attribute (<span data-ec-kiosk>) and has its
+// own rules in _ec-header.scss; the selectors below only match the values
+// "only" and "hide", so the two do not interfere.
+//
+// Hide-only rules (no `display: revert`), so elements keep their own display
+// value when shown. Loaded by _shared-theme.scss (EC views) and by
+// src/noob/core/theme.scss (noob kit).
+
+html:not(.ec-kiosk) [data-ec-kiosk='only'] { display: none !important; }
+html.ec-kiosk [data-ec-kiosk='hide'] { display: none !important; }

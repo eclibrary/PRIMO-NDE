@@ -73,11 +73,14 @@ function serveConfiguration(v) {
 function syncAngularJson(views) {
   const json = JSON.parse(fs.readFileSync(ANGULAR_JSON, 'utf8'));
   const arch = json.projects[PROJECT].architect;
-  const keep = new Set(['production', 'development']);
+  // "noob" = the build configuration of the noob zip (scripts/build-noob.cjs),
+  // not a view: kept, and re-written from build-noob.cjs so it cannot drift.
+  const keep = new Set(['production', 'development', 'noob']);
 
   for (const target of ['build', 'serve']) {
     const cfgs = arch[target].configurations || {};
     for (const k of Object.keys(cfgs)) if (!keep.has(k)) delete cfgs[k];
+    if (target === 'build') cfgs.noob = require('./build-noob.cjs').noobBuildConfiguration();
     for (const v of views) cfgs[v.key] = target === 'build' ? buildConfiguration(v) : serveConfiguration(v);
     arch[target].configurations = cfgs;
   }

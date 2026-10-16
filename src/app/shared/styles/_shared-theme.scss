@@ -8,6 +8,7 @@
 @use 'ec-footer'; // custom footer band (src/assets/header-footer/footer*.html)
 @use 'ec-dialogs'; // heading sizes in every EC dialog (title bar + body headings)
 @use 'ec-network'; // show/hide by EC network (data-ec-network) + footer lock
+@use 'ec-features'; // notice banners, opening hours (plain-DOM features started in bootstrap.ts)
 
 // Material Symbols icon font from the Google Fonts CDN, for the static HTML
 // (landing page, header, footer) and components alike. The stylesheet defines

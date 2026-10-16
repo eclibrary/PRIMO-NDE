@@ -94,10 +94,14 @@ export class EcSessionComponent implements OnDestroy {
       this.renderer.removeClass(html, 'ec-audience-guest');
       this.renderer.removeClass(html, 'ec-audience-user');
       this.renderer.addClass(html, `ec-audience-${audience}`);
+      // Until one of these two classes is set, every data-ec-audience block is
+      // hidden (_ec-conditional.scss) — so the right variant appears once.
     });
 
     // (5) Reflect the EC network check on <html>. Nothing is set while the
-    //     check runs ('unknown'): the CSS treats that as external.
+    //     check runs ('unknown'): data-ec-network content stays hidden until
+    //     the answer is in (_ec-conditional.scss). A cached answer or a switched-off
+    //     check is already on <html> from early-classes.ts.
     effect(() => {
       const html = document.documentElement;
       const status = this.network.status();
@@ -194,12 +198,13 @@ export class EcSessionComponent implements OnDestroy {
     // Placeholders, resolved at click time so static HTML never goes stale:
     //   {currentYear} → e.g. 2026 (from the visitor's clock), used for date
     //   ranges like mfacet=creationdate,include,[2020 TO {currentYear}].
-    //   {lotgCollectionId} → the Library on the Go collection id from the
-    //   settings (libraryOnTheGo.collectionId), so the landing-page tile and the
-    //   record badge can never point at different collections.
+    //   {lotgCollectionId} → the collection id of the FIRST collection badge
+    //   (settings libraryOnTheGo.badges[0].collectionId — the EC's Library on
+    //   the Go), so the landing-page tile and the record badge can never point
+    //   at different collections. Name kept from the one-badge days.
     const rawQuery = (anchor.dataset['ecQuery'] ?? '')
       .replace(/\{currentYear\}/g, String(new Date().getFullYear()))
-      .replace(/\{lotgCollectionId\}/g, EC_CONFIG.libraryOnTheGo?.collectionId ?? '');
+      .replace(/\{lotgCollectionId\}/g, EC_CONFIG.libraryOnTheGo?.badges?.[0]?.collectionId ?? '');
     const extra = new URLSearchParams(rawQuery);
     // Collect the declared keys with forEach: the project's tsconfig has no
     // "dom.iterable" lib, so URLSearchParams.keys() isn't typed here.

@@ -18,6 +18,8 @@
 //                                   signed-in patron only; nothing remembered for guests
 //        - EcWelcomeMessageComponent no "Don't show this message again" box; the message
 //                                   shows again for every new browser session
+//        - notice-banners.ts        a closed banner is remembered in sessionStorage only,
+//                                   so the idle reset brings it back for the next visitor
 //      Switching kiosk ON also deletes whatever those features stored before
 //      (purgeEcLocalStorage), so nothing from before the switch survives.
 //   2. IDLE RESET: after `kiosk.idleMinutes` (setting, default 60) without any
@@ -33,6 +35,13 @@
 //      (`<span data-ec-kiosk>`) that the CSS in _ec-header.scss only shows then.
 //      Inside it, `<span data-ec-kiosk-minutes>` gets the configured minutes, so
 //      the badge text always matches the setting.
+//   4. KIOSK CONTENT in home page / header / footer HTML (rules in _ec-conditional.scss):
+//        data-ec-kiosk="only"   shown only on reading room PCs
+//        data-ec-kiosk="hide"   hidden on reading room PCs
+//      To show it as early as possible, the class is already set by
+//      markKioskEarly() (via setEarlyClasses() in early-classes.ts) at the very
+//      start of bootstrapRemoteApp — before the settings are fetched — and
+//      re-asserted by showVisualCue() afterwards.
 //
 // NOT COVERED (do it on the PC/browser side): an EU Login session cookie can
 // outlive our reset, so the next visitor clicking "Sign in" might be signed in
@@ -42,8 +51,9 @@
 //
 // WHY A PLAIN MODULE (not an Angular service): it must run on EVERY page,
 // including account and full-record pages where EcSharedRootComponent is not
-// mounted. shared-mappings.ts imports this file, and the mappings are loaded
-// with the custom module on every page, so the code below runs at start-up.
+// mounted. startKiosk() is called by bootstrapRemoteApp (src/bootstrap.ts) —
+// the module's entry point on every page — right after assets/settings.js has
+// been applied (runtime-settings.ts), so idle time and texts are the final ones.
 import { EC_CONFIG, currentLang, currentVid, localised } from './ec-config';
 
 /** localStorage key of the kiosk flag ("1" = on). */
@@ -68,6 +78,8 @@ export function purgeEcLocalStorage(): void {
     EC_CONFIG.lastSearch?.storageKeyPrefix,    // "Pick up where you left off"
     EC_CONFIG.accountCounts?.storageKeyPrefix, // account counts
     'ec:welcomeMessage:',                      // welcome message dismissals
+    'ec:notice:',                              // closed notice banners (NOTICE_DISMISS_PREFIX in
+                                               // notice-banners.ts; literal here to avoid a circular import)
   ].filter((p): p is string => !!p);
   try {
     // Collect first, delete after: removing while iterating shifts the indexes.
@@ -190,12 +202,12 @@ function buildWarning(): HTMLDialogElement {
     #ec-kiosk-warning { border: 0; border-radius: .75rem; padding: 0; width: min(26rem, calc(100vw - 2rem));
       box-shadow: 0 1.5rem 3rem rgba(0,0,0,.3); font: 1rem/1.5 Arial, sans-serif; color: #1b1b1b; }
     #ec-kiosk-warning::backdrop { background: rgba(0,0,0,.45); }
-    #ec-kiosk-warning .ec-kw__bar { background: #004494; color: #fff; padding: .9rem 1.25rem; }
-    #ec-kiosk-warning .ec-kw__title { margin: 0; font: 600 1.125rem/1.3 Arial, sans-serif; color: #fff; }
+    #ec-kiosk-warning .ec-kw__bar { background: var(--ec-blue, #004494); color: var(--ec-on-blue, #fff); padding: .9rem 1.25rem; }
+    #ec-kiosk-warning .ec-kw__title { margin: 0; font: 600 1.125rem/1.3 Arial, sans-serif; color: inherit; }
     #ec-kiosk-warning .ec-kw__text { margin: 0; padding: 1.25rem; }
     #ec-kiosk-warning .ec-kw__foot { display: flex; justify-content: flex-end; padding: 0 1.25rem 1.25rem; }
-    #ec-kiosk-warning .ec-kw__btn { padding: .5rem 1.25rem; border: 0; border-radius: 1.25rem; background: #004494;
-      color: #fff; font: 600 .95rem/1.3 Arial, sans-serif; cursor: pointer; }
+    #ec-kiosk-warning .ec-kw__btn { padding: .5rem 1.25rem; border: 0; border-radius: 1.25rem; background: var(--ec-blue, #004494);
+      color: var(--ec-on-blue, #fff); font: 600 .95rem/1.3 Arial, sans-serif; cursor: pointer; }
     #ec-kiosk-warning .ec-kw__btn:focus-visible { outline: 3px solid #1b1b1b; outline-offset: 2px; }`;
   document.head.appendChild(style);
 
@@ -229,7 +241,7 @@ function showVisualCue(): void {
   const html = document.documentElement;
   const minutes = String(idleMinutes());
   const apply = () => {
-    if (!html.classList.contains('ec-kiosk')) html.classList.add('ec-kiosk');
+    if (!html.classList.contains('ec-kiosk')) setKioskClass(true);
     document.querySelectorAll<HTMLElement>('[data-ec-kiosk-minutes]').forEach((el) => {
       if (el.textContent !== minutes) el.textContent = minutes;
     });
@@ -245,9 +257,50 @@ function showVisualCue(): void {
   }).observe(html, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
 }
 
-// ---- start-up (runs once, when this module is first imported) -------------
-applyUrlSwitch();
-if (kiosk) {
-  showVisualCue();
-  startIdleReset();
+// ---- start-up ------------------------------------------------------------
+let started = false;
+
+/**
+ * Exactly one of `ec-kiosk` / `ec-no-kiosk` on <html>. Content marked
+ * data-ec-kiosk="only"/"hide" stays hidden until one is there (_ec-conditional.scss).
+ */
+function setKioskClass(on: boolean): void {
+  const cl = document.documentElement.classList;
+  cl.toggle('ec-kiosk', on);
+  cl.toggle('ec-no-kiosk', !on);
+}
+
+/**
+ * Put `ec-kiosk` (or `ec-no-kiosk`) on <html> RIGHT AWAY when this browser is (or is being
+ * switched to) a reading room PC — called first thing in bootstrapRemoteApp,
+ * before settings.js is fetched, so kiosk-only / kiosk-hidden content in the
+ * home page switches as early as possible. Side-effect free apart from the
+ * class: the URL switch is stored, storage purged, badge and idle reset
+ * started by startKiosk() later, once the settings are final.
+ */
+export function markKioskEarly(): void {
+  try {
+    const param = new URLSearchParams(window.location.search).get(URL_PARAM);
+    const on = param === '1' || (param !== '0' && localStorage.getItem(KIOSK_KEY) === '1');
+    setKioskClass(on);
+  } catch {
+    setKioskClass(false); // storage blocked → normal mode, as in applyUrlSwitch
+  }
+}
+
+/**
+ * Evaluate the URL switch and, on a kiosk PC, start the badge and idle reset.
+ * Called once by bootstrapRemoteApp (src/bootstrap.ts) AFTER assets/settings.js
+ * has been applied, so the idle time and texts are the final ones. Idempotent.
+ */
+export function startKiosk(): void {
+  if (started) return;
+  started = true;
+  applyUrlSwitch();
+  if (kiosk) {
+    showVisualCue();
+    startIdleReset();
+  } else {
+    setKioskClass(false); // final answer (also corrects markKioskEarly() if needed)
+  }
 }

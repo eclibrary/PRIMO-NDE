@@ -6,6 +6,8 @@
  *   npm run build -- finder       -> one view
  *   npm run build -- finder pubs  -> several
  *   npm run build -- --all        -> every view in views.config.json
+ *   npm run build -- --noob       -> the noob zip for libraries without a developer
+ *                                    (same as npm run build:noob, see build-noob.cjs)
  *   add --dev for an unoptimized build with source maps
  *
  * Each view: prebuild.js -> ng build --configuration production,<view> -> postbuild.js
@@ -16,6 +18,12 @@ const path = require('path');
 const { quoteForShell, toolchainEnv, ROOT, viewKeys, resolveView, readActiveKey } = require('./view-context.cjs');
 
 const args = process.argv.slice(2);
+
+// --noob: build the noob zip instead of views (scripts/build-noob.cjs).
+if (args.includes('--noob')) {
+  const r = spawnSync(process.execPath, [path.join(__dirname, 'build-noob.cjs')], { cwd: ROOT, stdio: 'inherit' });
+  process.exit(r.status ?? 1);
+}
 const dev = args.includes('--dev');
 const all = args.includes('--all');
 const requested = args.filter((a) => !a.startsWith('--'));

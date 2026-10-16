@@ -1,0 +1,39 @@
+// src/app/shared/styles/_ec-no-jump.scss
+//
+// NO JUMPING CONTENT — conditional content stays hidden until the class that
+// decides it is on <html>, instead of showing a default that is replaced a
+// moment later. Which component sets which class: src/app/shared/early-classes.ts.
+//
+// Loaded by _shared-theme.scss (EC views) and by src/noob/core/theme.scss (noob
+// kit). Hide-only rules with !important, so they win over the "show" rules
+// elsewhere (`display: revert`, `display: flex`) while a condition is open.
+//
+// CAVEAT: audience and last search are decided by components of the shared root
+// (EcSharedRootComponent / noob root), which is mounted on the search bar slot.
+// On a page WITHOUT the search bar, audience-gated content in the header or
+// footer therefore stays hidden. Move that root to a slot present on every page
+// (see the TODO in ec-shared-root.component.ts) to lift this.
+
+// Signed in / not signed in.
+html:not(.ec-audience-guest):not(.ec-audience-user) [data-ec-audience] {
+  display: none !important;
+}
+
+// "Pick up where you left off" — and the home page welcome blocks it replaces
+// (html.ec-has-last-search … .welcome[data-ec-audience] in homepage.css /
+// the noob theme), so a welcome block never shows first and is then swapped.
+html:not(.ec-has-last-search):not(.ec-no-last-search) [data-ec-last-search],
+html:not(.ec-has-last-search):not(.ec-no-last-search) .main-landing-page .welcome[data-ec-audience] {
+  display: none !important;
+}
+
+// Reading room PCs.
+html:not(.ec-kiosk):not(.ec-no-kiosk) [data-ec-kiosk='only'],
+html:not(.ec-kiosk):not(.ec-no-kiosk) [data-ec-kiosk='hide'] {
+  display: none !important;
+}
+
+// Network check (first page of a tab only; later pages use the cached answer).
+html:not(.ec-network-ec):not(.ec-network-external) [data-ec-network] {
+  display: none !important;
+}
