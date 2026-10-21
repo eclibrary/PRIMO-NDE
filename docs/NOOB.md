@@ -16,7 +16,9 @@ Output: `dist/ec-nde-noob-<version>.zip` (version = build date and time, e.g.
 4. Uploads the new zip in Alma.
 
 The same four steps install the kit, update it to a newer version, or change
-settings. The instructions are in the page and in the kit's `README.txt`
+settings. Always from a **fresh** download: the maker shows when the zip was
+downloaded and the newest file date in it, and warns when the zip is more than a day old
+(`staleWarning()` in `src/assets/editor/index.html`) — an old zip would undo later changes in Alma. The instructions are in the page and in the kit's `README.txt`
 (source: `src/noob/README.txt`).
 
 ## What is in the kit
@@ -29,6 +31,8 @@ settings. The instructions are in the page and in the kit's `README.txt`
 | `maker/rich-text.js` | the WYSIWYG for HTML messages |
 | `examples/header.html`, `examples/footer.html` | example header bar and footer band using the kit's `.ec-header` / `.ec-footer` styles (go in the library's `assets/header-footer/`) |
 | `examples/homepage_en.html` | example home page for the library's own package: guest/user and network parts, `data-ec-nav` links, "pick up where you left off", loans due, account counts, kiosk content, custom dialogs, opening hours, scheduled content — commented for non-developers (`src/noob/examples/`, copied as is) |
+| `maker/kit.js` → `starter` | starter home page, header and footer (`src/noob/starter/`): the maker offers to ADD the kinds a package lacks (ticked by default only when all three are missing); never replaces the library's own. `STARTER_FILES` in `scripts/build-noob.cjs`, `starterPanel()` in the editor |
+| `examples/FOR-CLAUDE.md` | knowledge file for a Claude project: instructions for Claude (how the kit works, what to edit and what never, HTML rules, how to answer) + README + every setting with its default + the examples. Template `src/noob/FOR-CLAUDE.md`, filled by `forClaude()` in `scripts/build-noob.cjs`; a copy lands in `dist/ec-nde-noob-<version>-FOR-CLAUDE.md`. The build fails if it contains an EC string |
 
 `kit.js` carries the core as data because a page opened from disk (`file://`)
 cannot read the files next to it, but it can load a `<script>`.
@@ -42,13 +46,17 @@ global styles, `version.js` = "the kit is installed, version X"). The maker
 removes those paths before adding the new core, so old hashed chunks never pile
 up (`KIT.coreRule`, defined in `scripts/build-noob.cjs`).
 
-Everything else is the library's and is kept untouched: `custom.css` (created
-empty with a comment when missing), homepage, header/footer, images, and
+Everything else is the library's and is kept untouched: the template's
+`assets/css/custom.css` (their styles) and `assets/js/custom.js` (their small
+scripts) — NDE loads both on every page (verified Oct 2026; a `custom.css` at the
+package top is loaded too) — homepage, header/footer, images, and
 `assets/settings.js` (merged: kit defaults + their values; settings that are new
 in this kit version are tagged "new" in the form; obsolete ones are dropped).
+When a package has no stylesheet at all, the maker adds a starter
+`assets/css/custom.css` with a comment.
 
 Our global styles are NOT in `custom.css` (that file is theirs). The module adds
-`assets/core/ec-core.css` itself, right before their `custom.css`, so their
+`assets/core/ec-core.css` itself, right before their first `custom.css`, so their
 rules win (`src/app/shared/core-styles.ts`; a no-op in the EC view builds).
 
 **Another custom module:** a package with `remoteEntry.js` but without

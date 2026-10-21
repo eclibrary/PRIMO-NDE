@@ -3,8 +3,9 @@
   Clicking the backdrop closes; the panel itself stops the click.
   aria-labelledby ties the dialog's accessible name to the visible title.
 
-  The LibAnswers widget renders into a div inside #widgetHost (one div per
-  widget id; the component creates them). Those divs are kept across opens.
+  The form from the setting "Widget code" (the provider's embed code) goes into
+  #widgetHost (insertEmbed, embed.ts); with resetOnClose it is emptied on close
+  and the embed code runs again on the next open.
 -->
 <dialog #dialog
         class="ec-ask"
@@ -33,8 +34,8 @@
           <a [href]="fallbackHref()" target="_blank" rel="noopener">{{ fallbackHref() }}</a>
         </p>
       }
-      <!-- Widget containers live here; hidden (not removed) while loading so the
-           widget script can render into them, and kept for the next open. -->
+      <!-- The widget lives here; hidden (not removed) while loading so its
+           scripts can render into it. -->
       <div #widgetHost class="ec-ask__widget" [hidden]="state() !== 'ready'"></div>
     </div>
 

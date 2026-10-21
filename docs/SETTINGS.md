@@ -106,6 +106,26 @@ NDE has no slot for "under the menu": the code finds the top bar from NDE's main
 (`[data-qa="main-menu_links"]`) — see the header of `notice-banners.ts`. On a new NDE release, run
 `ecNoticeBanners.probe()` in the browser console to see what it found.
 
+## Search tips
+
+Section `searchTips` — "best bets" between the results (`src/app/shared/search-tips.ts`, plain DOM
+started from `src/bootstrap.ts`; boxes reuse the `.ec-notice` styles of the banners). A list; each
+tip has **terms** (one per line; empty = every search), **match** (`some` = the search contains one
+of the terms as whole words, `exact` = the search is one of the terms; capitals, accents and
+punctuation ignored), **position** (after result #, default 3; fewer results → after the last),
+**text** (HTML per language, sanitised), **style/colour** and **from/until** dates as the banners.
+First results page only. The rows are `nde-search-result-item-container`; their list item is found
+as the child of the element all rows share (wrapped in an `<li>` when that is a list). On a new NDE
+release run `ecSearchTips.probe()` in the console.
+
+## Tabbed lists in the editors
+
+Lists marked `"x-tabs": true` in the schema (custom dialogs, search tips, notice banners, collection
+badges) show one item at a time, as tabs, in all three editors (`tabbed()` in
+`src/assets/editor/index.html` and `scripts/settings-ui/public/app.js`). The tab label comes from the
+item field named in `"x-tabLabel"` (`"x-tabEmptyLabel"` when it is empty); a tab with an error is
+marked. Short lists (Ask-a-librarian prefills) stay as cards.
+
 ## Opening hours
 
 Section `openingHours` (`src/app/shared/opening-hours.ts`, plain DOM). Weekly hours per day
@@ -206,6 +226,38 @@ editor under *Return labels* (right after *Print return label*). The label page
 (`assets/return-label/`) reads them from `settings.js` and falls back to
 `assets/data/libraries.js` (the built-in copy) when it cannot.
 
+## Ask a librarian
+
+Section `askALibrarian` (`src/app/shared/components/ec-ask-librarian/`). Links whose address
+starts with one of `triggerUrlPrefixes` are the Ask-a-librarian links.
+
+**Prefill — always, on the links themselves.** Their `href` is rewritten (on load, after every DOM
+change, on sign-in/out) with URL parameters, so the form opens filled in even in a new tab:
+
+| Setting | Parameter / field | Value |
+|---|---|---|
+| `prefillName` | `nameField` (`pname`) | patron name, JWT claim `userInfo.jwtNameClaim` |
+| `prefillEmail` | `emailField` (`pemail`) | e-mail from Primo's personal details |
+| `customPrefills[]` | `field` | `from: user` → `source` = an Alma user detail (dropdown: `displayName`, `primaryId`, `email`, `address1`–`4`, `city`, `zip`, `state`, `country`, `telephone1`, `smsnumber`, or Other… for any personal_settings field); `from: url` → `source` = a parameter of the Primo page's address (`query`, `docid`, …) |
+| `addContext` | `context.field` (`pdetails`) | marker + title / MMS ID / search terms / link of the current page |
+
+Patron values only for signed-in patrons; empty values are left out. The original href is kept in
+`data-ec-ask-href` and every rewrite starts from it, so a sign-out removes name and e-mail at once.
+
+**`useDialog`** — a plain click opens our dialog with the form from **`widgetCode`** (the
+provider's embed code, run by `src/app/shared/embed.ts`) and fills the same field names inside the
+form for 20 s while it renders and redraws (native value setter + input/change events; fields the
+patron typed in are left alone). LibAnswers draws its form in a closed shadow root: `embed.ts`
+tracks shadow roots from the start (`trackShadowRoots`), so the fill and **`customCss`** get in.
+Hide a field with CSS, e.g. `[name="pdetails"] { display: none; }`. Forms inside an iframe cannot
+be filled — use the link mode. Off: the links simply open their page with the parameters.
+
+Until Oct 2026 the form came from a LibAnswers widget id plus a prefill helper script hosted on
+Europa (`formfillScriptUrl`) — not shippable. Older settings are converted (`migrateLegacySettings`):
+widget id + host → `widgetCode` with `useDialog` on; `prefillFromUser` → the checkboxes and
+`customPrefills`; `prefillStatic`, `hideFields`, `formCssPath` are dropped (Find-eR's form CSS is
+now `askALibrarian.customCss` in `config/views/finder.json`).
+
 ## Custom dialogs
 
 Section `customDialogs` — the library's own pop-up dialogs
@@ -230,8 +282,9 @@ Text is sanitised by Angular (no scripts or inline styles).
 **Widget code** (`widget`) — embed code of a third-party widget (divs + scripts), shown below the
 text and started on the first opening; scripts are re-created so they run, in order, at their
 place in the code. NOT sanitised — the one place where settings.js puts code into Primo (no new
-risk: whoever can edit settings.js can upload the package). Embed codes using `document.write`
-cannot work. The dialog is wider (48rem) when it has a widget.
+risk: whoever can edit settings.js can upload the package). Embed codes that use `document.write`
+(older widgets) work too: `embed.ts` catches it while the embed runs and puts the HTML into the
+widget. The dialog is wider (48rem) when it has a widget.
 
 ## Conditional content (home page, header, footer)
 
@@ -244,6 +297,21 @@ classes on `<html>`:
 | `data-ec-last-search` | a last search is stored | `ec-has-last-search` / `ec-no-last-search` (EcLastSearchComponent) |
 | `data-ec-kiosk="only"` / `"hide"` | only on / not on reading room PCs | `ec-kiosk` / `ec-no-kiosk` (kiosk.ts) |
 | `data-ec-network="ec"` / `"external"` | on / outside the EC network | `ec-network-ec` / `ec-network-external` (NetworkService) |
+
+**"Check connection" button:** `<button type="button" data-ec-network-check>`
+(or `<a href="#ec-network-check">`) runs a LIVE network check on click,
+ignoring the per-tab cache, and updates the classes above and the cache. The
+result is shown in every `[data-ec-network-status]` element of the page, or
+else in a box right after the button: "Checking…", then connected (green) or a
+message explaining the cause and what to do (orange), with folded technical
+details (reason, time, address) for the helpdesk. Reasons: `reached`,
+`offline` (navigator.onLine false), `timeout`, `unreachable` (any network
+error — the browser does not say which), `blocked` (Content-Security-Policy,
+via the securitypolicyviolation event), `insecure` (http:// ping on an https://
+page), `off`. Texts: settings `network.checkingText`, `insideText`,
+`outsideText`, `offlineText`, `blockedText`, `detailsLabel`, `closeLabel`.
+Code: `src/app/shared/network-check.ts` (ping + button), NetworkService
+(`recheck()`), styles `.ec-network-result` in `_ec-network.scss`.
 
 **No jumping content:** conditional content is hidden until one of its two
 classes is on `<html>` (`src/app/shared/styles/_ec-conditional.scss`, one

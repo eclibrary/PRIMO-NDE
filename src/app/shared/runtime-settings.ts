@@ -186,6 +186,34 @@ export function migrateLegacySettings(values: Record<string, any>): void {
       delete d['name'];
     }
   }
+
+  // Oct 2026 — Ask a librarian without the Europa helper script: LibAnswers
+  // widget id + host → embed code (dialog on); prefillFromUser → the name /
+  // e-mail checkboxes + other prefills; prefillStatic, hideFields, formCssPath
+  // and formfillScriptUrl are gone (hiding fields = Custom CSS now).
+  const ask = values?.['askALibrarian'];
+  if (ask && typeof ask === 'object' && ('widgetId' in ask || 'prefillFromUser' in ask)) {
+    const id = String(ask['widgetId']?.['en'] ?? '').trim();
+    const host = String(ask['libanswersHost'] ?? '').trim().replace(/\/+$/, '');
+    if ('widgetId' in ask && !('widgetCode' in ask)) {
+      ask['widgetCode'] = id && host ? `<div id="s-la-widget-${id}"></div>\n<script src="${host}/1.0/widgets/${id}"></script>` : '';
+      ask['useDialog'] = !!(id && host);
+    }
+    const map = ask['prefillFromUser'];
+    if (map && typeof map === 'object' && !Array.isArray(map)) {
+      const custom: Array<{ field: string; source: string }> = [];
+      ask['prefillName'] = false;
+      ask['prefillEmail'] = false;
+      for (const [field, source] of Object.entries<any>(map)) {
+        if (source === 'displayName') { ask['prefillName'] = true; ask['nameField'] = field; }
+        else if (source === 'email') { ask['prefillEmail'] = true; ask['emailField'] = field; }
+        else custom.push({ field, source: String(source) });
+      }
+      ask['customPrefills'] = custom;
+    }
+    if (!('addContext' in ask)) ask['addContext'] = true; // the old form always added it
+    for (const k of ['widgetId', 'libanswersHost', 'formfillScriptUrl', 'prefillFromUser', 'prefillStatic', 'hideFields', 'formCssPath']) delete ask[k];
+  }
 }
 
 /** "string" | "number" | "boolean" | "array" | "object" | "null" | … */

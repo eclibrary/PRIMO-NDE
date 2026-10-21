@@ -123,12 +123,31 @@
   .objlist__item > legend { display:flex; gap:1rem; align-items:baseline; }
   .objlist__remove { font-size:.85rem; font-weight:400; }
   .objlist__hint code { background:#eef1f6; padding:.05rem .3rem; border-radius:.25rem; }
+  /* Tabbed lists ("x-tabs"): one item at a time. */
+  .objlist--tabs .tabs { display:flex; flex-wrap:wrap; gap:.25rem; align-items:flex-end; border-bottom:1px solid var(--line); margin-bottom:.5rem; }
+  .objlist--tabs .tab { border:1px solid var(--line); border-bottom:0; border-radius:.375rem .375rem 0 0; background:#f3f4f6; padding:.35rem .75rem; font:inherit; font-size:.9rem; cursor:pointer; color:var(--ink); max-width:16rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .objlist--tabs .tab[aria-selected="true"] { background:#fff; color:var(--blue); font-weight:600; position:relative; top:1px; }
+  .objlist--tabs .tab.has-error { color:var(--err); }
+  .objlist--tabs .tab.has-error::before { content:'! '; font-weight:700; }
+  .objlist--tabs .tab-add { margin:0 0 .25rem .5rem; padding:.3rem .7rem; font-size:.9rem; }
+  .objlist--tabs > .objlist__item { margin-top:0; }
   /* Colour fields (schema "format": "color"): swatch + #code + Clear. */
   .colour { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
   .colour input[type=color] { width:3rem; height:2.1rem; padding:.1rem; border:1px solid var(--line); border-radius:.375rem; background:#fff; cursor:pointer; }
   .colour input[type=text] { width:8rem; font-family:ui-monospace,Consolas,monospace; }
   .colour .unset { color:var(--muted); font-size:.85rem; }
   input[type=date] { padding:.35rem .5rem; border:1px solid var(--line); border-radius:.375rem; font:inherit; background:#fff; }
+  /* Page tabs: Settings | HTML features (showPage / helpPanel). */
+  .pagetabs { display:flex; gap:.25rem; max-width:62rem; margin:0 auto; padding:.75rem 1.5rem 0; border-bottom:1px solid var(--line); }
+  .pagetabs button { border:1px solid var(--line); border-bottom:0; border-radius:.375rem .375rem 0 0; background:#eef1f6; padding:.45rem 1rem; font:inherit; cursor:pointer; color:var(--ink); }
+  .pagetabs button[aria-selected="true"] { background:#fff; color:var(--blue); font-weight:600; position:relative; top:1px; }
+  .help-page { max-width:62rem; margin:0 auto; padding:1rem 1.5rem 2rem; }
+  .help-card { background:#fff; border:1px solid var(--line); border-radius:.75rem; padding:1rem 1.25rem; margin:0 0 .75rem; }
+  .help-card h2 { font-size:1.05rem; margin:0 0 .35rem; display:flex; gap:.5rem; align-items:baseline; flex-wrap:wrap; }
+  .help-card .needs { font-size:.75rem; font-weight:600; padding:.1rem .5rem; border-radius:1rem; background:#e3f5e6; color:#14421d; }
+  .help-card .needs.setting { background:#fff4d6; color:#4d3800; }
+  .help-card pre { background:#f6f7f9; border:1px solid var(--line); border-radius:.5rem; padding:.6rem .75rem; overflow:auto; font:.85rem/1.45 ui-monospace,Consolas,monospace; margin:.5rem 0 .25rem; white-space:pre; }
+  .help-card .notes { margin:.35rem 0 0; padding-left:1.1rem; color:var(--muted); font-size:.9rem; }
   .drop { border:2px dashed var(--blue); border-radius:.75rem; padding:2rem; text-align:center; background:#fff; }
   @media (max-width: 700px) { .field, .lib { grid-template-columns:1fr; } header, .bar { padding-left:1rem; padding-right:1rem; } }
 </style>
@@ -142,6 +161,8 @@
 <script src="schema.js"></script>
 <!-- WYSIWYG for the HTML messages (shared with the local settings UI). -->
 <script src="rich-text.js"></script>
+<!-- "HTML features" tab: the markup-only features (shared with the settings UI and FOR-CLAUDE.md). -->
+<script src="markup-help.js"></script>
 <!-- /ec:scripts -->
 </head>
 <body>
@@ -149,7 +170,14 @@
   <h1 id="title">Settings editor</h1>
   <p id="subtitle">Loading…</p>
 </header>
+<!-- Page tabs: the settings, and the reference of HTML features (markup-help.js).
+     Shown once settings are loaded; see showPage(). -->
+<nav id="pagetabs" class="pagetabs" role="tablist" aria-label="Page" hidden>
+  <button type="button" role="tab" id="tab-settings" aria-selected="true">Settings</button>
+  <button type="button" role="tab" id="tab-help" aria-selected="false">HTML features</button>
+</nav>
 <main id="main"></main>
+<section id="help" class="help-page" hidden></section>
 <div class="bar">
   <span id="status" class="status"></span>
   <label class="toggle"><input type="checkbox" id="advanced"> Show advanced settings</label>
@@ -274,6 +302,31 @@ function migrateLegacySettings(v) {
       delete d.name;
     }
   }
+
+  // Oct 2026 — Ask a librarian without the Europa helper script (see runtime-settings.ts).
+  const ask = v && v.askALibrarian;
+  if (ask && typeof ask === 'object' && ('widgetId' in ask || 'prefillFromUser' in ask)) {
+    const id = String((ask.widgetId && ask.widgetId.en) || '').trim();
+    const host = String(ask.libanswersHost || '').trim().replace(/\/+$/, '');
+    if ('widgetId' in ask && !('widgetCode' in ask)) {
+      ask.widgetCode = id && host ? `<div id="s-la-widget-${id}"></div>\n<script src="${host}/1.0/widgets/${id}"><\/script>` /* <\/script>: a literal closing tag would end this page's own <script> */ : '';
+      ask.useDialog = !!(id && host);
+    }
+    const map = ask.prefillFromUser;
+    if (map && typeof map === 'object' && !Array.isArray(map)) {
+      const custom = [];
+      ask.prefillName = false;
+      ask.prefillEmail = false;
+      for (const [field, source] of Object.entries(map)) {
+        if (source === 'displayName') { ask.prefillName = true; ask.nameField = field; }
+        else if (source === 'email') { ask.prefillEmail = true; ask.emailField = field; }
+        else custom.push({ field, source: String(source) });
+      }
+      ask.customPrefills = custom;
+    }
+    if (!('addContext' in ask)) ask.addContext = true;
+    for (const k of ['widgetId', 'libanswersHost', 'formfillScriptUrl', 'prefillFromUser', 'prefillStatic', 'hideFields', 'formCssPath']) delete ask[k];
+  }
   return v;
 }
 
@@ -323,7 +376,50 @@ function readFile(file) {
 }
 
 /* ------------------------------------------------------------- rendering */
+/**
+ * PAGE TABS — "Settings" (#main + the bar) and "HTML features" (#help, the
+ * markup-only features from markup-help.js). The tabs appear once there is
+ * something to show and markup-help.js is loaded.
+ */
+function showPage(which) {
+  const help = which === 'help';
+  $('#main').hidden = help;
+  $('#help').hidden = !help;
+  $('#tab-settings').setAttribute('aria-selected', String(!help));
+  $('#tab-help').setAttribute('aria-selected', String(help));
+  if (help && !$('#help').childElementCount) $('#help').append(...helpPanel());
+}
+function initPageTabs() {
+  if (!Array.isArray(window.EC_MARKUP_HELP) || !$('#pagetabs').hidden) return;
+  $('#pagetabs').hidden = false;
+  $('#tab-settings').addEventListener('click', () => showPage('settings'));
+  $('#tab-help').addEventListener('click', () => showPage('help'));
+}
+
+/** The "HTML features" page: one card per entry of window.EC_MARKUP_HELP. */
+function helpPanel() {
+  const intro = el('div', { class: 'intro' },
+    el('p', { style: 'margin:0' }, 'These features need no setting — or only a switch in the settings — but ', el('strong', {}, 'markup in your own HTML'),
+      ': the home page (assets/homepage/), the header and footer (assets/header-footer/). Copy an example into your file and adapt the texts. ',
+      'Full examples with explanations: the kit\'s examples folder (examples/homepage_en.html).'));
+  return [intro, ...window.EC_MARKUP_HELP.map((h) => {
+    const code = el('pre', {}, el('code', {}, h.code));
+    const copy = el('button', { type: 'button', class: 'link', onclick: (e) => {
+      const done = () => { e.target.textContent = 'Copied'; setTimeout(() => { e.target.textContent = 'Copy'; }, 1500); };
+      (navigator.clipboard ? navigator.clipboard.writeText(h.code) : Promise.reject()).then(done, () => {
+        const r = document.createRange(); r.selectNodeContents(code); getSelection().removeAllRanges(); getSelection().addRange(r);
+      });
+    } }, 'Copy');
+    return el('article', { class: 'help-card' },
+      el('h2', {}, h.title, el('span', { class: 'needs' + (h.needs ? ' setting' : '') }, h.needs ? `needs: ${h.needs}` : 'works always')),
+      el('p', { style: 'margin:0' }, h.what),
+      code, copy,
+      Array.isArray(h.notes) && h.notes.length ? el('ul', { class: 'notes' }, h.notes.map((n) => el('li', {}, n))) : null);
+  })];
+}
+
 function render() {
+  initPageTabs();
   const main = $('#main');
   const pkg = (envelope.vid || '<INST>:<VIEW>').replace(':', '-');
   if (KIT) main.replaceChildren(...makerPanels(), languagesPanel());
@@ -538,6 +634,7 @@ function objectList(path, s) {
           // Drop errors of this list; they are re-evaluated when it is drawn again.
           for (const k of [...errors.keys()]) if (k.startsWith(path.join('.') + '.')) errors.delete(k);
           setPath(values, path, next);
+          if (s['x-tabs']) TAB_STATE.set(path.join('.'), Math.max(0, i - 1)); // the tab before it
           render(); openPanel(sectionKey);
         } }, 'Remove')));
     for (const [k, sub] of Object.entries(itemS.properties || {})) {
@@ -550,11 +647,67 @@ function objectList(path, s) {
     }
     box.append(card);
   });
-  box.append(el('button', { type: 'button', class: 'secondary', onclick: () => {
+  const add = el('button', { type: 'button', class: 'secondary', onclick: () => {
     setPath(values, path, [...clone(items()), blankFor(itemS)]);
+    if (s['x-tabs']) TAB_STATE.set(path.join('.'), items().length - 1); // open the new one
     render(); openPanel(sectionKey);
-  } }, `+ Add ${what}`));
+  } }, `+ Add ${what}`);
+  if (s['x-tabs']) return tabbed(path, s, itemS, box, add);
+  box.append(add);
   return box;
+}
+
+/** Selected tab per tabbed list (dot path → index); survives the redraws of render(). */
+const TAB_STATE = new Map();
+
+/**
+ * "x-tabs" (schema, on a list): the items as TABS — one item's fields at a
+ * time — instead of cards under each other (long lists of banners, dialogs,
+ * badges, search tips). The cards built by objectList() become the panels.
+ * Tab label: the item's "x-tabLabel" field (text, first line of a list, the
+ * English of a translated text, HTML without tags), shortened; "x-tabEmptyLabel"
+ * when that field is empty, else "<Item> n". A tab whose fields have an error
+ * is marked, so a problem in a hidden tab is still noticed.
+ * Twin: tabbed() in scripts/settings-ui/public/app.js.
+ */
+function tabbed(path, s, itemS, box, add) {
+  const key = path.join('.');
+  const cards = [...box.children];
+  const n = cards.length;
+  let current = Math.min(TAB_STATE.get(key) ?? 0, Math.max(0, n - 1));
+  const label = (i) => {
+    const item = (getPath(values, path) || [])[i];
+    let v = item ? item[s['x-tabLabel']] : '';
+    if (Array.isArray(v)) v = v.find((x) => String(x).trim()) || '';
+    else if (v && typeof v === 'object') v = v.en || Object.values(v).find(Boolean) || '';
+    v = String(v || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!v) v = s['x-tabEmptyLabel'] && item ? s['x-tabEmptyLabel'] : `${itemS.title || 'Item'} ${i + 1}`;
+    return v.length > 28 ? v.slice(0, 27) + '…' : v;
+  };
+  const strip = el('div', { class: 'tabs', role: 'tablist', 'aria-label': s.title || '' });
+  const buttons = cards.map((card, i) => {
+    const b = el('button', { type: 'button', role: 'tab', class: 'tab', onclick: () => select(i) });
+    card.setAttribute('role', 'tabpanel');
+    return b;
+  });
+  const refresh = () => buttons.forEach((b, i) => {
+    b.textContent = label(i);
+    b.setAttribute('aria-selected', String(i === current));
+    b.classList.toggle('has-error', [...errors.keys()].some((k) => k.startsWith(`${key}.${i}.`)));
+  });
+  const select = (i) => {
+    current = i; TAB_STATE.set(key, i);
+    cards.forEach((c, j) => { c.hidden = j !== i; });
+    refresh();
+  };
+  strip.append(...buttons, add);
+  add.classList.add('tab-add');
+  const wrap = el('div', { class: 'objlist objlist--tabs' }, strip, ...cards);
+  if (!n) wrap.append(el('p', { class: 'desc' }, `No ${(itemS.title || 'item').toLowerCase()}s yet.`));
+  // Labels follow what is typed (and the WYSIWYG, which reports on keyup/change).
+  for (const ev of ['input', 'change', 'keyup']) wrap.addEventListener(ev, () => refresh());
+  select(current);
+  return wrap;
 }
 
 /**
@@ -610,10 +763,59 @@ function section(key, s) {
   d.append(el('summary', {}, el('h2', {}, s.title || key), ...chips, changed),
     el('div', { class: 'section-body' },
       s.description ? el('p', { class: 'desc' }, s.description) : null,
+      s['x-kioskLinks'] ? kioskLinks() : null,
       ...fields([key], s)));
   d.dataset.key = key;
   d._changed = changed;
   return d;
+}
+
+/**
+ * "x-kioskLinks" (schema, kiosk section): the two addresses that switch a
+ * reading room PC to kiosk mode and back, for this view, with Copy buttons.
+ * The page does not know the Primo address (it is opened from the package, or
+ * from disk), so there is a box for it, remembered in this browser only.
+ * The parameter is read by src/app/shared/kiosk.ts (ec_kiosk=1 / ec_kiosk=0).
+ * Twin: kioskLinks() in scripts/settings-ui/public/app.js.
+ */
+function kioskLinks() {
+  const KEY = 'ec-editor:primoAddress';
+  let saved = '';
+  try { saved = localStorage.getItem(KEY) || ''; } catch { /* storage blocked */ }
+  const host = el('input', { type: 'url', value: saved, placeholder: 'https://yourlibrary.primo.exlibrisgroup.com',
+    'aria-label': 'Primo address', style: 'max-width:28rem' });
+  const rows = el('div', {});
+  const draw = () => {
+    const vid = (KIT ? maker.vid : envelope && envelope.vid) || 'INST:VIEW';
+    const base = (host.value.trim() || 'https://yourlibrary.primo.exlibrisgroup.com').replace(/\/+$/, '');
+    const url = (on) => `${base}/nde/home?vid=${vid}&ec_kiosk=${on ? 1 : 0}`;
+    rows.replaceChildren(...[[true, 'Switch a PC ON'], [false, 'Switch it OFF again']].map(([on, label]) => {
+      const code = el('code', {}, url(on));
+      return el('p', { class: 'desc', style: 'margin:.25rem 0' }, el('strong', {}, label + ': '), code, ' ',
+        el('button', { type: 'button', class: 'link', onclick: (e) => {
+          const done = () => { e.target.textContent = 'Copied'; setTimeout(() => { e.target.textContent = 'Copy'; }, 1500); };
+          (navigator.clipboard ? navigator.clipboard.writeText(code.textContent) : Promise.reject()).then(done, () => {
+            const r = document.createRange(); r.selectNodeContents(code); getSelection().removeAllRanges(); getSelection().addRange(r);
+          });
+        } }, 'Copy'));
+    }));
+  };
+  host.addEventListener('input', () => { try { localStorage.setItem(KEY, host.value.trim()); } catch { /* ignore */ } });
+  // Redraw on every input in the page: the address box, and the maker's view
+  // code field (the links carry the view code). Stops once the box is gone.
+  const onInput = () => { if (!rows.isConnected && rows.childNodes.length) { document.removeEventListener('input', onInput); return; } draw(); };
+  document.addEventListener('input', onInput);
+  draw();
+  return el('div', { class: 'intro', style: 'margin:.5rem 0 1rem' },
+    el('p', { class: 'desc', style: 'margin:0 0 .4rem' }, 'Your Primo address (only to build the links below; not saved in the settings): '), host, rows,
+    el('p', { class: 'desc', style: 'margin:.4rem 0 0' }, 'Open the first address once on each reading room PC (or make it the start page). The PC stays in kiosk mode until the second address is opened on it.'));
+}
+
+/** Are the "x-choices" of `s` in force? Every sibling named in "x-choicesWhen" must have the given value (missing = the sibling's schema default). */
+function choicesActive(path, s) {
+  if (!Array.isArray(s['x-choices'])) return false;
+  const when = s['x-choicesWhen'] || {};
+  return Object.entries(when).every(([k, want]) => (getPath(values, [...path.slice(0, -1), k]) ?? want) === want);
 }
 
 function fields(path, s) {
@@ -667,8 +869,31 @@ function field(path, s, opts = {}) {
   } else if (k === 'enum') {
     // "x-enumNames" (same order as "enum") = what the user sees; the value stays the code.
     const names = Array.isArray(s['x-enumNames']) ? s['x-enumNames'] : [];
-    control.append(el('select', { id, onchange: (e) => set(e.target.value) },
-      s.enum.map((opt, i) => el('option', { value: opt, selected: opt === value }, names[i] || (opt === '' ? '(none)' : opt)))));
+    // "x-rerender": other fields depend on this choice (e.g. a prefill's "From"
+    // decides how its "Value" is asked) — redraw the section after a change.
+    control.append(el('select', { id, onchange: (e) => {
+      set(e.target.value);
+      if (s['x-rerender']) { render(); openPanel(path[0]); }
+    } }, s.enum.map((opt, i) => el('option', { value: opt, selected: opt === value }, names[i] || (opt === '' ? '(none)' : opt)))));
+  } else if (k === 'string' && choicesActive(path, s)) {
+    // "x-choices": a dropdown of known values plus "Other…" with a text box —
+    // e.g. the Alma user details for a prefill. Only while the sibling fields
+    // named in "x-choicesWhen" have those values (e.g. from = "user");
+    // otherwise the plain text box below.
+    const known = s['x-choices'].map((c) => c.value);
+    const other = el('input', { type: 'text', value: known.includes(value) ? '' : (value ?? ''), placeholder: 'field name',
+      'aria-label': `${s.title || ''} — other`, style: 'margin-top:.35rem', oninput: (e) => set(e.target.value.trim()) });
+    other.hidden = known.includes(value) || !value;
+    const OTHER = '__other__';
+    const select = el('select', { id, onchange: (e) => {
+      const v = e.target.value;
+      other.hidden = v !== OTHER;
+      if (v === OTHER) { other.focus(); set(other.value.trim()); } else set(v);
+    } },
+      el('option', { value: '', selected: !value }, '— choose —'),
+      s['x-choices'].map((c) => el('option', { value: c.value, selected: c.value === value }, c.label || c.value)),
+      el('option', { value: OTHER, selected: !!value && !known.includes(value) }, 'Other…'));
+    control.append(select, other);
   } else if (k === 'string') {
     // Schema "pattern" (e.g. a custom dialog's name): checked on every key
     // stroke and right away, so an empty new item blocks the download/package.
@@ -873,7 +1098,7 @@ const VID_RE = /^[A-Za-z0-9_]+:[A-Za-z0-9_-]+$/;
 /** First screen: what this is, the steps, and where to drop the zip. */
 function makerStart() {
   Object.assign(maker, { sourceName: '', files: new Map(), installed: null, foreignModule: false, replaceConfirmed: false,
-    settingsFrom: '', newPaths: new Set(), vid: '', done: '' });
+    settingsFrom: '', newPaths: new Set(), vid: '', done: '', newest: null, zipDate: null, addStarter: null });
   envelope = null; values = null; original = null;
   errors.clear();
   document.title = 'Package maker — NOOB: NDE Out Of the Box';
@@ -906,7 +1131,7 @@ function makerStart() {
       el('h2', {}, 'What this does'),
       el('p', { style: 'margin:0' }, 'It adds the EC Library features to your Primo NDE view — or updates them — and lets you set them up, ',
         'without any technical tools. You end up with one zip file to upload in Alma. Your own files in the package ',
-        '(styles, home page, header, footer, images) are kept as they are.')),
+        '(styles, scripts, home page, header, footer, images) are kept as they are.')),
     el('div', { class: 'maker-box' },
       el('h2', {}, 'Steps'),
       el('ol', { class: 'steps' },
@@ -919,6 +1144,9 @@ function makerStart() {
         el('li', {}, el('strong', {}, 'Upload the new zip in Alma: '), 'same tab, "Upload Package", choose the zip next to ',
           '"Customization Package" and click "Upload". Primo shows the changes after a few minutes (reload the page).')),
       el('p', { class: 'desc' }, 'To change settings later, or to install a newer kit: do the same again with the package from Alma.'),
+      el('p', {}, el('strong', {}, 'Always start from a fresh download. '),
+        'Never reuse an older zip from your Downloads folder: whatever was changed in the package since (a new image, ',
+        'an edited home page, settings) would be undone when you upload the result.'),
       el('p', { class: 'desc' }, 'Home page features (last search, loans due, account counts, parts for guests, signed-in visitors or your network), ',
         'and a header and footer: see the examples in the kit\'s "examples" folder and README.txt, "Your home page". ',
         'Colours follow the Color Theme picked for the view in Alma.')),
@@ -943,6 +1171,13 @@ async function loadPackageZip(file) {
   const root = tops.size === 1 && entries.every((f) => f.name.includes('/')) ? [...tops][0] : '';
   const files = new Map(entries.map((f) => [root ? f.name.slice(root.length + 1) : f.name, f.data]));
 
+  // How fresh is this zip? (shown in "Your package"; see staleWarning)
+  //   newest — the most recent file date stored in the zip (when it was last changed in the package);
+  //   zipDate — when the zip itself was saved on this computer, i.e. downloaded from Alma.
+  const dated = entries.filter((f) => f.modified).sort((a, b) => b.modified - a.modified);
+  const newest = dated.length ? { date: dated[0].modified, name: root ? dated[0].name.slice(root.length + 1) : dated[0].name } : null;
+  const zipDate = file.lastModified ? new Date(file.lastModified) : null;
+
   // A zip of a whole kit or of anything else: refuse early, with a hint.
   if (files.has('START HERE.html') || files.has('maker/kit.js')) {
     setStatus('That is the kit itself. Drop the customization package downloaded from Alma.', true); return;
@@ -965,7 +1200,7 @@ async function loadPackageZip(file) {
   const vid = (env && VID_RE.test(env.vid || '') && env.vid) || fromName(root) || fromName(file.name.replace(/\.zip$/i, '').replace(/\s*\(\d+\)$/, '')) || '';
 
   Object.assign(maker, { sourceName: file.name, files, installed, foreignModule: files.has('remoteEntry.js') && !installed,
-    replaceConfirmed: false, done: '' });
+    replaceConfirmed: false, done: '', newest, zipDate, addStarter: null });
   maker.settingsFrom = env ? `from your package (last saved ${formatDate(env.savedAt)})` : 'default settings (first installation)';
   begin(env, vid);
 }
@@ -1027,6 +1262,63 @@ function mergeDefaults(def, have, path) {
   return clone(def);
 }
 
+/**
+ * Warning box when the dropped zip looks old: saved on this computer (i.e.
+ * downloaded from Alma) more than STALE_HOURS ago. The file date in the zip is
+ * shown in "Your package" too, but Alma may stamp every file with the time it
+ * made the zip, so the download date is the more reliable sign. null = fresh
+ * enough, or no package dropped.
+ */
+const STALE_HOURS = 24;
+function staleWarning() {
+  if (!maker.sourceName || !maker.zipDate || maker.done) return null;
+  const hours = (Date.now() - maker.zipDate.getTime()) / 36e5;
+  if (hours < STALE_HOURS) return null;
+  const days = Math.floor(hours / 24);
+  return el('div', { class: 'maker-box warn' },
+    el('h2', {}, `This zip was downloaded ${days === 1 ? 'yesterday' : `${days} days ago`}`),
+    el('p', {}, `${maker.sourceName} was saved on this computer on ${formatDate(maker.zipDate.toISOString())}. `,
+      'If anything changed in the package in Alma since then (an image, a page, the settings), the zip you make here would undo it. ',
+      'Unless you are sure nothing changed: download the package from Alma again and drop that one ("Start again", top right).'));
+}
+
+/**
+ * STARTER PAGES (KIT.starter, from src/noob/starter/): a clean home page,
+ * header and footer that work as they are, for a package that has none of that
+ * kind. Only the missing kinds are offered — a library's own file is never
+ * replaced (any homepage_*.html counts as "has a home page", any header*.html
+ * as "has a header", …). Ticked by default when ALL three are missing (a new
+ * view), unticked otherwise.
+ */
+const STARTER_KINDS = [
+  { path: 'assets/homepage/homepage_en.html', has: /^assets\/homepage\/homepage(_[a-z]{2})?\.html$/, label: 'home page' },
+  { path: 'assets/header-footer/header.html', has: /^assets\/header-footer\/header(_[a-z]{2})?\.html$/, label: 'header' },
+  { path: 'assets/header-footer/footer.html', has: /^assets\/header-footer\/footer(_[a-z]{2})?\.html$/, label: 'footer' },
+];
+/** Starter files this package lacks (path + label). */
+function missingStarters() {
+  if (!KIT || !KIT.starter) return [];
+  const paths = [...maker.files.keys()];
+  return STARTER_KINDS.filter((k) => KIT.starter[k.path] && !paths.some((p) => k.has.test(p)));
+}
+function starterPanel() {
+  const missing = missingStarters();
+  if (!missing.length || maker.done) return null;
+  if (maker.addStarter === null) maker.addStarter = missing.length === STARTER_KINDS.length;
+  const names = missing.map((k) => k.label);
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0];
+  const box = el('input', { type: 'checkbox', id: 'add-starter', checked: maker.addStarter,
+    onchange: (e) => { maker.addStarter = e.target.checked; } });
+  return el('div', { class: 'maker-box' },
+    el('h2', {}, `Your package has no ${list}`),
+    el('p', {}, el('label', { for: 'add-starter' }, box, ' ', el('strong', {}, `Add a starter ${list}`)),
+      ' — simple pages that work as they are, using the kit\'s features (welcome for guests and signed-in visitors, ',
+      '"pick up where you left off", loans due, account counts, opening hours). Replace the texts marked [YOUR …] later.'),
+    el('p', { class: 'desc' }, 'Files added: ', ...missing.flatMap((k, i) => [i ? ', ' : '', el('code', {}, k.path)]), '. ',
+      'Primo shows the home page only when, in Alma, the view\'s Landing Page settings use the HTML file. ',
+      'The kit\'s examples folder has fuller examples of every feature.'));
+}
+
 /** The boxes above the settings: summary, view code, warnings, next steps. */
 function makerPanels() {
   const panels = [];
@@ -1062,6 +1354,10 @@ function makerPanels() {
     el('dl', {},
       el('dt', {}, 'Package from Alma'), el('dd', {}, maker.sourceName || 'none — a new package is made'),
       el('dt', {}, 'Your own files kept'), el('dd', {}, kept.length ? `${kept.length} (styles, pages, images …)` : 'none'),
+      maker.zipDate ? el('dt', {}, 'Downloaded') : null,
+      maker.zipDate ? el('dd', {}, formatDate(maker.zipDate.toISOString())) : null,
+      maker.newest ? el('dt', {}, 'Newest file in it') : null,
+      maker.newest ? el('dd', {}, `${formatDate(maker.newest.date.toISOString())} (${maker.newest.name})`) : null,
       el('dt', {}, 'EC Library kit'), el('dd', {}, kit),
       el('dt', {}, 'Settings'), el('dd', {}, maker.settingsFrom,
         maker.newPaths.size ? ` — ${maker.newPaths.size} new setting${maker.newPaths.size === 1 ? '' : 's'} in this version, marked "new" below` : '')),
@@ -1069,6 +1365,14 @@ function makerPanels() {
       el('label', {}, el('strong', {}, 'View code '), el('span', { class: 'desc' }, '(as in the Primo address after vid=)')),
       vidInput),
     vidErr));
+
+  // An old zip? Warn — uploading its result would undo what changed in Alma since.
+  const stale = staleWarning();
+  if (stale) panels.push(stale);
+
+  // Starter pages for a package without a home page / header / footer.
+  const starterBox = starterPanel();
+  if (starterBox) panels.push(starterBox);
 
   if (maker.foreignModule) {
     const box = el('input', { type: 'checkbox', id: 'replace-module', checked: maker.replaceConfirmed,
@@ -1090,9 +1394,16 @@ function isCorePath(p) {
   return (!p.includes('/') && new RegExp(rule.rootFiles).test(p)) || rule.folders.some((f) => p.startsWith(f));
 }
 
-/** Starter custom.css for a package that has none: the library's own styles go here. */
+/**
+ * Starter assets/css/custom.css for a package that has no stylesheet of its
+ * own yet — that is where Ex Libris' template keeps the library's styles, and
+ * NDE loads it on every page (as it does assets/js/custom.js). Until Oct 2026
+ * the maker created a custom.css at the package top instead; NDE loads that one
+ * too, so packages that have it keep it and get no second file.
+ */
+const STARTER_CSS_PATH = 'assets/css/custom.css';
 const STARTER_CSS =
-  '/* custom.css — YOUR OWN styles for this Primo view.\n' +
+  '/* assets/css/custom.css — YOUR OWN styles for this Primo view.\n' +
   '   The EC Library package maker never changes this file once it exists.\n' +
   '   Example — another colour for the kit\'s links and badges:\n' +
   '     :root { --ec-blue: #7a003c; }\n' +
@@ -1118,7 +1429,9 @@ async function makePackage() {
     for (const [p, b64] of Object.entries(KIT.files)) {
       out.push({ name: `${folder}/${p}`, data: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)) });
     }
-    if (!maker.files.has('custom.css')) out.push({ name: `${folder}/custom.css`, data: STARTER_CSS });
+    if (!maker.files.has(STARTER_CSS_PATH) && !maker.files.has('custom.css')) out.push({ name: `${folder}/${STARTER_CSS_PATH}`, data: STARTER_CSS });
+    // Starter pages (see starterPanel): only the missing kinds, only when ticked.
+    if (maker.addStarter) for (const k of missingStarters()) out.push({ name: `${folder}/${k.path}`, data: KIT.starter[k.path] });
     const env = { ...envelope, format: 1, vid: maker.vid, savedAt: new Date().toISOString(), savedBy: 'package maker',
       kitVersion: KIT.version, languages, values };
     out.push({ name: `${folder}/assets/settings.js`, data: settingsJsText(env,

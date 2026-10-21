@@ -105,6 +105,31 @@ function migrateLegacySettings(values) {
       delete d.name;
     }
   }
+
+  // Oct 2026 — Ask a librarian without the Europa helper script (see runtime-settings.ts).
+  const ask = values && values.askALibrarian;
+  if (ask && typeof ask === 'object' && ('widgetId' in ask || 'prefillFromUser' in ask)) {
+    const id = String((ask.widgetId && ask.widgetId.en) || '').trim();
+    const host = String(ask.libanswersHost || '').trim().replace(/\/+$/, '');
+    if ('widgetId' in ask && !('widgetCode' in ask)) {
+      ask.widgetCode = id && host ? `<div id="s-la-widget-${id}"></div>\n<script src="${host}/1.0/widgets/${id}"></script>` : '';
+      ask.useDialog = !!(id && host);
+    }
+    const map = ask.prefillFromUser;
+    if (map && typeof map === 'object' && !Array.isArray(map)) {
+      const custom = [];
+      ask.prefillName = false;
+      ask.prefillEmail = false;
+      for (const [field, source] of Object.entries(map)) {
+        if (source === 'displayName') { ask.prefillName = true; ask.nameField = field; }
+        else if (source === 'email') { ask.prefillEmail = true; ask.emailField = field; }
+        else custom.push({ field, source: String(source) });
+      }
+      ask.customPrefills = custom;
+    }
+    if (!('addContext' in ask)) ask.addContext = true;
+    for (const k of ['widgetId', 'libanswersHost', 'formfillScriptUrl', 'prefillFromUser', 'prefillStatic', 'hideFields', 'formCssPath']) delete ask[k];
+  }
   return values;
 }
 
@@ -369,11 +394,12 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   try {
     if (url.pathname.startsWith('/api/')) return await handleApi(req, res, url);
-    // The WYSIWYG editor lives with the package editor (one implementation for both).
-    if (url.pathname === '/rich-text.js') {
-      const rte = path.join(ROOT, 'src', 'assets', 'editor', 'rich-text.js');
+    // The WYSIWYG editor and the "HTML features" list live with the package
+    // editor (one implementation for both).
+    if (url.pathname === '/rich-text.js' || url.pathname === '/markup-help.js') {
+      const shared = path.join(ROOT, 'src', 'assets', 'editor', url.pathname.slice(1));
       res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
-      return res.end(fs.readFileSync(rte));
+      return res.end(fs.readFileSync(shared));
     }
     const file = path.join(PUBLIC_DIR, url.pathname === '/' ? 'index.html' : url.pathname);
     if (!file.startsWith(PUBLIC_DIR) || !fs.existsSync(file)) return send(res, 404, 'not found', 'text/plain');

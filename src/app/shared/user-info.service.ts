@@ -1,7 +1,8 @@
 // src/app/shared/user-info.service.ts
 //
 // Fetches the signed-in patron's details (name, e-mail, …) from Primo, for
-// features that need them — currently prefilling the Ask-a-librarian form.
+// features that need them — currently prefilling the Ask-a-librarian links/form
+// (name, e-mail, and any personal_settings field via `fields`).
 //
 // HOW: the NDE shell talks to private Primo REST endpoints under /primaws/rest/priv/
 // with the session JWT as a Bearer token. We do the same with `fetch`, on the
@@ -55,7 +56,9 @@ export class UserInfoService {
         console.warn(`[ec] user info request failed: ${res.status} ${url}`);
         return null;
       }
-      const info = cfg.mapResponse(await res.json());
+      const json = await res.json();
+      const info = cfg.mapResponse(json);
+      info.fields = unwrapFields(json);
       // Name and primary id are not in personal_settings; take them from the JWT.
       if (jwt) {
         info.displayName ??= this.jwtClaim(jwt, cfg.jwtNameClaim);
@@ -88,4 +91,21 @@ export class UserInfoService {
       return undefined;
     }
   }
+}
+
+/**
+ * Every field of the personal_settings answer as a plain string map: each field
+ * is `{ value, maxlen, usage, … }` (or occasionally a bare string); empty and
+ * non-text values are left out. Used by prefills that name any field.
+ */
+function unwrapFields(json: any): Record<string, string> {
+  const out: Record<string, string> = {};
+  const data = json?.data;
+  if (!data || typeof data !== 'object') return out;
+  for (const [key, field] of Object.entries<any>(data)) {
+    const v = typeof field === 'string' ? field : field?.value;
+    if (typeof v === 'string' && v.trim()) out[key] = v.trim();
+    else if (typeof v === 'number') out[key] = String(v);
+  }
+  return out;
 }

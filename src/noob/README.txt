@@ -30,6 +30,10 @@ The same four steps every time.
    "Download" next to "Current View Customization Package". You get a zip
    file named after your view, for example 44ABC_INST-MAIN.zip.
    Do not unzip it.
+   ALWAYS START FROM A FRESH DOWNLOAD. Never reuse an older zip from your
+   Downloads folder: whatever was changed in the package since (a new image,
+   an edited home page, settings) would be undone when you upload the
+   result. The package maker warns you when the zip is more than a day old.
    (The page says "No Package Loaded"? Then the view has no package yet:
    skip this step and choose "Start without a package" in step 2.)
 
@@ -58,8 +62,9 @@ your view exactly as it was.
 
 GOOD TO KNOW
 ------------
-- YOUR OWN FILES ARE KEPT. Your styles (custom.css), home page, header,
-  footer and images stay exactly as they are. The package maker only replaces
+- YOUR OWN FILES ARE KEPT. Your styles (assets\css\custom.css), your
+  scripts (assets\js\custom.js), home page, header, footer and images stay
+  exactly as they are. The package maker only replaces
   its own program files and the settings file (assets/settings.js).
 
 - COLOURS. The kit uses the colour theme you pick for the view in Alma
@@ -67,11 +72,27 @@ GOOD TO KNOW
   buttons, header and footer bars and the home page links all follow it.
   Changed the theme? Nothing to do here — reload Primo after a few minutes.
 
-- YOUR STYLES. Put your own CSS in custom.css (in the package). It is never
+- YOUR STYLES. Put your own CSS in assets\css\custom.css (the file from
+  Ex Libris' template package; Primo loads it on every page). It is never
   changed by the package maker, and it wins over the kit's styles. Example —
   a colour of your own instead of the Alma theme:
       :root { --ec-blue: #7a003c; --ec-on-blue: #fff; }
   (--ec-blue = the main colour, --ec-on-blue = text on it.)
+  (A custom.css at the top of the package folder is loaded too, so older
+  packages keep working; use one of the two, not both.)
+
+- YOUR OWN SCRIPTS. Small scripts of your own go in assets\js\custom.js
+  (also from the template; Primo loads it on every page, and the package
+  maker never changes it). NOT in the home page, header or footer: Primo
+  removes <script> from those. Keep scripts small, and remember that Primo
+  draws its pages after your script has started — so wait for the elements
+  you need instead of expecting them to be there. Check first whether the kit
+  already does what you want (settings, data-ec-… attributes): that is safer.
+
+- NO HOME PAGE, HEADER OR FOOTER YET? When your package has none, the
+  package maker offers to add a STARTER home page, header and footer: simple
+  pages that work as they are, with the texts to replace marked [YOUR …].
+  It never replaces pages you already have.
 
 - YOUR HOME PAGE. The kit can add things to your home page (the part
   below the search box): a "Pick up where you left off" link to the
@@ -86,6 +107,10 @@ GOOD TO KNOW
   START HERE.html as usual — your home page is kept.
   Switch on "Loans due soon" and "Account counts on the landing page" in the
   settings; "Network check" for the network parts.
+  A "Check connection" button (also in the example) lets visitors check
+  the network again, e.g. after switching on the VPN; when they are not on
+  the network it explains why and what to do. Write that advice (your VPN,
+  whom to contact) in the "Network check" settings.
 
 - READING ROOM PCs. Open Primo once on such a PC with &ec_kiosk=1 added to
   the address (&ec_kiosk=0 switches it off). The kit then clears what the
@@ -110,6 +135,21 @@ GOOD TO KNOW
   loads the first time the dialog opens. This code RUNS in your Primo:
   paste only code from providers you trust.
 
+- ASK A LIBRARIAN. Your "ask us a question" links (section "Ask a
+  librarian"): list the start of their address under "Ask a librarian
+  links", e.g. https://yourlibrary.libanswers.com/form?queue_id=1234. Every
+  such link in your home page, header, footer or menu then carries the
+  signed-in visitor's name and e-mail (tick which), other values you choose
+  ("Other prefills": a detail from Alma, e.g. address line 2 for a
+  department field, or a parameter of the Primo page, e.g. query), and — with "Add context to the details" — what they
+  were looking at (record title, search terms, link). The form opens filled
+  in, as long as it reads those from its address (LibAnswers forms do: use
+  the form's field names, e.g. pname, pemail, pdetails).
+  Tick "Use dialog" to open the form in a pop-up instead: paste the form's
+  embed code in "Widget code" (LibAnswers: Admin > Widgets > your question
+  form > embed code). Hide or restyle parts of it with "Custom CSS", e.g.
+  [name="pdetails"] { display: none; }
+
 - NOTICE BANNERS. Coloured message bars on every page — "Closed on 1 May",
   "New: chat with a librarian". Section "Notice banners" of the package maker:
   add as many as you need. Each has its text (per language), a place (above
@@ -118,6 +158,14 @@ GOOD TO KNOW
   colour with the colour picker — the text turns black or white by itself so
   it stays readable), optional first and last day, and optionally a × to
   close it. A closed banner stays closed in that browser until you change it.
+
+- SEARCH TIPS. A box between the search results when a search contains
+  certain words — e.g. "Looking for statistics? Try …" after result 3 for any
+  search with "statistics". Section "Search tips": add a tip per subject, with
+  its words (one per line; leave empty for EVERY search), whether the search
+  must contain one of them or be exactly one of them, after which result it
+  goes, its text and colour, and optional dates. Shown on the first page of
+  results only.
 
 - OPENING HOURS. Fill in your weekly hours and the exceptions (public
   holidays, closures) in the section "Opening hours". Your home page, header

@@ -229,11 +229,33 @@ function renderField(key, schema, path, ctx) {
     case 'enum': {
       // "x-enumNames" (same order as "enum") = what is shown; the value stays the code.
       const names = Array.isArray(schema['x-enumNames']) ? schema['x-enumNames'] : [];
-      const sel = el('select', { onchange: (e) => onChange(e.target.value) }, schema.enum.map((o, i) => el('option', { value: o, ...(o === value ? { selected: '' } : {}) }, names[i] || o)));
+      // "x-rerender": other fields depend on this choice (a prefill's "From") — redraw after a change.
+      const sel = el('select', { onchange: (e) => { onChange(e.target.value); if (schema['x-rerender']) render(); } }, schema.enum.map((o, i) => el('option', { value: o, ...(o === value ? { selected: '' } : {}) }, names[i] || o)));
       control.append(sel);
       break;
     }
     case 'string': {
+      // "x-choices": dropdown of known values + "Other…" (e.g. Alma user details),
+      // while the siblings named in "x-choicesWhen" have those values. Twin of
+      // the package editor's (src/assets/editor/index.html).
+      const when = schema['x-choicesWhen'] || {};
+      const active = Array.isArray(schema['x-choices'])
+        && Object.entries(when).every(([k, want]) => (getPath(ctx.data, [...path.slice(0, -1), k]) ?? want) === want);
+      if (active) {
+        const known = schema['x-choices'].map((c) => c.value);
+        const OTHER = '__other__';
+        const other = el('input', { type: 'text', value: known.includes(value) ? '' : (value ?? ''), placeholder: 'field name', oninput: (e) => onChange(e.target.value.trim()) });
+        if (known.includes(value) || !value) other.hidden = true;
+        const sel = el('select', { onchange: (e) => {
+          const v = e.target.value; other.hidden = v !== OTHER;
+          if (v === OTHER) { other.focus(); onChange(other.value.trim()); } else onChange(v);
+        } },
+          el('option', { value: '', ...(!value ? { selected: '' } : {}) }, '— choose —'),
+          schema['x-choices'].map((c) => el('option', { value: c.value, ...(c.value === value ? { selected: '' } : {}) }, c.label || c.value)),
+          el('option', { value: OTHER, ...(value && !known.includes(value) ? { selected: '' } : {}) }, 'Other…'));
+        control.append(sel, other);
+        break;
+      }
       // Schema "pattern" (e.g. a custom dialog's name): shown as a hint while
       // typing; the server validates it again on Save.
       const hint = el('p', { class: 'hint error' });
@@ -285,11 +307,15 @@ function renderField(key, schema, path, ctx) {
       const itemS = resolve(schema.items);
       const what = (itemS.title || 'item').toLowerCase();
       const items = clone(value ?? []);
+      // Tabbed lists ("x-tabs"): which tab is open, per view tab and list.
+      const tabKey = `${active}|${path.join('.')}`;
+      const cards = [];
       const sub = { data: { items }, overrides: null, onAnyChange: () => onChange(clone(items)) };
       items.forEach((item, i) => {
         const card = el('fieldset', { class: 'objlist-item' }, el('legend', {}, `${itemS.title || 'Item'} ${i + 1} `,
           el('button', { type: 'button', class: 'link', onclick: () => {
             if (!confirm(`Remove ${what} ${i + 1}${item?.selector ? ` (${item.selector})` : ''}?`)) return;
+            if (schema['x-tabs']) TAB_STATE.set(tabKey, Math.max(0, i - 1)); // the tab before it
             items.splice(i, 1); onChange(clone(items)); render();
           } }, 'Remove')));
         for (const [k, s2] of Object.entries(itemS.properties || {})) {
@@ -311,15 +337,18 @@ function renderField(key, schema, path, ctx) {
             card.append(el('p', { class: 'hint' }, lead, code));
           }
         }
-        control.append(card);
+        cards.push(card);
       });
       // Two custom dialogs opening from the same thing: the first would always win.
       const triggers = items.map((it) => (it?.selector || '').trim()).filter(Boolean);
       const dup = triggers.find((n, i) => triggers.indexOf(n) !== i);
       if (dup) control.append(el('p', { class: 'hint error' }, `Two ${what}s open from "${dup}" — each needs its own "Opens from".`));
-      control.append(el('button', { type: 'button', class: 'add secondary', onclick: () => {
+      const addBtn = el('button', { type: 'button', class: 'add secondary', onclick: () => {
+        if (schema['x-tabs']) TAB_STATE.set(tabKey, items.length); // open the new one
         items.push(blankFor(itemS)); onChange(clone(items)); render();
-      } }, `+ Add ${what}`));
+      } }, `+ Add ${what}`);
+      if (schema['x-tabs']) control.append(tabbed(tabKey, schema, itemS, items, cards, addBtn));
+      else control.append(...cards, addBtn);
       break;
     }
     case 'list':
@@ -393,6 +422,63 @@ function renderField(key, schema, path, ctx) {
     field.append(el('div', { class: 'override' }, btn));
   }
   return field;
+}
+
+/**
+ * "x-kioskLinks" (schema, kiosk section): the addresses that switch a reading
+ * room PC to kiosk mode (ec_kiosk=1) and back (ec_kiosk=0) — read by
+ * src/app/shared/kiosk.ts. Built from views.config.json (instId, the view's
+ * host or defaultHost, viewId). Global tab: one pair per view.
+ * Twin: kioskLinks() in src/assets/editor/index.html.
+ */
+function kioskLinks(viewKey) {
+  const cfg = state.viewsConfig || {};
+  const keys = viewKey ? [viewKey] : Object.keys(cfg.views || {});
+  const box = el('div', { class: 'kiosk-links' });
+  for (const key of keys) {
+    const v = (cfg.views || {})[key];
+    if (!v) continue;
+    const base = String(v.host || cfg.defaultHost || '').replace(/\/+$/, '');
+    const vid = `${cfg.instId}:${v.viewId}`;
+    const url = (on) => `${base}/nde/home?vid=${vid}&ec_kiosk=${on ? 1 : 0}`;
+    box.append(el('p', { class: 'hint' }, el('strong', {}, `${v.label || key}: `),
+      'on ', el('code', {}, url(true)), ' · off ', el('code', {}, url(false))));
+  }
+  return box;
+}
+
+/** Selected tab per tabbed list ("<view tab>|<path>" → index); survives render(). */
+const TAB_STATE = new Map();
+
+/**
+ * "x-tabs" (schema, on a list): the items as TABS — one item's fields at a time —
+ * instead of cards under each other. Labels from the item's "x-tabLabel" field
+ * (first line of a list, English of a translated text, HTML without tags),
+ * shortened; "x-tabEmptyLabel" when empty, else "<Item> n".
+ * Twin: tabbed() in src/assets/editor/index.html.
+ */
+function tabbed(key, schema, itemS, items, cards, addBtn) {
+  let current = Math.min(TAB_STATE.get(key) ?? 0, Math.max(0, cards.length - 1));
+  const label = (i) => {
+    let v = items[i] ? items[i][schema['x-tabLabel']] : '';
+    if (Array.isArray(v)) v = v.find((x) => String(x).trim()) || '';
+    else if (v && typeof v === 'object') v = v.en || Object.values(v).find(Boolean) || '';
+    v = String(v || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!v) v = schema['x-tabEmptyLabel'] || `${itemS.title || 'Item'} ${i + 1}`;
+    return v.length > 28 ? v.slice(0, 27) + '…' : v;
+  };
+  const buttons = cards.map((card, i) => {
+    card.setAttribute('role', 'tabpanel');
+    return el('button', { type: 'button', role: 'tab', class: 'tab', onclick: () => select(i) });
+  });
+  const refresh = () => buttons.forEach((b, i) => { b.textContent = label(i); b.setAttribute('aria-selected', String(i === current)); });
+  const select = (i) => { current = i; TAB_STATE.set(key, i); cards.forEach((c, j) => { c.hidden = j !== i; }); refresh(); };
+  addBtn.classList.add('tab-add');
+  const wrap = el('div', { class: 'objlist-tabs' }, el('div', { class: 'tabs-strip', role: 'tablist' }, ...buttons, addBtn), ...cards);
+  if (!cards.length) wrap.append(el('p', { class: 'hint' }, `No ${(itemS.title || 'item').toLowerCase()}s yet.`));
+  for (const ev of ['input', 'change', 'keyup']) wrap.addEventListener(ev, () => refresh());
+  select(current);
+  return wrap;
 }
 
 /** An object with `properties` → fieldset (top level: card). */
@@ -482,7 +568,10 @@ function renderConfigTab(viewKey) {
         } }, `Enable "${r.title || k}" here`))));
       continue;
     }
-    main.append(kindOf(r) === 'object' ? renderObject(k, r, [k], ctx, true) : renderField(k, r, [k], ctx));
+    const node = kindOf(r) === 'object' ? renderObject(k, r, [k], ctx, true) : renderField(k, r, [k], ctx);
+    // Reading room section: the switch-on/off addresses of this view (or of every view on Global).
+    if (r['x-kioskLinks']) node.querySelector('.desc')?.after(kioskLinks(viewKey));
+    main.append(node);
   }
   $('#bar').hidden = false;
 }
@@ -608,17 +697,37 @@ function renderLanguages() {
   $('#bar').hidden = false;
 }
 
+/**
+ * "HTML features" tab: the markup-only features of the kit (attributes and
+ * placeholders in the home page, header and footer), from
+ * src/assets/editor/markup-help.js — the same list as the package editor's
+ * tab and the noob kit's FOR-CLAUDE.md. Read-only.
+ */
+function renderMarkupHelp() {
+  const main = $('#main'); main.replaceChildren();
+  main.append(el('p', { class: 'intro' }, 'Features that work through markup in the view\'s own HTML (home page, header, footer) — some need a setting switched on, as noted.'));
+  for (const h of window.EC_MARKUP_HELP) {
+    main.append(el('section', { class: 'card markup-help' },
+      el('h2', {}, h.title, ' ', el('span', { class: `chip ${h.needs ? 'off' : 'on'}` }, h.needs ? `needs: ${h.needs}` : 'works always')),
+      el('p', {}, h.what),
+      el('pre', {}, el('code', {}, h.code)),
+      Array.isArray(h.notes) && h.notes.length ? el('ul', { class: 'hint' }, h.notes.map((n) => el('li', {}, n))) : null));
+  }
+}
+
 function render() {
   const tabs = $('#tabs'); tabs.replaceChildren();
   const tab = (id, text) => el('button', { type: 'button', role: 'tab', 'aria-selected': String(id === active), onclick: () => switchTab(id) }, text);
   tabs.append(tab('global', 'Global'), el('span', { class: 'group' }, 'Views:'));
   for (const [key, v] of Object.entries(state.views)) tabs.append(tab(`view:${key}`, `${v.label} (${v.viewId})`));
   tabs.append(el('span', { class: 'group' }, '·'), tab('labels', 'Return labels'), tab('views', 'Views'), tab('languages', 'Languages'));
+  if (Array.isArray(window.EC_MARKUP_HELP)) tabs.append(tab('markup', 'HTML features'));
 
   if (active === 'global') renderConfigTab(null);
   else if (active.startsWith('view:')) renderConfigTab(active.slice(5));
   else if (active === 'labels') renderReturnLabels();
   else if (active === 'languages') renderLanguages();
+  else if (active === 'markup') renderMarkupHelp();
   else renderViews();
 }
 

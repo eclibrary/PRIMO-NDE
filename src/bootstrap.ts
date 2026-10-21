@@ -9,6 +9,7 @@ import { loadCoreStyles } from './app/shared/core-styles';
 import { startScheduledContent } from './app/shared/scheduled-content';
 import { startNoticeBanners } from './app/shared/notice-banners';
 import { startOpeningHours } from './app/shared/opening-hours';
+import { startSearchTips } from './app/shared/search-tips';
 
 // Called by the NDE shell to start our module (exposed in webpack.config.js).
 // BEFORE Angular starts:
@@ -24,6 +25,7 @@ import { startOpeningHours } from './app/shared/opening-hours';
 //        scheduled-content.ts  data-ec-from / data-ec-until on any element
 //        notice-banners.ts     coloured message bars (settings noticeBanners)
 //        opening-hours.ts      [data-ec-opening-hours] + #ec-opening-hours pop-up
+//        search-tips.ts        tips between the search results (settings searchTips)
 //      Each does nothing when its setting is off (scheduled content has none).
 // Noob zip only: our global stylesheet is added first (core-styles.ts), in
 // parallel with the settings fetch — the EC views have it in custom.css.
@@ -35,6 +37,7 @@ export const bootstrapRemoteApp = async (bootstrapOptions: any) => {
    startScheduledContent();
    startNoticeBanners();
    startOpeningHours();
+   startSearchTips();
    return bootstrap(AppModule(bootstrapOptions), {
     production: true,
     appType: 'microfrontend'

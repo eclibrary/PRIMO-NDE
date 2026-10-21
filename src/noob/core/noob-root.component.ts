@@ -28,7 +28,7 @@ import { EcCustomDialogsComponent } from '../../app/shared/components/ec-custom-
   template: `
     <!-- guest/user + sandbox classes on <html>, data-ec-nav links -->
     <custom-ec-session></custom-ec-session>
-    <!-- Ask-a-librarian modal (only when askALibrarian is configured) -->
+    <!-- Ask-a-librarian links: prefill parameters, and the dialog with "Use dialog" (only when askALibrarian is configured) -->
     <custom-ec-ask-librarian></custom-ec-ask-librarian>
     <!-- remembers the last search ("pick up where you left off") -->
     <custom-ec-last-search></custom-ec-last-search>

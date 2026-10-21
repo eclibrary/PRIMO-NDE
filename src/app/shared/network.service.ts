@@ -15,7 +15,12 @@
 //
 // CACHING: the result is kept in sessionStorage for the rest of the browser tab,
 // so the ping runs once per tab, not on every page. A laptop that moves between
-// networks gets a fresh check in a new tab.
+// networks gets a fresh check in a new tab — or at once with a "Check
+// connection" button (data-ec-network-check), which always checks live and
+// explains a failure to the visitor (network-check.ts).
+//
+// THE PING ITSELF (and the reason when it fails) is pingNetwork() in
+// network-check.ts, shared by the automatic check and the button.
 //
 // USING IT
 //   - Static HTML (homepage/header/footer): mark elements with
@@ -35,6 +40,7 @@
 // everyone is treated as external; the console then shows a CSP error.
 import { Injectable, computed, signal } from '@angular/core';
 import { EC_CONFIG } from './ec-config';
+import { EcNetworkOutcome, pingNetwork, startNetworkCheckButtons } from './network-check';
 
 /** 'unknown' until the check has finished (or when the feature is switched off). */
 export type EcNetworkStatus = 'unknown' | 'ec' | 'external';
@@ -54,6 +60,9 @@ export class NetworkService {
 
   constructor() {
     void this.check();
+    // "Check connection" buttons in the library's HTML (data-ec-network-check,
+    // href="#ec-network-check"): a live check on click — see network-check.ts.
+    startNetworkCheckButtons(() => this.recheck());
   }
 
   /** Run the check once per tab (cached result reused). Never throws. */
@@ -71,28 +80,34 @@ export class NetworkService {
 
     const cached = readCache();
     if (cached) {
-      console.info(`[ec] network: ${cached} (cached for this tab; run sessionStorage.removeItem('${STORAGE_KEY}') and reload to re-check)`);
+      console.info(`[ec] network: ${cached} (cached for this tab; a "Check connection" button, or sessionStorage.removeItem('${STORAGE_KEY}') + reload, checks again)`);
       this.state.set(cached);
       return;
     }
     console.info(`[ec] network: checking ${cfg.pingUrl} (timeout ${cfg.timeoutMs || 3000} ms)…`);
+    const outcome = await pingNetwork();
+    this.apply(outcome);
+  }
 
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), cfg.timeoutMs || 3000);
-    let result: EcNetworkStatus;
-    try {
-      // Any response at all (opaque in no-cors mode) means intragate is reachable.
-      await fetch(cfg.pingUrl, { mode: 'no-cors', cache: 'no-store', credentials: 'omit', signal: controller.signal });
-      result = 'ec';
-    } catch (err) {
-      result = 'external'; // DNS failure, refused, blocked (e.g. CSP) or timed out
-      console.info('[ec] network: no answer —', (err as Error)?.name === 'AbortError' ? 'timed out' : err);
-    } finally {
-      window.clearTimeout(timer);
-    }
-    console.info(`[ec] network: ${result}`);
-    this.state.set(result);
-    writeCache(result);
+  /**
+   * LIVE check now, ignoring the per-tab cache (the "Check connection"
+   * button). Updates the status — and so the <html> classes and every
+   * data-ec-network element — and the cache. Never throws.
+   * While it runs the previous status stays (no content disappearing and
+   * coming back); only the result changes it.
+   */
+  async recheck(): Promise<EcNetworkOutcome> {
+    console.info('[ec] network: live check requested (Check connection)…');
+    const outcome = await pingNetwork();
+    this.apply(outcome);
+    return outcome;
+  }
+
+  /** Log, set and cache one outcome. 'off' is not cached (nothing was checked). */
+  private apply(o: EcNetworkOutcome): void {
+    console.info(`[ec] network: ${o.status} (${o.reason}, ${o.ms} ms) — ${o.detail}`);
+    this.state.set(o.status);
+    if (o.reason !== 'off') writeCache(o.status);
   }
 }
 

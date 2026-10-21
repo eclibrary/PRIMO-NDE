@@ -43,19 +43,20 @@
 // is no new risk, because whoever can change settings.js can also upload the
 // package itself (i.e. this module's JavaScript). The editors say "paste only
 // code from providers you trust".
-//   HOW: on the FIRST opening of a dialog, its embed code is turned into DOM
-//   in a container of its own (mountWidget): ordinary elements are copied,
-//   each <script> is re-created so the browser runs it (scripts inserted via
-//   innerHTML never run), in document order, external ones one after the
-//   other. The container is kept per dialog (WIDGETS) and moved into the
-//   dialog on every opening, so the script loads once and the widget keeps
-//   its state. Iframes inside it reload when moved — harmless for forms.
-//   Widgets that use document.write (very old embed codes) cannot work here.
+//   HOW: on the FIRST opening of a dialog, a container of its own is put in
+//   the dialog and the embed code goes into it via insertEmbed() (embed.ts),
+//   which re-creates the scripts so they run, in order, at their place. The
+//   container is kept per dialog (WIDGETS) and moved into the dialog on every
+//   opening, so the script loads once and the widget keeps its state. Iframes
+//   inside it reload when moved — harmless for forms.
+//   Widgets that use document.write (older embed codes) work too — see
+//   DOCUMENT.WRITE in embed.ts.
 //
 // MOUNT: child of EcSharedRootComponent (EC views) and EcNoobRootComponent
 // (noob kit) — i.e. on every page with a search bar, which includes the home page.
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation, inject, signal } from '@angular/core';
 import { EC_CONFIG, Localised, localised } from '../../ec-config';
+import { insertEmbed } from '../../embed';
 
 /** "Opens from" values matching this are plain words (see TRIGGER above), not CSS. */
 const PLAIN_WORD = /^[A-Za-z][A-Za-z0-9_-]*$/;
@@ -148,9 +149,15 @@ export class EcCustomDialogsComponent implements OnInit, OnDestroy {
     // previous dialog's widget out (it stays in WIDGETS, detached).
     const host = this.widgetHostRef?.nativeElement;
     if (host) {
-      const widget = d.widget ? mountWidget(d.key, d.widget) : null;
-      host.replaceChildren(...(widget ? [widget] : []));
+      const widget = d.widget ? widgetBox(d.key) : null;
+      host.replaceChildren(...(widget ? [widget.box] : []));
       host.hidden = !widget;
+      // First opening: the box is in the page now, so its scripts can find
+      // their elements — insert the embed code and run it (embed.ts).
+      if (widget?.isNew) {
+        insertEmbed(widget.box, d.widget).catch((err) =>
+          console.warn(`[ec] custom dialogs: widget of the dialog opening from "${d.key}": ${err?.message ?? err}`));
+      }
     }
     if (!dlg.open) dlg.showModal(); // top layer + backdrop + focus trap; Esc closes
   }
@@ -205,52 +212,15 @@ function addPointerCursor(dialogs: ReadyDialog[]): void {
 }
 
 /**
- * The widget container of a dialog, built on its first opening: the embed code
- * as DOM, with every <script> re-created so that it runs (see WIDGETS above).
- * External scripts are chained (each waits for the previous one to load),
- * because embed codes often load a library first and then call it inline.
+ * The widget container of a dialog: created on its first opening and kept
+ * (WIDGETS), so the widget's scripts run once and it keeps its state.
  * Exported for tests only.
  */
-export function mountWidget(key: string, code: string): HTMLElement {
+export function widgetBox(key: string): { box: HTMLElement; isNew: boolean } {
   const existing = WIDGETS.get(key);
-  if (existing) return existing;
-
+  if (existing) return { box: existing, isNew: false };
   const box = document.createElement('div');
   box.className = 'ec-custom-dialog__widget-content';
-  const template = document.createElement('template');
-  template.innerHTML = code; // inert: nothing in a <template> runs or loads
-
-  // Copy everything; collect the scripts (in document order) to run afterwards.
-  // Each script leaves a placeholder and later goes back to exactly that spot:
-  // some widgets draw themselves right next to their own <script> tag.
-  const scripts: Array<{ script: HTMLScriptElement; spot: Comment }> = [];
-  box.append(document.importNode(template.content, true));
-  box.querySelectorAll('script').forEach((old) => {
-    const fresh = document.createElement('script');
-    for (const attr of Array.from(old.attributes)) fresh.setAttribute(attr.name, attr.value);
-    fresh.text = old.text;
-    // Not async: keep the order of the embed code.
-    if (fresh.src) fresh.async = false;
-    const spot = document.createComment(' ec: widget script ');
-    old.replaceWith(spot);
-    scripts.push({ script: fresh, spot });
-  });
   WIDGETS.set(key, box);
-
-  // Run them once the container is in the page (widgets look for their <div>
-  // by id): next frame, after open() has put the box into the dialog.
-  requestAnimationFrame(() => {
-    let chain = Promise.resolve();
-    for (const { script: s, spot } of scripts) {
-      chain = chain.then(() => new Promise<void>((done) => {
-        if (s.src) {
-          s.addEventListener('load', () => done(), { once: true });
-          s.addEventListener('error', () => { console.warn(`[ec] custom dialogs: widget script of the dialog opening from "${key}" did not load: ${s.src}`); done(); }, { once: true });
-        }
-        spot.replaceWith(s); // inserted into the page → the browser runs it
-        if (!s.src) done(); // inline scripts run on insertion
-      }));
-    }
-  });
-  return box;
+  return { box, isNew: true };
 }

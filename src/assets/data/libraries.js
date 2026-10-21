@@ -6,7 +6,7 @@
   file only when settings.js cannot be read.
 */
 window.EC_LIBRARIES = {
-  "generatedAt": "2026-10-16T07:47:21.567Z",
+  "generatedAt": "2026-10-17T09:54:56.100Z",
   "source": "data/return-labels.json",
   "libraries": {
     "BCB": {

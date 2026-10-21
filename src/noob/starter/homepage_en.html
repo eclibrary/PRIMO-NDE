@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<!--
+  STARTER HOME PAGE — added by the EC Library NDE kit's package maker because
+  your package had none. It works as it is; replace the texts marked
+  [YOUR …] and the example addresses with your own.
+  Every feature used here is explained in the kit: examples/homepage_en.html
+  and README.txt ("YOUR HOME PAGE"). Other languages: copy this file as
+  homepage_fr.html, homepage_de.html, … and translate.
+  Primo shows this page only when the view's Landing Page settings in Alma
+  use the HTML file. No <script> here (Primo removes it).
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library home page</title>
+</head>
+<body>
+<main class="main-landing-page display-flex flex-column flex-layout-center-center">
+
+  <!-- Quick links. href="#" + data-ec-nav = a page inside Primo (keeps the
+       visitor's view and language); other links open their address. -->
+  <div class="menu-container width-100">
+    <ul role="list" class="menu width-100">
+      <li role="listitem">
+        <a href="#" data-ec-nav="account" data-ec-query="section=loans">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span></div>
+          <span>My loans</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a href="#" data-ec-nav="account/favorites">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">push_pin</span></div>
+          <span>Saved records</span>
+        </a>
+      </li>
+      <li role="listitem">
+        <a href="https://www.example.org/" target="_blank" rel="noopener">
+          <div class="icon display-flex"><span class="material-symbols-outlined" aria-hidden="true">home</span></div>
+          <span>[YOUR LIBRARY] website</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Welcome: exactly one of these three blocks shows (guest / signed in /
+       "pick up where you left off" when the visitor searched before). -->
+  <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="guest">
+    <h2 class="welcome-title mat-headline-medium" role="heading" aria-level="2">Welcome to [YOUR LIBRARY]</h2>
+    <span class="welcome-content">Search our collections above. Sign in to see your loans and saved records.</span>
+    <a href="#" data-ec-nav="account" data-ec-query="section=overview" role="link">Sign in</a>
+    <nav class="ec-account-counts" data-ec-account-counts></nav>
+  </div>
+
+  <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="user">
+    <h2 class="welcome-title mat-headline-medium" role="heading" aria-level="2">Welcome back</h2>
+    <!-- Loans due soon and account counts: shown when the settings
+         "Loans due soon" / "Account counts" are on and there is something to show. -->
+    <p class="ec-loans-due" data-ec-loans-due>
+      <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
+      <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
+    </p>
+    <nav class="ec-account-counts" data-ec-account-counts></nav>
+  </div>
+
+  <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
+    <h2 class="welcome-title mat-headline-medium" role="heading" aria-level="2">Welcome back</h2>
+    <span class="welcome-content">Pick up where you left off:</span>
+    <a href="#" data-ec-last-search-link role="link">“<span data-ec-last-search-terms></span>” <span data-ec-last-search-page></span></a>
+    <p class="ec-loans-due" data-ec-loans-due>
+      <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
+      <a href="#" data-ec-nav="account" data-ec-query="section=loans" data-ec-loans-due-text></a>
+    </p>
+    <nav class="ec-account-counts" data-ec-account-counts></nav>
+  </div>
+
+  <!-- Announcements: your own news. -->
+  <div class="announcements display-flex flex-column">
+    <header class="flex-column gap-1">
+      <h2 class="mat-title-medium" role="heading" aria-level="2">Announcements</h2>
+    </header>
+    <p>[YOUR NEWS] — e.g. new services, events, changes to the opening hours.</p>
+    <!-- Today's opening hours + "Open now": shown when the setting
+         "Opening hours" is on (invisible until then). -->
+    <p data-ec-opening-hours></p>
+  </div>
+
+</main>
+</body>
+</html>

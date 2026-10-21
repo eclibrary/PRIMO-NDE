@@ -32,18 +32,15 @@
     "triggerUrlPrefixes": [
       "https://ec.europa.eu/libraries/pages/askalibrarian/"
     ],
-    "formfillScriptUrl": "https://ec.europa.eu/libraries/libanswers/libanswers.script.js",
-    "libanswersHost": "https://ec-europa-eu.libanswers.com",
-    "widgetId": {
-      "en": "8158",
-      "fr": "8158",
-      "de": "8158"
-    },
-    "prefillFromUser": {
-      "pname": "displayName",
-      "pemail": "email"
-    },
-    "prefillStatic": {},
+    "prefillName": true,
+    "nameField": "pname",
+    "prefillEmail": true,
+    "emailField": "pemail",
+    "customPrefills": [],
+    "addContext": true,
+    "useDialog": true,
+    "widgetCode": "<div id=\"s-la-widget-8158\"></div>\n<script src=\"https://ec-europa-eu.libanswers.com/1.0/widgets/8158\"></script>",
+    "customCss": "",
     "context": {
       "field": "pdetails",
       "titleSelector": "nde-record-title h3",
@@ -96,9 +93,7 @@
       "fr": "Le formulaire n’a pas pu être chargé. Réessayez ou ouvrez la page directement :",
       "de": "Das Formular konnte nicht geladen werden. Bitte versuchen Sie es erneut oder öffnen Sie die Seite direkt:"
     },
-    "resetOnClose": true,
-    "hideFields": [],
-    "formCssPath": "assets/ask-librarian/form.css"
+    "resetOnClose": true
   },
   "libchat": {
     "libanswersHost": "https://ec-europa-eu.libanswers.com",
@@ -110,7 +105,42 @@
   "network": {
     "enabled": true,
     "pingUrl": "https://intragate.ec.europa.eu/eclibrarytools/ping",
-    "timeoutMs": 3000
+    "timeoutMs": 3000,
+    "checkingText": {
+      "en": "Checking the connection…",
+      "fr": "Vérification de la connexion…",
+      "de": "Verbindung wird geprüft…"
+    },
+    "insideText": {
+      "en": "<p>You are connected to the Commission network.</p>",
+      "fr": "<p>Vous êtes connecté(e) au réseau de la Commission.</p>",
+      "de": "<p>Sie sind mit dem Netz der Kommission verbunden.</p>"
+    },
+    "outsideText": {
+      "en": "<p><strong>You are not connected to the Commission network.</strong></p><p>Possible causes: you are working from home or on the move without the VPN, the VPN is not connected (yet), or a browser extension blocks the check.</p><p>What you can do: connect to the Commission VPN and click the button again. Library on the Go titles can be read without it.</p>",
+      "fr": "<p><strong>Vous n'êtes pas connecté(e) au réseau de la Commission.</strong></p><p>Causes possibles : vous travaillez à domicile ou en déplacement sans VPN, le VPN n'est pas (encore) connecté, ou une extension du navigateur bloque la vérification.</p><p>Que faire : connectez-vous au VPN de la Commission et cliquez à nouveau sur le bouton. Les titres Library on the Go sont accessibles sans VPN.</p>",
+      "de": "<p><strong>Sie sind nicht mit dem Netz der Kommission verbunden.</strong></p><p>Mögliche Ursachen: Sie arbeiten von zu Hause oder unterwegs ohne VPN, das VPN ist (noch) nicht verbunden, oder eine Browser-Erweiterung blockiert die Prüfung.</p><p>Was Sie tun können: Verbinden Sie sich mit dem VPN der Kommission und klicken Sie erneut auf die Schaltfläche. Titel von Library on the Go sind auch ohne VPN lesbar.</p>"
+    },
+    "offlineText": {
+      "en": "<p><strong>Your device is not connected to the internet.</strong></p><p>Check your Wi-Fi or network cable, then try again.</p>",
+      "fr": "<p><strong>Votre appareil n'est pas connecté à Internet.</strong></p><p>Vérifiez votre Wi-Fi ou votre câble réseau, puis réessayez.</p>",
+      "de": "<p><strong>Ihr Gerät ist nicht mit dem Internet verbunden.</strong></p><p>Prüfen Sie WLAN oder Netzwerkkabel und versuchen Sie es erneut.</p>"
+    },
+    "blockedText": {
+      "en": "<p><strong>The connection could not be checked in this browser.</strong></p><p>Please contact the library and mention the technical details below.</p>",
+      "fr": "<p><strong>La connexion n'a pas pu être vérifiée dans ce navigateur.</strong></p><p>Veuillez contacter la bibliothèque en mentionnant les détails techniques ci-dessous.</p>",
+      "de": "<p><strong>Die Verbindung konnte in diesem Browser nicht geprüft werden.</strong></p><p>Bitte wenden Sie sich an die Bibliothek und nennen Sie die technischen Details unten.</p>"
+    },
+    "detailsLabel": {
+      "en": "Technical details",
+      "fr": "Détails techniques",
+      "de": "Technische Details"
+    },
+    "closeLabel": {
+      "en": "Close",
+      "fr": "Fermer",
+      "de": "Schließen"
+    }
   },
   "welcomeMessage": {
     "enabled": false,
@@ -204,6 +234,15 @@
       "en": "Free legal copy found by Unpaywall — opens in a new tab",
       "fr": "Copie légale gratuite trouvée par Unpaywall — s’ouvre dans un nouvel onglet",
       "de": "Kostenlose legale Kopie, gefunden von Unpaywall — öffnet in einem neuen Tab"
+    }
+  },
+  "searchTips": {
+    "enabled": false,
+    "tips": [],
+    "regionLabel": {
+      "en": "Search tip",
+      "fr": "Conseil de recherche",
+      "de": "Suchtipp"
     }
   },
   "loansDue": {

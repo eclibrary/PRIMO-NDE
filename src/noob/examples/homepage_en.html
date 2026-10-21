@@ -29,6 +29,7 @@
     data-ec-audience="guest" | "user"   show only to visitors who are NOT
                                         signed in / who ARE signed in  (always on)
     data-ec-network="ec" | "external"   show only on / outside your own network
+    data-ec-network-check               "Check connection" button (live check + explanation)
                                         (setting "Network check" must be on)
     data-ec-kiosk="only" | "hide"       show only on / hide on reading room PCs
                                         (kiosk mode — see section 4 below)
@@ -58,7 +59,7 @@
   in this file are yours — translate them in homepage_fr.html etc.
 
   STYLES: the kit's own styles (assets/core/ec-core.css) already style the
-  blocks below. Change colours in your custom.css, e.g.
+  blocks below. Change colours in your assets/css/custom.css, e.g.
       :root { --ec-blue: #7a003c; }
 
   ICONS: <span class="material-symbols-outlined">NAME</span> with any icon
@@ -227,6 +228,17 @@
          when "Network check" is off — so network-only content never flashes
          up for outsiders. -->
     <p data-ec-network="external">Outside the organisation's network? Sign in to read e-books.</p>
+
+    <!-- "Check connection" button ("Network check" on). A click checks the
+         network again right away (e.g. after switching on the VPN): the
+         network parts of the page follow at once. When the visitor is not on
+         the network, a message under the button explains why and what to do
+         (texts: settings "Network check"). Want the message somewhere else?
+         Put an empty <div data-ec-network-status></div> there.
+         A link works too: <a href="#ec-network-check">Check connection</a> -->
+    <p data-ec-network="external">
+      <button type="button" class="ec-network-check-button" data-ec-network-check>Check connection</button>
+    </p>
 
     <!-- Combined: signed-in visitors outside the network. -->
     <p data-ec-audience="user" data-ec-network="external">Tip: your loans can be returned by post.</p>

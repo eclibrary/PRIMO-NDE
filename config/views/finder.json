@@ -22,5 +22,8 @@
   },
   "libchat": {
     "signedInOnly": true
+  },
+  "askALibrarian": {
+    "customCss": "/* Find-eR: no file uploads on questions coming from the catalogue. */\n.has-advanced-upload { display: none !important; }"
   }
 }

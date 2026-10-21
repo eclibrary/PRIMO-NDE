@@ -2,13 +2,8 @@
   "$schema": "./schema.json",
   "askALibrarian": {
     "triggerUrlPrefixes": [],
-    "formfillScriptUrl": "",
-    "libanswersHost": "",
-    "widgetId": {
-      "en": "",
-      "fr": "",
-      "de": ""
-    }
+    "useDialog": false,
+    "widgetCode": ""
   },
   "libchat": {
     "libanswersHost": "",
@@ -16,7 +11,13 @@
   },
   "network": {
     "enabled": false,
-    "pingUrl": ""
+    "pingUrl": "",
+    "insideText": {
+      "en": "<p>You are connected to our network.</p>"
+    },
+    "outsideText": {
+      "en": "<p><strong>You are not connected to our network.</strong></p><p>Possible causes: you are working from outside the building without the VPN, the VPN is not connected (yet), or a browser extension blocks the check.</p><p>What you can do: connect to the VPN and click the button again. Still not working? Contact the library.</p>"
+    }
   },
   "welcomeMessage": {
     "enabled": false,

@@ -124,3 +124,19 @@ button.link { background: none; border: 0; padding: 0; color: var(--blue); text-
 .field .control .colour input[type="text"] { width: 8rem; font-family: ui-monospace, Consolas, monospace; }
 .field .control .colour input[type="date"] { padding: .3rem .5rem; border: 1px solid var(--line); border-radius: .375rem; }
 .colour .hint { margin: 0; }
+
+/* Reading room section: the kiosk switch-on/off addresses (kioskLinks in app.js). */
+.kiosk-links { margin: .25rem 0 1rem; }
+.kiosk-links .hint { font-size: .8rem; color: var(--muted); margin: .2rem 0; }
+.kiosk-links code { word-break: break-all; }
+
+/* Tabbed lists ("x-tabs" in the schema): one item at a time (tabbed() in app.js). */
+.objlist-tabs .tabs-strip { display: flex; flex-wrap: wrap; gap: .25rem; align-items: flex-end; border-bottom: 1px solid var(--line); margin-bottom: .5rem; }
+.objlist-tabs .tab { border: 1px solid var(--line); border-bottom: 0; border-radius: .375rem .375rem 0 0; background: #f3f4f6; padding: .3rem .7rem; font: inherit; font-size: .85rem; cursor: pointer; max-width: 16rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.objlist-tabs .tab[aria-selected="true"] { background: #fff; font-weight: 600; position: relative; top: 1px; }
+.objlist-tabs .tab-add { margin: 0 0 .25rem .5rem; }
+
+/* "HTML features" tab (renderMarkupHelp in app.js). */
+.markup-help { padding: 1rem 1.25rem; margin-bottom: .75rem; }
+.markup-help h2 { font-size: 1.05rem; margin: 0 0 .35rem; }
+.markup-help pre { background: #f6f7f9; border: 1px solid var(--line); border-radius: .5rem; padding: .6rem .75rem; overflow: auto; font: .85rem/1.45 ui-monospace, Consolas, monospace; }

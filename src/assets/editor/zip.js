@@ -67,6 +67,13 @@
     return (c ^ 0xffffffff) >>> 0;
   }
 
+  /** MS-DOS date + time from a zip header → Date (local time); null for an empty/invalid stamp. */
+  function fromDos(date, time) {
+    if (!date) return null;
+    const d = new Date(1980 + (date >> 9), ((date >> 5) & 15) - 1, date & 31, time >> 11, (time >> 5) & 63, (time & 31) * 2);
+    return isNaN(d) ? null : d;
+  }
+
   /** MS-DOS date and time (what zip headers store), local time, 2-second precision. */
   function dosDateTime(d) {
     const time = (d.getHours() << 11) | (d.getMinutes() << 5) | Math.floor(d.getSeconds() / 2);
@@ -79,7 +86,9 @@
   /**
    * All files of a zip, in archive order.
    * @param {ArrayBuffer|Blob|Uint8Array} input
-   * @returns {Promise<Array<{name: string, data: Uint8Array}>>}
+   * @returns {Promise<Array<{name: string, data: Uint8Array, modified: Date|null}>>}
+   *   `modified` = the file's date as stored in the zip (MS-DOS date/time,
+   *   local time); null when the zip has none.
    */
   async function read(input) {
     if (!supported()) throw new Error('This browser cannot open zip files. Please use a recent Edge, Chrome or Firefox.');
@@ -104,6 +113,8 @@
     for (let n = 0; n < count; n++) {
       if (view.getUint32(p, true) !== SIG_CENTRAL) throw new Error('The zip file is damaged (table of contents).');
       const flags = view.getUint16(p + 8, true);
+      const dosTime = view.getUint16(p + 12, true);
+      const dosDate = view.getUint16(p + 14, true);
       const method = view.getUint16(p + 10, true);
       const compSize = view.getUint32(p + 20, true);
       const size = view.getUint32(p + 24, true);
@@ -130,7 +141,7 @@
       else if (method === 8) data = await inflate(raw);
       else throw new Error(`"${name}" uses an unsupported compression method (${method}).`);
       if (data.length !== size) throw new Error(`"${name}" could not be unpacked correctly.`);
-      files.push({ name, data });
+      files.push({ name, data, modified: fromDos(dosDate, dosTime) });
     }
     return files;
   }

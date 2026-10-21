@@ -25,3 +25,41 @@
 .ec-network-lock[data-ec-network='external'] {
   color: #ff6b6b !important;
 }
+
+// ---- "Check connection" button: the result box ------------------------------
+// Markup and behaviour: src/app/shared/network-check.ts. The box is an
+// .ec-notice (colour presets info / success / warning in _ec-features.scss)
+// inside either the library's [data-ec-network-status] element or a
+// .ec-network-result-host the code puts right after the button.
+.ec-network-result-host,
+[data-ec-network-status] {
+  display: block;
+  &[hidden] { display: none !important; } // closed with ×
+}
+.ec-network-result {
+  margin: .5rem 0;
+  border-radius: .5rem;
+  text-align: left;            // also when the button sits in a centred block
+  & + & { border-top: 0; }     // no banner separator line
+}
+// "Technical details": folded, small, monospace, wraps long addresses.
+.ec-network-result .ec-network-result__details {
+  margin-top: .4rem;
+  font-size: .8125rem;
+  summary { cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  code {
+    display: block;
+    margin-top: .25rem;
+    font-family: ui-monospace, Consolas, monospace;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}
+// The "Checking…" icon turns (not for visitors who asked for less motion).
+.ec-network-result.ec-notice--info .ec-notice__icon {
+  animation: ec-network-spin 1s linear infinite;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+@keyframes ec-network-spin { to { transform: rotate(360deg); } }
+// The button while checking: a wait cursor, not clickable-looking.
+.ec-network-checking { cursor: progress !important; opacity: .7; }

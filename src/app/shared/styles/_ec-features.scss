@@ -4,6 +4,7 @@
 // so no component stylesheet): started from src/bootstrap.ts.
 //   - NOTICE BANNERS  src/app/shared/notice-banners.ts   (.ec-notices / .ec-notice)
 //   - OPENING HOURS   src/app/shared/opening-hours.ts    (.ec-oh / .ec-oh-dialog)
+//   - SEARCH TIPS     src/app/shared/search-tips.ts      (.ec-search-tips; the boxes reuse .ec-notice)
 // (Scheduled content needs no styles of its own: its hide-unless rule is in
 // _ec-conditional.scss with the other conditional content.)
 //
@@ -246,4 +247,30 @@ html.ec-has-bottom-notice body {
     &:hover { filter: brightness(1.15); }
     &:focus-visible { outline: 3px solid var(--sys-on-surface, #1b1b1b); outline-offset: 2px; }
   }
+}
+
+// =============================================================================
+// SEARCH TIPS — boxes between the results (search-tips.ts). Each tip is an
+// .ec-notice (colours and icon as the banners) with rounded corners and some
+// room above and below, so it reads as a box in the list, not as a result.
+// =============================================================================
+.ec-search-tips {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin: .75rem 0;
+}
+.ec-search-tips .ec-search-tip {
+  border-radius: .5rem;
+  padding: .75rem 1rem;
+  & + & { border-top: 0; } // no separator line between tips (that is for banners)
+}
+// In NDE's <ul> of results, if it is one: no bullet, no extra indent.
+li.ec-search-tips-item {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+@media print {
+  .ec-search-tips, li.ec-search-tips-item { display: none !important; }
 }

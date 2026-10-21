@@ -15,7 +15,7 @@
 //
 // PER-VIEW VALUES: because each view is a separate build, EC_CONFIG already
 // contains the merged values for the view being built. Components therefore
-// read e.g. EC_CONFIG.askALibrarian.hideFields directly — there is no runtime
+// read e.g. EC_CONFIG.askALibrarian.nameField directly — there is no runtime
 // "which view am I" lookup for settings.
 import { EC_CONFIG_VALUES, EC_CONFIG_VIEW, EC_LANGUAGES } from './ec-config.generated';
 
@@ -46,6 +46,12 @@ export interface EcUserInfo {
   unit?: string;
   /** Work city code, e.g. "BRU" / "LUX" (Alma address line 4). */
   city?: string;
+  /**
+   * EVERY field of Primo's personal details (personal_settings `data`),
+   * unwrapped to plain strings, e.g. { address2: "OP.A.4.003", phone: "…" } —
+   * for prefills that name any field (askALibrarian.customPrefills).
+   */
+  fields?: Record<string, string>;
 }
 
 /** One link of the landing-page account counts (settings accountCounts.loans/favorites/savedSearches). */
@@ -85,6 +91,24 @@ export interface EcCollectionBadge {
   dialogTitle: Localised;
   /** Explanation as HTML; sanitised by Angular when rendered. Empty = no (i) button. */
   dialogHtml: Localised;
+}
+
+/** One search tip (settings searchTips.tips[]) — see src/app/shared/search-tips.ts. */
+export interface EcSearchTip {
+  /** Words / phrases; empty = every search. */
+  terms: string[];
+  /** 'some' = the search contains one of the terms (whole words); 'exact' = it is one of them. */
+  match: 'some' | 'exact';
+  /** Shown after this result (1-based) on the first results page. */
+  position: number;
+  /** HTML per language; sanitised (sanitize.ts). */
+  html: Localised;
+  /** Same colour presets as the notice banners; 'custom' uses color. */
+  style: EcNoticeBanner['style'];
+  color: string;
+  /** "YYYY-MM-DD" or "" — first / last day (included). */
+  from: string;
+  until: string;
 }
 
 /** Day keys of openingHours.week, Monday first. */
@@ -129,14 +153,37 @@ export interface EcConfigValues {
     /** Label put on the last viewed record in the results list. Empty en = off. */
     lastViewedLabel: Localised;
   };
+  /**
+   * "Ask a librarian" links — see EcAskLibrarianComponent. Links starting with
+   * a trigger prefix get the prefill as URL parameters (always); with useDialog
+   * they open a dialog with the form from widgetCode, prefilled in place.
+   * Until Oct 2026: a LibAnswers widget id + an external prefill script (on
+   * Europa); older settings are converted by migrateLegacySettings.
+   */
   askALibrarian: {
     triggerUrlPrefixes: string[];
-    formfillScriptUrl: string;
-    libanswersHost: string;
-    widgetId: Localised;
-    prefillFromUser: Record<string, keyof EcUserInfo>;
-    prefillStatic: Record<string, string>;
+    /** Signed-in patrons: name → nameField (form field = URL parameter). */
+    prefillName: boolean;
+    nameField: string;
+    /** Signed-in patrons: e-mail → emailField. */
+    prefillEmail: boolean;
+    emailField: string;
+    /**
+     * More values: field ← source. from 'user' (default): an EcUserInfo key or
+     * a personal_settings field (signed-in only). from 'url': a parameter of
+     * the current Primo page's address (e.g. query, docid).
+     */
+    customPrefills: Array<{ field: string; from?: 'user' | 'url'; source: string }>;
+    /** Page context (title, MMS id, search terms, link) → context.field. */
+    addContext: boolean;
+    /** true = links open the dialog with widgetCode; false = links just carry the parameters. */
+    useDialog: boolean;
+    /** Embed code of the form (divs + scripts), run in the dialog. NOT sanitised (meant to run). */
+    widgetCode: string;
+    /** CSS put inside the form (its shadow root, when it has one). */
+    customCss: string;
     context: {
+      /** The details field (form field = URL parameter), e.g. "pdetails". */
       field: string;
       titleSelector: string;
       marker: Localised;
@@ -147,8 +194,6 @@ export interface EcConfigValues {
     loadingLabel: Localised;
     errorLabel: Localised;
     resetOnClose: boolean;
-    hideFields: string[];
-    formCssPath: string;
   };
   libchat: {
     libanswersHost: string;
@@ -182,6 +227,13 @@ export interface EcConfigValues {
       widget?: string;
     }>;
     closeLabel: Localised;
+  };
+  /** Search tips ("best bets") between the results — see search-tips.ts. Plain DOM, started from bootstrap.ts. */
+  searchTips: {
+    enabled: boolean;
+    tips: EcSearchTip[];
+    /** Accessible name of a tip box. */
+    regionLabel: Localised;
   };
   /**
    * Opening hours — weekly hours + exceptions; fills [data-ec-opening-hours]
@@ -314,6 +366,22 @@ export interface EcConfigValues {
     pingUrl: string;
     /** Give up after this many ms and treat the visitor as external. */
     timeoutMs: number;
+    // Texts of the "Check connection" button (network-check.ts). Optional:
+    // missing = built-in English. *Text with HTML except checkingText.
+    /** "Checking the connection…" (plain text). */
+    checkingText?: Localised;
+    /** Answered: on the network. */
+    insideText?: Localised;
+    /** No answer / not reachable: causes and what to do (VPN…). */
+    outsideText?: Localised;
+    /** The device has no internet at all. */
+    offlineText?: Localised;
+    /** The check cannot run (off, bad address, CSP): a set-up problem. */
+    blockedText?: Localised;
+    /** Label of the folded technical details. */
+    detailsLabel?: Localised;
+    /** × button (screen readers). */
+    closeLabel?: Localised;
   };
   /** Reading room PCs — see kiosk.ts. Optional: absent = 60 minutes, English texts. */
   kiosk?: {

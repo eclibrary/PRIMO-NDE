@@ -112,7 +112,7 @@
       "type": "object",
       "additionalProperties": false,
       "title": "Ask a librarian",
-      "description": "The modal that opens the LibAnswers question form instead of leaving the page.",
+      "description": "The \"Ask a librarian\" links: prefilled with the signed-in patron's details and what they were looking at, opening the question form either in a dialog or on its own page.",
       "properties": {
         "triggerUrlPrefixes": {
           "type": "array",
@@ -120,71 +120,75 @@
             "type": "string",
             "format": "uri"
           },
-          "title": "Trigger link prefixes",
-          "description": "Any link whose href starts with one of these opens the modal. Prefix match (language variants and query strings included).",
-          "x-advanced": true
+          "title": "Ask a librarian links",
+          "description": "Links whose address starts with one of these are the \"Ask a librarian\" links: they get the prefill parameters added (on every page) and, with \"Use dialog\", open the dialog. One per line, e.g. https://yourlibrary.libanswers.com/form?queue_id=1234."
         },
-        "formfillScriptUrl": {
+        "prefillName": {
+          "type": "boolean",
+          "title": "Prefill patron name",
+          "description": "Signed-in patrons: their name goes into the field below (from Primo's session)."
+        },
+        "nameField": {
           "type": "string",
-          "format": "uri",
-          "title": "Prefill helper script",
-          "description": "URL of libanswers.script.js on Europa. Loaded before the widget; its CSS is resolved relative to it.",
-          "x-advanced": true
+          "title": "Name field",
+          "description": "Form field / URL parameter for the name, e.g. pname for LibAnswers."
         },
-        "libanswersHost": {
+        "prefillEmail": {
+          "type": "boolean",
+          "title": "Prefill patron email",
+          "description": "Signed-in patrons: their e-mail address goes into the field below (from Primo's personal details)."
+        },
+        "emailField": {
           "type": "string",
-          "format": "uri",
-          "title": "LibAnswers host",
-          "description": "Widget scripts are loaded from <host>/1.0/widgets/<id>.",
-          "x-advanced": true
+          "title": "Email field",
+          "description": "Form field / URL parameter for the e-mail address, e.g. pemail for LibAnswers."
         },
-        "widgetId": {
-          "$ref": "#/definitions/localised",
-          "title": "Widget id per language",
-          "description": "LibAnswers question-form widget id. Empty en = modal disabled (links behave normally)."
+        "customPrefills": {
+          "type": "array",
+          "title": "Other prefills",
+          "description": "More values for more fields, e.g. the patron's unit for a department field, or the search terms from the page. Empty values are left out.",
+          "items": {
+            "$ref": "#/definitions/askPrefill"
+          }
         },
-        "prefillFromUser": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string",
-            "enum": [
-              "displayName",
-              "firstName",
-              "lastName",
-              "email",
-              "primaryId",
-              "unit",
-              "city"
-            ]
-          },
-          "title": "Prefill from user",
-          "description": "LibAnswers form field name → patron property. Field names come from the rendered form (pname, pemail, custom5, …).",
-          "x-advanced": true
+        "addContext": {
+          "type": "boolean",
+          "title": "Add context to the details",
+          "description": "Add what the patron was looking at — record title, MMS ID, search terms, link to the page — below a marker line in the details field (set under \"Context texts\")."
         },
-        "prefillStatic": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "title": "Static prefill",
-          "description": "Field name → fixed value, always applied (e.g. a hidden 'source' field).",
-          "x-advanced": true
+        "useDialog": {
+          "type": "boolean",
+          "title": "Use dialog",
+          "description": "On: the links open a pop-up with the form below (Widget code), prefilled. Off: the links simply open their page, with the prefill parameters in the address."
+        },
+        "widgetCode": {
+          "type": "string",
+          "format": "code",
+          "title": "Widget code",
+          "description": "The embed code of the form, exactly as its provider gives it (for LibAnswers: Admin › Widgets › your question form › Embed code). Used with \"Use dialog\". This code RUNS inside Primo: paste only code from providers you trust."
+        },
+        "customCss": {
+          "type": "string",
+          "format": "code",
+          "title": "Custom CSS",
+          "description": "Your own CSS for the form in the dialog — e.g. hide a field: [name=\"pdetails\"] { display: none; }. It is put INSIDE the form, which matters for LibAnswers: its form sits in a sealed part of the page that ordinary page CSS cannot reach. For forms without such a part the CSS applies to the whole page — start those selectors with .ec-ask (the dialog)."
         },
         "context": {
           "type": "object",
           "additionalProperties": false,
-          "title": "Context block",
-          "description": "Text appended to the question with what the patron was looking at.",
+          "title": "Context texts",
+          "description": "Labels of the context lines and the marker above them (see \"Add context to the details\").",
           "properties": {
             "field": {
               "type": "string",
-              "title": "Target field",
-              "description": "Form textarea that receives the block."
+              "title": "Details field",
+              "description": "Name of the form field (and URL parameter) that receives the context, e.g. pdetails for LibAnswers."
             },
             "titleSelector": {
               "type": "string",
               "title": "Record title selector",
-              "description": "CSS selector of the record title on the full-display page."
+              "description": "CSS selector of the record title on the full-display page.",
+              "x-advanced": true
             },
             "marker": {
               "$ref": "#/definitions/localised",
@@ -208,14 +212,14 @@
               },
               "required": [
                 "en"
-              ]
+              ],
+              "x-advanced": true
             }
-          },
-          "x-advanced": true
+          }
         },
         "title": {
           "$ref": "#/definitions/localised",
-          "title": "Modal title"
+          "title": "Dialog title"
         },
         "closeLabel": {
           "$ref": "#/definitions/localised",
@@ -234,21 +238,6 @@
           "type": "boolean",
           "title": "Reset form on close",
           "description": "Discard the form when the modal closes so every open starts empty.",
-          "x-advanced": true
-        },
-        "hideFields": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "Hidden form fields",
-          "description": "Form field names whose row is hidden (typically set per view). A hidden required field must be filled via static prefill instead.",
-          "x-advanced": true
-        },
-        "formCssPath": {
-          "type": "string",
-          "title": "Form stylesheet path",
-          "description": "Package-relative CSS injected into the widget's shadow root; per-view assets overlay applies. Missing file = ignored.",
           "x-advanced": true
         }
       }
@@ -296,7 +285,7 @@
       "type": "object",
       "additionalProperties": false,
       "title": "Network check",
-      "description": "Tells whether the visitor is on your organisation's internal network, by requesting an address that only answers there (for the EC: intragate). Used to show/hide content — data-ec-network=\"ec\" (inside) / \"external\" (outside) in homepage, header and footer HTML, e.g. the lock after an intranet link in the footer — and by components. Runs once per browser tab. Outside the network, while checking, or when switched off, visitors count as outside. The server answering the ping must allow cross-origin use of its reply (header Cross-Origin-Resource-Policy: cross-origin).",
+      "description": "Tells whether the visitor is on your organisation's internal network, by requesting an address that only answers there. Used to show/hide content — data-ec-network=\"ec\" (inside) / \"external\" (outside) in homepage, header and footer HTML, e.g. the lock after an intranet link in the footer — and by components. Runs once per browser tab. Outside the network, while checking, or when switched off, visitors count as outside. The server answering the ping must allow cross-origin use of its reply (header Cross-Origin-Resource-Policy: cross-origin). A \"Check connection\" button in your HTML (data-ec-network-check — see the HTML features tab) checks again at once and explains a failure to the visitor with the texts below.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -306,13 +295,58 @@
           "type": "string",
           "format": "uri",
           "title": "Address to ping",
-          "description": "A web address that only answers from inside your network (any answer counts as \"inside\"). Example: https://intragate.ec.europa.eu/eclibrarytools/ping"
+          "description": "A web address that only answers from inside your network (any answer counts as \"inside\"). Example: https://intranet.example.org/ping"
         },
         "timeoutMs": {
           "type": "integer",
           "minimum": 500,
           "title": "Timeout (ms)",
           "description": "No answer within this time = external.",
+          "x-advanced": true
+        },
+        "outsideText": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Check connection\": not on the network",
+          "description": "Shown when the address did not answer (no answer in time, or not reachable). Say what usually causes it and what to do — e.g. how to connect to your VPN, and whom to contact.",
+          "format": "html"
+        },
+        "insideText": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Check connection\": on the network",
+          "description": "Shown when the address answered.",
+          "format": "html",
+          "x-advanced": true
+        },
+        "offlineText": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Check connection\": no internet",
+          "description": "Shown when the device has no internet connection at all.",
+          "format": "html",
+          "x-advanced": true
+        },
+        "blockedText": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Check connection\": cannot check",
+          "description": "Shown when the check cannot run at all (switched off, invalid or http:// address, or blocked by Primo's security policy) — a set-up problem, not the visitor's. The technical details below the text name the cause.",
+          "format": "html",
+          "x-advanced": true
+        },
+        "checkingText": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Check connection\": while checking",
+          "description": "Plain text.",
+          "x-advanced": true
+        },
+        "detailsLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Check connection\": label of the technical details",
+          "description": "",
+          "x-advanced": true
+        },
+        "closeLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "\"Check connection\": close button (screen readers)",
+          "description": "",
           "x-advanced": true
         }
       },
@@ -383,7 +417,9 @@
           "title": "Banners",
           "items": {
             "$ref": "#/definitions/noticeBanner"
-          }
+          },
+          "x-tabs": true,
+          "x-tabLabel": "text"
         },
         "closeLabel": {
           "$ref": "#/definitions/localised",
@@ -418,7 +454,9 @@
           "title": "Badges",
           "items": {
             "$ref": "#/definitions/collectionBadge"
-          }
+          },
+          "x-tabs": true,
+          "x-tabLabel": "label"
         },
         "closeLabel": {
           "$ref": "#/definitions/localised",
@@ -486,6 +524,38 @@
         "acceptedLabel",
         "submittedLabel",
         "linkTitle"
+      ]
+    },
+    "searchTips": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Search tips",
+      "description": "A box between the search results — \"best bets\": when a search contains certain words (or for every search), show a tip after result #3 (or another position), e.g. \"Looking for statistics? Try our database …\". Add as many tips as you need.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Show search tips"
+        },
+        "tips": {
+          "type": "array",
+          "title": "Tips",
+          "x-tabs": true,
+          "x-tabLabel": "terms",
+          "x-tabEmptyLabel": "All searches",
+          "items": {
+            "$ref": "#/definitions/searchTip"
+          }
+        },
+        "regionLabel": {
+          "$ref": "#/definitions/localised",
+          "title": "Region label",
+          "description": "Read by screen readers before a tip; not visible."
+        }
+      },
+      "required": [
+        "enabled",
+        "tips",
+        "regionLabel"
       ]
     },
     "loansDue": {
@@ -704,7 +774,9 @@
           "title": "Dialogs",
           "items": {
             "$ref": "#/definitions/customDialog"
-          }
+          },
+          "x-tabs": true,
+          "x-tabLabel": "selector"
         },
         "closeLabel": {
           "$ref": "#/definitions/localised",
@@ -855,7 +927,8 @@
       "type": "object",
       "additionalProperties": false,
       "title": "Reading room PCs (kiosk mode)",
-      "description": "Kiosk mode is switched on per PC by opening a view once with &ec_kiosk=1 in the URL (and off with &ec_kiosk=0). On such a PC no feature stores anything in the browser (no 'Pick up where you left off', no remembered account counts, no 'don't show again'), and the tab is reset after a period without activity.",
+      "description": "Kiosk mode is switched on per PC by opening the view once with the \"switch on\" address below (ec_kiosk=1), and off again with the \"switch off\" address (ec_kiosk=0) — e.g. as the start page or a desktop shortcut of the reading room PCs. On such a PC no feature stores anything in the browser (no 'Pick up where you left off', no remembered account counts, no 'don't show again'), and the tab is reset after a period without activity.",
+      "x-kioskLinks": true,
       "properties": {
         "idleMinutes": {
           "type": "integer",
@@ -1146,6 +1219,196 @@
         "until",
         "hours",
         "note"
+      ]
+    },
+    "askPrefill": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Prefill",
+      "properties": {
+        "field": {
+          "type": "string",
+          "title": "Field",
+          "description": "Form field / URL parameter it fills, e.g. department."
+        },
+        "from": {
+          "type": "string",
+          "default": "user",
+          "enum": [
+            "user",
+            "url"
+          ],
+          "x-enumNames": [
+            "Alma user details",
+            "URL parameter of the Primo page"
+          ],
+          "x-rerender": true,
+          "title": "From",
+          "description": "Alma user details: signed-in patrons only. URL parameter: a parameter of the Primo page the patron is on, e.g. query or docid."
+        },
+        "source": {
+          "type": "string",
+          "title": "Value",
+          "description": "The user detail (pick one, or \"Other…\" for a field your Alma returns that is not listed), or the name of the URL parameter.",
+          "x-choicesWhen": {
+            "from": "user"
+          },
+          "x-choices": [
+            {
+              "value": "displayName",
+              "label": "Name (from the session) — displayName"
+            },
+            {
+              "value": "primaryId",
+              "label": "Primary ID (from the session) — primaryId"
+            },
+            {
+              "value": "email",
+              "label": "E-mail — email"
+            },
+            {
+              "value": "address1",
+              "label": "Address line 1 — address1"
+            },
+            {
+              "value": "address2",
+              "label": "Address line 2 — address2"
+            },
+            {
+              "value": "address3",
+              "label": "Address line 3 — address3"
+            },
+            {
+              "value": "address4",
+              "label": "Address line 4 — address4"
+            },
+            {
+              "value": "city",
+              "label": "City — city"
+            },
+            {
+              "value": "zip",
+              "label": "Postal code — zip"
+            },
+            {
+              "value": "state",
+              "label": "State / region — state"
+            },
+            {
+              "value": "country",
+              "label": "Country — country"
+            },
+            {
+              "value": "telephone1",
+              "label": "Telephone — telephone1"
+            },
+            {
+              "value": "smsnumber",
+              "label": "SMS number — smsnumber"
+            }
+          ]
+        }
+      },
+      "required": [
+        "field",
+        "from",
+        "source"
+      ]
+    },
+    "searchTip": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Tip",
+      "properties": {
+        "terms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Search terms",
+          "description": "One word or phrase per line. Empty = the tip shows on EVERY search."
+        },
+        "match": {
+          "type": "string",
+          "default": "some",
+          "enum": [
+            "some",
+            "exact"
+          ],
+          "x-enumNames": [
+            "The search contains one of the terms",
+            "The search is exactly one of the terms"
+          ],
+          "title": "Match",
+          "description": "Capitals and accents are ignored. \"Contains\" matches whole words: climate matches \"climate change\", not \"climates\"."
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 3,
+          "title": "Show after result #",
+          "description": "The tip appears below this result (on the first page of results). With fewer results, below the last one."
+        },
+        "html": {
+          "$ref": "#/definitions/localised",
+          "format": "html",
+          "title": "Text",
+          "description": "What the tip says, per language (English is used when a language is empty) — e.g. a link to a database or a guide."
+        },
+        "style": {
+          "type": "string",
+          "default": "info",
+          "enum": [
+            "theme",
+            "info",
+            "warning",
+            "success",
+            "custom"
+          ],
+          "x-enumNames": [
+            "Theme colour",
+            "Information (light blue)",
+            "Warning (amber)",
+            "Success (green)",
+            "My own colour (below)"
+          ],
+          "title": "Style",
+          "description": "Background colour and icon. The text colour (black or white) is chosen automatically so it stays readable."
+        },
+        "color": {
+          "type": "string",
+          "format": "color",
+          "pattern": "^(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})?$",
+          "x-patternHint": "A colour as #RRGGBB (e.g. #00727a), or empty.",
+          "title": "Own colour",
+          "description": "Background colour when the style is \"My own colour\"."
+        },
+        "from": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$",
+          "x-patternHint": "A date as YYYY-MM-DD, or empty.",
+          "title": "Show from",
+          "description": "First day the tip is shown. Empty = from now on."
+        },
+        "until": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$",
+          "x-patternHint": "A date as YYYY-MM-DD, or empty.",
+          "title": "Show until",
+          "description": "Last day the tip is shown (included). Empty = until you remove it."
+        }
+      },
+      "required": [
+        "terms",
+        "match",
+        "position",
+        "html",
+        "style",
+        "color",
+        "from",
+        "until"
       ]
     }
   }

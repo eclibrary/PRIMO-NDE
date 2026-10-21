@@ -14,13 +14,18 @@
  *     examples/         example files for the library's OWN package files, e.g.
  *                       homepage_en.html using guest/user, network, loans due,
  *                       account counts and "pick up where you left off"
- *                       (src/noob/examples, copied as they are)
+ *                       (src/noob/examples, copied as they are), plus
+ *       FOR-CLAUDE.md   a knowledge file for a Claude project: instructions for
+ *                       Claude + README + every setting + the examples
+ *                       (src/noob/FOR-CLAUDE.md, filled in by forClaude();
+ *                       a copy also lands next to the kit zip in dist/)
  *     maker/            what START HERE.html needs (do not separate them):
  *       kit.js          version, settings schema, neutral defaults and OUR CODE
  *                       (the "core" files, base64) — a .js so the page can load it
  *                       from disk (file://), where reading other files is blocked
  *       zip.js          zip reader/writer (src/assets/editor/zip.js)
  *       rich-text.js    WYSIWYG for HTML messages (src/assets/editor/rich-text.js)
+ *       markup-help.js  the "HTML features" tab (src/assets/editor/markup-help.js)
  *
  * WHAT GOES INTO THEIR PACKAGE ("core", replaced as a whole on every update):
  *   remoteEntry.js and the other compiled .js/.css files at the package root,
@@ -53,6 +58,19 @@ const KIT_ROOT = path.join(ROOT, 'dist', 'noob');          // assembled kit fold
 const EDITOR_DIR = path.join(ROOT, 'src', 'assets', 'editor');
 const README_TEMPLATE = path.join(ROOT, 'src', 'noob', 'README.txt');
 const EXAMPLES_DIR = path.join(ROOT, 'src', 'noob', 'examples');
+const FOR_CLAUDE_TEMPLATE = path.join(ROOT, 'src', 'noob', 'FOR-CLAUDE.md');
+/**
+ * Starter home page, header and footer (src/noob/starter/): the package maker
+ * offers to ADD them to a package that has none of that kind ("Add starter
+ * pages"); it never replaces a library's own. Kept in kit.js (KIT.starter) as
+ * package path → text.
+ */
+const STARTER_DIR = path.join(ROOT, 'src', 'noob', 'starter');
+const STARTER_FILES = {
+  'assets/homepage/homepage_en.html': 'homepage_en.html',
+  'assets/header-footer/header.html': 'header.html',
+  'assets/header-footer/footer.html': 'footer.html',
+};
 
 /** Schema sections hidden in the maker: their feature is not in the noob core. */
 const HIDDEN_SECTIONS = ['printReturnLabel'];
@@ -119,6 +137,96 @@ function listFiles(dir, base = dir) {
 function versionStamp(d) {
   const p = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+}
+
+/**
+ * examples/FOR-CLAUDE.md: the template src/noob/FOR-CLAUDE.md with its
+ * placeholders filled (see the comment at its top, which is left out here):
+ * version, README, a reference of every setting (from the schema and the kit's
+ * defaults — so it always matches this kit), and the example files.
+ */
+function forClaude(version, schema, defaults, readme) {
+  const template = fs.readFileSync(FOR_CLAUDE_TEMPLATE, 'utf8').replace(/<!--[\s\S]*?-->\s*/, '');
+  return template
+    .split('{{VERSION}}').join(version)
+    .split('{{README}}').join(readme.trim())
+    .split('{{SETTINGS}}').join(settingsReference(schema, defaults))
+    .split('{{MARKUP}}').join(markupReference())
+    .replace(/\{\{EXAMPLE:([\w.-]+)\}\}/g, (_, f) => fs.readFileSync(path.join(EXAMPLES_DIR, f), 'utf8').trim());
+}
+
+/**
+ * The "HTML features" (src/assets/editor/markup-help.js — the same list as the
+ * editors' tab) as Markdown. The file is a browser script setting
+ * window.EC_MARKUP_HELP; run it here with a stand-in window.
+ */
+function markupReference() {
+  const sandbox = { window: {} };
+  new Function('window', fs.readFileSync(path.join(EDITOR_DIR, 'markup-help.js'), 'utf8'))(sandbox.window);
+  return (sandbox.window.EC_MARKUP_HELP || []).map((h) => [
+    `### ${h.title}`,
+    `*${h.needs ? `Needs the setting: ${h.needs}` : 'Works as soon as the kit is installed'}.* ${h.what}`,
+    '```html', h.code, '```',
+    ...(h.notes || []).map((n) => `- ${n}`),
+  ].join('\n')).join('\n\n');
+}
+
+/**
+ * Markdown list of the settings: per section its title, code name and help
+ * text; per setting its title, code name, help text and default. Sections the
+ * kit hides (HIDDEN_SECTIONS) are left out. Lists of items (banners, badges …)
+ * describe the fields of one item. Translated texts show the English default.
+ */
+function settingsReference(schema, defaults) {
+  const resolve = (s) => {
+    if (!s || !s.$ref) return s || {};
+    const target = s.$ref.replace('#/', '').split('/').reduce((o, k) => o && o[k], schema);
+    const { $ref, ...own } = s;
+    return { ...resolve(target), ...own };
+  };
+  const isText = (s) => s.type === 'object' && s.properties && 'en' in s.properties
+    && Object.keys(s.properties).every((k) => /^[a-z]{2}$/.test(k));
+  const short = (v) => {
+    if (v === undefined) return '';
+    let t = typeof v === 'string' ? v : JSON.stringify(v);
+    t = t.replace(/\s+/g, ' ').trim();
+    if (t.length > 120) t = t.slice(0, 117) + '…';
+    return t === '' ? '(empty)' : t.replace(/`/g, "'");
+  };
+  const line = (key, s, value, indent) => {
+    const kind = isText(s) ? 'per language' : s.enum ? `one of: ${s.enum.map((e, i) => (s['x-enumNames']?.[i] ? `${e} (${s['x-enumNames'][i]})` : e)).join(', ')}` : s.type;
+    const def = isText(s) ? short(value?.en) : short(value);
+    const desc = (s.description || '').replace(/\s+/g, ' ').trim();
+    return `${indent}- **${s.title || key}** (\`${key}\`, ${kind})${desc ? ` — ${desc}` : ''}${def ? ` Default: \`${def}\`.` : ''}${s['x-advanced'] ? ' *(advanced: shown with "Show advanced settings")*' : ''}`;
+  };
+  const fields = (s, value, indent) => {
+    const out = [];
+    for (const [k, sub] of Object.entries(s.properties || {})) {
+      const r = resolve(sub);
+      const v = value ? value[k] : undefined;
+      if (r.type === 'object' && !isText(r) && r.properties) {
+        out.push(`${indent}- **${r.title || k}** (\`${k}\`)${r.description ? ` — ${r.description.replace(/\s+/g, ' ')}` : ''}`);
+        out.push(...fields(r, v, indent + '  '));
+      } else if (r.type === 'array' && resolve(r.items).type === 'object') {
+        const item = resolve(r.items);
+        out.push(`${indent}- **${r.title || k}** (\`${k}\`, a list${Array.isArray(v) ? `; default: ${v.length} item${v.length === 1 ? '' : 's'}` : ''})${r.description ? ` — ${r.description.replace(/\s+/g, ' ')}` : ''} Each ${(item.title || 'item').toLowerCase()} has:`);
+        out.push(...fields(item, undefined, indent + '  '));
+      } else {
+        out.push(line(k, r, v, indent));
+      }
+    }
+    return out;
+  };
+  const parts = [];
+  for (const [key, sub] of Object.entries(schema.properties || {})) {
+    if (HIDDEN_SECTIONS.includes(key) || !(key in defaults)) continue;
+    const s = resolve(sub);
+    if (s.type !== 'object' || !s.properties) continue;
+    parts.push(`### ${s.title || key} (\`${key}\`)${s['x-advanced'] ? ' — advanced' : ''}\n`);
+    if (s.description) parts.push(`${s.description.replace(/\s+/g, ' ').trim()}\n`);
+    parts.push(fields(s, defaults[key], '').join('\n') + '\n');
+  }
+  return parts.join('\n');
 }
 
 function zipFolder(folder, zipFile) {
@@ -206,6 +314,8 @@ async function main() {
       // Folders (everything inside):
       folders: ['assets/core/'],
     },
+    // Starter pages, offered for packages without them (see STARTER_FILES).
+    starter: Object.fromEntries(Object.entries(STARTER_FILES).map(([to, from]) => [to, fs.readFileSync(path.join(STARTER_DIR, from), 'utf8')])),
     // Our code, base64. Paths are relative to the package folder (<INST>-<VIEW>/).
     files: Object.fromEntries(coreFiles.map((f) => [f, fs.readFileSync(path.join(BUILD_DIR, f)).toString('base64')])),
   };
@@ -214,7 +324,7 @@ async function main() {
     `   Loaded by "START HERE.html". Contains the settings schema, neutral defaults and the\n` +
     `   compiled code ("core") that the package maker puts into a customization package. */\n` +
     `window.EC_KIT = ${JSON.stringify(kit)};\n`);
-  for (const f of ['zip.js', 'rich-text.js']) fs.copyFileSync(path.join(EDITOR_DIR, f), path.join(kitDir, 'maker', f));
+  for (const f of ['zip.js', 'rich-text.js', 'markup-help.js']) fs.copyFileSync(path.join(EDITOR_DIR, f), path.join(kitDir, 'maker', f));
 
   // The maker is the settings editor in "maker" mode: same page, other scripts.
   // index.html marks its script block with <!-- ec:scripts --> … <!-- /ec:scripts -->.
@@ -226,6 +336,7 @@ async function main() {
     '<script src="maker/kit.js"></script>\n' +
     '<script src="maker/zip.js"></script>\n' +
     '<script src="maker/rich-text.js"></script>\n' +
+    '<script src="maker/markup-help.js"></script>\n' +
     '<!-- /ec:scripts -->'));
 
   // Examples for the library's own files (home page …): src/noob/examples → examples/.
@@ -236,15 +347,26 @@ async function main() {
   // Windows line endings: the README is opened with Notepad by most recipients.
   fs.writeFileSync(path.join(kitDir, 'README.txt'), readme.replace(/\r?\n/g, '\r\n'));
 
+  // Knowledge file for a Claude project (see forClaude): in the kit, and a
+  // copy next to the kit zip so it can be shared on its own.
+  const claudeDoc = forClaude(version, schema, defaults, readme);
+  // Same rule as for the core: nothing EC-specific may ship (schema help texts
+  // end up in this file too).
+  const ecHit = NO_EC_STRINGS.find((w) => claudeDoc.includes(w));
+  if (ecHit) throw new Error(`FOR-CLAUDE.md contains "${ecHit}" — remove it from config/schema.json, src/noob/ or the examples`);
+  fs.writeFileSync(path.join(kitDir, 'examples', 'FOR-CLAUDE.md'), claudeDoc);
+
   // 6. Zip.
   const zipFile = path.join(ROOT, 'dist', `${name}.zip`);
   for (const f of fs.readdirSync(path.join(ROOT, 'dist'))) {
-    if (/^ec-nde-noob-.*\.zip$/.test(f)) fs.rmSync(path.join(ROOT, 'dist', f)); // keep only the newest
+    if (/^ec-nde-noob-.*(\.zip|-FOR-CLAUDE\.md)$/.test(f)) fs.rmSync(path.join(ROOT, 'dist', f)); // keep only the newest
   }
+  fs.writeFileSync(path.join(ROOT, 'dist', `${name}-FOR-CLAUDE.md`), claudeDoc);
   await zipFolder(kitDir, zipFile);
   const kb = Math.round(fs.statSync(zipFile).size / 1024);
   console.log(`\n[noob] ${coreFiles.length} core files, version ${version}`);
   console.log(`[noob] Zip file created at: ${path.relative(ROOT, zipFile)} (${kb} KB) — ready to share.`);
+  console.log(`[noob] Claude knowledge file: examples/FOR-CLAUDE.md in the kit, copy at dist/${name}-FOR-CLAUDE.md`);
 }
 
 module.exports = { noobBuildConfiguration, NOOB_KEY };
