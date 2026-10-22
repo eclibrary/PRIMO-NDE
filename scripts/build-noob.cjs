@@ -197,7 +197,10 @@ function settingsReference(schema, defaults) {
     const kind = isText(s) ? 'per language' : s.enum ? `one of: ${s.enum.map((e, i) => (s['x-enumNames']?.[i] ? `${e} (${s['x-enumNames'][i]})` : e)).join(', ')}` : s.type;
     const def = isText(s) ? short(value?.en) : short(value);
     const desc = (s.description || '').replace(/\s+/g, ' ').trim();
-    return `${indent}- **${s.title || key}** (\`${key}\`, ${kind})${desc ? ` — ${desc}` : ''}${def ? ` Default: \`${def}\`.` : ''}${s['x-advanced'] ? ' *(advanced: shown with "Show advanced settings")*' : ''}`;
+    // "x-showWhen": the field only appears in the form while siblings have these values.
+    const when = s['x-showWhen'] && typeof s['x-showWhen'] === 'object'
+      ? ` *(only shown when ${Object.entries(s['x-showWhen']).map(([k, v]) => `\`${k}\` = \`${v}\``).join(' and ')})*` : '';
+    return `${indent}- **${s.title || key}** (\`${key}\`, ${kind})${desc ? ` — ${desc}` : ''}${def ? ` Default: \`${def}\`.` : ''}${when}${s['x-advanced'] ? ' *(advanced: shown with "Show advanced settings")*' : ''}`;
   };
   const fields = (s, value, indent) => {
     const out = [];

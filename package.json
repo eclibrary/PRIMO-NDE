@@ -1,6 +1,7 @@
 {
   "name": "ec-library-nde-views",
   "version": "2.0.0",
+  "license": "EUPL-1.2",
   "scripts": {
     "setup": "node scripts/install.cjs",
     "ng": "ng",

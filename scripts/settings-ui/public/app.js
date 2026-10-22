@@ -201,8 +201,23 @@ function markDirty() {
 }
 
 /** One editable unit. `ctx` = { data, overrides } — overrides is null on the global tab. */
+/**
+ * "x-showWhen" (schema, on a field): show it only while the named sibling
+ * fields have those values, e.g. "Own colour" only with Style = "My own
+ * colour". The deciding field carries "x-rerender": true. Hidden fields keep
+ * their value. A missing sibling counts as matching. Twin of showWhenActive()
+ * in src/assets/editor/index.html.
+ */
+function showWhenActive(schema, path, ctx) {
+  const when = schema['x-showWhen'];
+  if (!when || typeof when !== 'object') return true;
+  return Object.entries(when).every(([k, want]) => (getPath(ctx.data, [...path.slice(0, -1), k]) ?? want) === want);
+}
+
 function renderField(key, schema, path, ctx) {
   schema = resolve(schema);
+  // Hidden by "x-showWhen": an empty hidden placeholder, so callers can append it as usual.
+  if (!showWhenActive(schema, path, ctx)) return el('div', { class: 'field', hidden: '' });
   const kind = kindOf(schema);
   const value = getPath(ctx.data, path);
   const inherited = ctx.overrides !== null && !has(ctx.overrides, path);

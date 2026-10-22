@@ -818,6 +818,24 @@ function choicesActive(path, s) {
   return Object.entries(when).every(([k, want]) => (getPath(values, [...path.slice(0, -1), k]) ?? want) === want);
 }
 
+/**
+ * "x-showWhen" (schema, on a field): { "<sibling key>": <value>, … } — the
+ * field is only SHOWN while every named sibling field (same object / same
+ * list card) has that value. E.g. a banner's "Own colour" only appears with
+ * Style = "My own colour" ({ "style": "custom" }). The sibling that decides
+ * needs "x-rerender": true, so the form is redrawn when it changes.
+ * A hidden field keeps its value in the settings (picking "My own colour"
+ * again brings the old colour back); the module ignores it anyway — see
+ * notice-banners.ts / search-tips.ts, which only use `color` with style
+ * "custom". A missing sibling counts as matching (same rule as x-choicesWhen).
+ * Twin: showWhenActive() in scripts/settings-ui/public/app.js.
+ */
+function showWhenActive(path, s) {
+  const when = s['x-showWhen'];
+  if (!when || typeof when !== 'object') return true;
+  return Object.entries(when).every(([k, want]) => (getPath(values, [...path.slice(0, -1), k]) ?? want) === want);
+}
+
 function fields(path, s) {
   return Object.entries(s.properties || {}).map(([k, sub]) => {
     const r = resolve(sub);
@@ -834,6 +852,13 @@ function fields(path, s) {
 }
 
 function field(path, s, opts = {}) {
+  // Hidden by "x-showWhen" (see showWhenActive): an empty, hidden placeholder,
+  // so callers can append the result as usual. Its error (if any) must not
+  // block "Download" / "Make package" while the field cannot even be seen.
+  if (!showWhenActive(path, s)) {
+    errors.delete(path.join('.'));
+    return el('div', { class: 'field', hidden: true });
+  }
   const k = kind(s);
   const id = 'f_' + path.join('_');
   const wrap = el('div', { class: 'field' + (s['x-advanced'] ? ' adv' : '') });
