@@ -192,16 +192,52 @@ Every build also puts the view's settings **into the package** as
 `assets/settings.js`, plus a **settings editor** at `assets/editor/index.html`.
 When a page opens, the custom module reads `settings.js` and its values override
 the ones built into the package (`src/app/shared/runtime-settings.ts`). So
-settings can be changed **without a build**:
+settings can be changed **without a build**, by anyone with access to the view
+in Alma — no Node, npm or Git. Each view's package has its own copy of the
+editor, which opens that view's settings.
 
-1. Open `https://<primo host>/nde/custom/<INST>-<VIEW>/assets/editor/index.html`
-   (or `assets/editor/index.html` in an unzipped package, offline).
-2. Change texts, links and switches. HTML messages have a small WYSIWYG editor
+**The package route (recommended, Oct 2026)** — four steps, nothing to unzip:
+
+1. In Alma, download the view's package: *Manage Customization Package* ›
+   *Download Package* › *Current View Customization Package* (a fresh download
+   every time).
+2. Open the view's editor: `https://<primo host>/nde/custom/<INST>-<VIEW>/assets/editor/index.html`
+   (or `assets/editor/index.html` in any copy of that view's package, offline),
+   and drop the zip from step 1 on it. The settings are loaded **from the zip**.
+3. Change texts, links and switches. HTML messages have a small WYSIWYG editor
    (`assets/editor/rich-text.js`, also used by `npm run settings`); technical
    fields appear with "Show advanced settings" (`"x-advanced": true` in
-   `config/schema.json`).
-3. **Download settings.js**, put it in the package as `assets/settings.js`, zip
-   the `<INST>-<VIEW>` folder again and upload it in Alma.
+   `config/schema.json`). Click **Make package**.
+4. Upload the downloaded zip in Alma (*Upload Package* › *Customization Package*).
+
+"Make package" returns **the same zip with only `assets/settings.js` replaced**:
+every other file keeps its name, bytes and date (`zip.js` `write()` keeps a
+passed `modified` date). It never adds, removes or replaces program files,
+styles, pages or images — so, unlike the noob kit's package maker, it cannot
+remove a feature. **This is how non-developers change the EC views**; the noob
+kit's `START HERE.html` must never be used on them (it swaps the program for
+the kit's, which lacks the EC-only features — see `docs/NOOB.md`).
+
+The editor checks the dropped zip (`loadOwnPackage()`, PACKAGE MODE section of
+`src/assets/editor/index.html`) and refuses, with what to do instead:
+
+| Dropped zip | Message |
+|---|---|
+| another view's package (e.g. Publications on Find-eR's editor) | names both views; open the other view's editor |
+| a package made with the noob kit (`assets/core/version.js`) | use the kit's package maker |
+| a package without `assets/settings.js` or `assets/editor/` (not built from this repo) | not one of our packages |
+| the noob kit itself | drop the package from Alma |
+
+The view check compares with the view the editor shows (its `../settings.js`,
+or the last file opened); an editor opened on its own (no `settings.js` next to
+it) accepts any of our packages. A zip downloaded more than a day ago gets the
+same warning as in the maker (`staleWarning()`), because uploading its result
+would undo later changes in Alma.
+
+**The settings.js route** (still there, e.g. for a browser that cannot handle
+zips): **Download settings.js**, put it in the unzipped package as
+`assets/settings.js`, zip the `<INST>-<VIEW>` folder again and upload it in
+Alma. "Open package or settings.js…" also opens another view's `settings.js`.
 
 Safety: the module reads the file as data (never executes it), ignores a file
 made for another view, ignores values of the wrong type and settings it does not
@@ -211,7 +247,9 @@ The console line `[ec] settings: …` says what happened.
 **One place per view.** A build writes `settings.js` from `config/*.json`, so it
 replaces whatever was edited live. For a view edited in the package editor, first
 use **Import settings.js…** on that view's tab in `npm run settings` (with the
-file downloaded from the live package), then build. Return addresses edited in
+file downloaded from the live package — e.g. `assets/settings.js` from a fresh
+Alma download), then build. Tell colleagues who edit settings in the package to
+let you know, so their changes are imported before your next build. Return addresses edited in
 the package editor are imported too, into `data/return-labels.json` (shared by
 all views); settings that no longer exist (file from an older package) are
 skipped and listed.

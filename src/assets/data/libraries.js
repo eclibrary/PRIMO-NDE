@@ -6,7 +6,7 @@
   file only when settings.js cannot be read.
 */
 window.EC_LIBRARIES = {
-  "generatedAt": "2026-10-21T13:39:03.984Z",
+  "generatedAt": "2026-10-22T10:25:58.210Z",
   "source": "data/return-labels.json",
   "libraries": {
     "BCB": {
@@ -168,10 +168,6 @@ window.EC_LIBRARIES = {
         "BECH A3/023",
         "L-1521 LUXEMBOURG"
       ]
-    },
-    "OPP": {
-      "code": "OPP",
-      "name": "OP – Preservation"
     },
     "RES_SHARE": {
       "code": "RES_SHARE",

@@ -1,9 +1,13 @@
 /*
   zip.js — read and write .zip files in the browser, without any library.
 
-  Used by the package maker of the noob zip (the settings editor in "maker"
-  mode, see index.html next to this file): it opens the customization package
-  downloaded from Alma, swaps our code in, and writes the zip to upload again.
+  Used by the settings editor (index.html next to this file) in two places:
+    - the package maker of the noob zip ("maker" mode): it opens the
+      customization package downloaded from Alma, swaps our code in, and writes
+      the zip to upload again;
+    - the settings editor inside every view's package ("package" mode, Oct
+      2026): it opens that view's package from Alma and writes the same zip
+      back with only assets/settings.js replaced.
   Everything happens in the browser's memory; nothing is sent anywhere.
 
   WHY OUR OWN (about 200 lines) AND NOT A LIBRARY: the browser already does the
@@ -19,8 +23,10 @@
   (files over 4 GB — a customization package is a few MB), split archives.
 
   API (plain script, no modules):
-      const files = await EcZip.read(arrayBufferOrBlob);   // [{ name, data: Uint8Array }]
+      const files = await EcZip.read(arrayBufferOrBlob);   // [{ name, data: Uint8Array, modified: Date|null }]
       const blob  = await EcZip.write(files);               // files as above → Blob (application/zip)
+  write() stamps each file with its `modified` date when given (so files that
+  are passed through unchanged keep their original date), else with "now".
   Folder entries are not returned by read() and not needed by write(): a path
   like "INST-VIEW/assets/settings.js" implies its folders.
 
@@ -151,18 +157,23 @@
   /**
    * A zip containing `files`, compressed with deflate (stored when that is not
    * smaller, e.g. images that are compressed already).
-   * @param {Array<{name: string, data: Uint8Array|string}>} files  strings are written as UTF-8
+   * @param {Array<{name: string, data: Uint8Array|string, modified?: Date|null}>} files
+   *   strings are written as UTF-8; `modified` (optional) = the date stored for
+   *   the file — pass the date from read() to keep it; missing/invalid = now.
    * @returns {Promise<Blob>}
    */
   async function write(files) {
     if (!supported()) throw new Error('This browser cannot create zip files. Please use a recent Edge, Chrome or Firefox.');
     const enc = new TextEncoder();
-    const { time, date } = dosDateTime(new Date());
+    const now = dosDateTime(new Date());
     const parts = [];      // local headers + data, in order
     const central = [];    // central directory headers
     let offset = 0;
 
     for (const f of files) {
+      // The file's own date when the caller passed one (unchanged files keep
+      // theirs, so "newest file in the zip" stays meaningful), else now.
+      const { time, date } = f.modified instanceof Date && !isNaN(f.modified) ? dosDateTime(f.modified) : now;
       const name = enc.encode(f.name);
       const data = typeof f.data === 'string' ? enc.encode(f.data) : f.data;
       const crc = crc32(data);

@@ -64,6 +64,17 @@ rules win (`src/app/shared/core-styles.ts`; a no-op in the EC view builds).
 Libris template). The maker shows a warning and only proceeds after the library
 ticks "Replace it".
 
+**Never use the maker on a view built from this repository** (the EC views:
+Find-eR, Publications, EC Data, Country Knowledge). Their packages carry no
+`assets/core/version.js` either, so the maker shows the same warning — and if
+"Replace it" is ticked, it swaps their program for the kit's and silently drops
+the features the kit leaves out (print return label, resource-sharing format,
+country scope) and the settings it does not know. To change the settings of
+those views without a developer, use **the view's own settings editor**
+(`assets/editor/index.html` in its package): drop the Alma zip, change, "Make
+package" — it replaces only `assets/settings.js` (see "Settings in the package"
+in `docs/SETTINGS.md`). The editor in turn refuses packages made with the kit.
+
 ## Nothing EC-specific
 
 | Where | How |

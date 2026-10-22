@@ -71,7 +71,7 @@ console.log(`✔ Written to ${assetBaseOutPath}:\nexport const assetBaseUrl = '$
     if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
-console.log('Prebuild complemeted successfully!');
+console.log('Prebuild completed successfully!');
 /*
 
  The script reads the  build-settings.env  file and extracts the  ADDON_NAME  and  ASSET_BASE_URL  values. It then renames the  bootstrap.ts  file to  bootstrap{ADDON_NAME}.ts  and updates the  main.ts  file to import the renamed bootstrap file. It also updates the  webpack.config.js  file with the addon name and the new bootstrap file. Finally, it writes the  assetBaseUrl  value to a new file  asset-base.generated.ts .

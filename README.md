@@ -147,10 +147,17 @@ A view build differs from the others only through `angular.json` configurations 
 
 All configurable values are **data, not code**: `config/*.json`, validated against
 `config/schema.json` on every build. Edit them in the settings UI (`npm run settings`)
-or by hand. Every package also ships `assets/settings.js` and a settings editor
+or by hand. Every package also ships `assets/settings.js` and its own settings editor
 (`assets/editor/index.html`), so settings can be changed **in a deployed package
-without rebuilding**. Never put secrets in settings: they ship in the package and
-are public. Details: [`docs/SETTINGS.md`](docs/SETTINGS.md).
+without rebuilding**: drop the view's zip from Alma on its editor, change the
+settings, click **Make package**, and upload the result. Only `settings.js`
+changes, so this is the safe way for non-developers to change a view built from
+this repository. Never use the NOOB kit's `START HERE.html` on such a view: it
+replaces the program with the kit's, which lacks the view's own features.
+After settings were changed in a package, import them (`npm run settings` ›
+*Import settings.js…*) before your next build, or the build overwrites them.
+Never put secrets in settings: they ship in the package and are public.
+Details: [`docs/SETTINGS.md`](docs/SETTINGS.md).
 
 ### Adding things
 

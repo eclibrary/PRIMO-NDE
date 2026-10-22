@@ -17,10 +17,18 @@
        The Languages panel adds/removes languages (authoritative at runtime);
        the Return labels panel edits the label addresses per library code
        (settings.js "libraries", read by assets/return-label/label.js);
-    3. checks the input and offers "Download settings.js";
-    4. the user replaces assets/settings.js in the package with that file and
-       uploads the package in Alma (instructions in the page).
-  Another settings.js can also be loaded with "Open a settings.js file…".
+    3. checks the input and saves the result in one of two ways:
+       a. PACKAGE ROUTE (recommended, Oct 2026): the user drops the view's
+          package zip downloaded from Alma on the page, changes the settings
+          and clicks "Make package" — the SAME zip comes back with only
+          assets/settings.js replaced (every other file byte for byte, with its
+          original date). Upload it in Alma. See the PACKAGE MODE section below.
+          This is the safe way for non-developers to change an EC view: unlike
+          the noob kit's maker it never touches the program files, so no
+          feature can be lost.
+       b. "Download settings.js": the user replaces assets/settings.js in the
+          unzipped package by hand, zips the folder and uploads it.
+  Another view's settings.js can also be loaded with "Open package or settings.js…".
 
   MAKER MODE (the noob zip, scripts/build-noob.cjs): the same page, saved as
   "START HERE.html" next to maker/kit.js (window.EC_KIT: schema, neutral
@@ -163,6 +171,9 @@
 <script src="rich-text.js"></script>
 <!-- "HTML features" tab: the markup-only features (shared with the settings UI and FOR-CLAUDE.md). -->
 <script src="markup-help.js"></script>
+<!-- Zip reader/writer for the package route ("Make package", see PACKAGE MODE).
+     Optional: without it only "Download settings.js" is offered. -->
+<script src="zip.js"></script>
 <!-- /ec:scripts -->
 </head>
 <body>
@@ -181,9 +192,10 @@
 <div class="bar">
   <span id="status" class="status"></span>
   <label class="toggle"><input type="checkbox" id="advanced"> Show advanced settings</label>
-  <button type="button" class="secondary" id="open">Open a settings.js file…</button>
+  <button type="button" class="secondary" id="open">Open package or settings.js…</button>
   <button type="button" id="download">Download settings.js</button>
-  <input type="file" id="file" accept=".js,text/javascript" hidden>
+  <!-- The package zip from Alma (package route) or a bare settings.js; see openFile(). -->
+  <input type="file" id="file" accept=".zip,application/zip,.js,text/javascript" hidden>
 </div>
 
 <script>
@@ -350,10 +362,11 @@ function load(env) {
 function showDropZone() {
   $('#subtitle').textContent = 'No settings loaded.';
   const zone = el('div', { class: 'drop' },
-    el('p', {}, el('strong', {}, 'Open the settings.js of the view you want to change.')),
-    el('p', { class: 'desc' }, 'It is in the package, in the folder assets. Drop it here or use "Open a settings.js file…".'));
+    el('p', {}, el('strong', {}, 'Drop the package of the view you want to change.')),
+    el('p', { class: 'desc' }, 'The zip downloaded from Alma (recommended: you get a package to upload back), ',
+      'or the settings.js from the package\'s assets folder. Or use "Open package or settings.js…".'));
   zone.addEventListener('dragover', (e) => e.preventDefault());
-  zone.addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); });
+  zone.addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]); });
   $('#main').replaceChildren(zone);
 }
 
@@ -369,10 +382,248 @@ function parseSettings(text) {
 function readFile(file) {
   const r = new FileReader();
   r.onload = () => {
-    try { load(parseSettings(String(r.result))); setStatus(`Opened ${file.name}.`); }
-    catch (e) { setStatus(`Could not open ${file.name}: ${e.message}`, true); }
+    try {
+      const env = parseSettings(String(r.result));
+      resetPackage(); // a bare settings.js: back to the "Download settings.js" route
+      load(env);
+      setStatus(`Opened ${file.name}.`);
+    } catch (e) { setStatus(`Could not open ${file.name}: ${e.message}`, true); }
   };
   r.readAsText(file);
+}
+
+/** A file from the drop zone or "Open package or settings.js…": zip → package route, else settings.js. */
+function openFile(file) {
+  if (/\.zip$/i.test(file.name) || /zip/i.test(file.type || '')) loadOwnPackage(file);
+  else readFile(file);
+}
+
+/* ============================================================ PACKAGE MODE
+   The editor INSIDE a view's package (not the noob kit's maker): change the
+   settings of the package downloaded from Alma and get the same package back.
+
+     1. the user drops the view's zip from Alma (Manage Customization Package ›
+        Download Package › Current View Customization Package);
+     2. loadOwnPackage() reads it (zip.js) and CHECKS it:
+          - the noob kit itself, or a package made with the kit
+            (assets/core/version.js) → refused: those are changed with the
+            kit's own package maker ("START HERE.html");
+          - no assets/settings.js or no assets/editor/ → refused: not a package
+            built from this repository;
+          - another view than the one this editor shows (its settings.js "vid",
+            else the folder name) → refused, naming both views, so the
+            Publications zip cannot be dropped on Find-eR's editor by mistake;
+        then loads the settings FROM THE ZIP (a fresh download is the truth;
+        the settings.js next to this page may be older or newer);
+     3. the user changes settings; the bar button reads "Make package";
+     4. makeSettingsPackage() writes every file of the zip back unchanged —
+        same names, same bytes, same dates (zip.js `modified`) — except
+        assets/settings.js, and downloads it under the zip's folder name.
+
+   What it never does: add, remove or replace program files (remoteEntry.js,
+   chunks), styles, pages or images. That is the point: a colleague can change
+   texts and switches of an EC view without any risk to its features.
+   Shares staleWarning() (old download) with the maker.
+   ========================================================================= */
+const pkg = {
+  sourceName: '',   // file name of the dropped zip ('' = no package loaded)
+  root: '',         // the package folder inside the zip ("<INST>-<VIEW>"), '' = files at the top
+  entries: [],      // every file of the zip as read: { name (full path in the zip), data, modified }
+  zipDate: null,    // when the zip was saved on this computer (≈ downloaded from Alma)
+  newest: null,     // { date, name } — most recent file date inside the zip
+  done: '',         // file name of the last package made ('' = none yet)
+};
+
+/** Is a package from Alma loaded (package route)? Never in maker mode. */
+function hasPackage() { return !KIT && pkg.entries.length > 0; }
+
+/** Forget the loaded package (e.g. when a bare settings.js is opened instead). */
+function resetPackage() {
+  Object.assign(pkg, { sourceName: '', root: '', entries: [], zipDate: null, newest: null, done: '' });
+}
+
+/**
+ * Alma packages hold ONE folder, <INST>-<VIEW>/. A zip made of the folder's
+ * CONTENT (files at the top) is tolerated: root is then ''. Shared with the
+ * maker (loadPackageZip). Returns { root, files: Map(path inside the folder → data) }.
+ */
+function splitPackage(entries) {
+  const tops = new Set(entries.map((f) => f.name.split('/')[0]));
+  const root = tops.size === 1 && entries.every((f) => f.name.includes('/')) ? [...tops][0] : '';
+  return { root, files: new Map(entries.map((f) => [root ? f.name.slice(root.length + 1) : f.name, f.data])) };
+}
+
+/** "INST-VIEW" (folder or zip name) → "INST:VIEW", or ''. */
+function vidFromName(n) {
+  const m = /^([A-Za-z0-9_]+)-([A-Za-z0-9_-]+)$/.exec(n || '');
+  return m ? `${m[1]}:${m[2]}` : '';
+}
+
+/** Read and check a dropped package zip, then load its settings (see PACKAGE MODE). */
+async function loadOwnPackage(file) {
+  if (!window.EcZip || !EcZip.supported()) {
+    setStatus('This browser cannot open zip files. Use a recent Edge, Chrome or Firefox — or open the package\'s assets/settings.js instead.', true);
+    return;
+  }
+  // Unsaved edits on the page would be replaced by the zip's settings: ask first.
+  if (values && (changedCount() || librariesChanged() || !same(languages, originalLanguages))
+      && !confirm('The settings in this package replace the changes you made on this page so far. Continue?')) return;
+
+  setStatus(`Reading ${file.name}…`);
+  let entries;
+  try { entries = await EcZip.read(file); }
+  catch (e) { setStatus(`Could not open ${file.name}: ${e.message}`, true); return; }
+  // Leftovers of macOS zipping are never part of a package.
+  entries = entries.filter((f) => !f.name.startsWith('__MACOSX/') && !/(^|\/)\.DS_Store$/.test(f.name));
+  if (!entries.length) { setStatus(`${file.name} is empty.`, true); return; }
+
+  const { root, files } = splitPackage(entries);
+  const refuse = (msg) => { setStatus(msg, true); };
+
+  // The checks — each with what to do instead.
+  if (files.has('START HERE.html') || files.has('maker/kit.js')) {
+    return refuse('That is the NDE kit itself, not a package. Drop the zip of this view downloaded from Alma.');
+  }
+  if (files.has('assets/core/version.js')) {
+    return refuse(`${file.name} was made with the NDE kit (START HERE.html). Change its settings with the kit's package maker, not here.`);
+  }
+  if (!files.has('assets/settings.js') || !files.has('assets/editor/index.html')) {
+    return refuse(`${file.name} is not a package built from the EC Library NDE repository (no assets/settings.js or settings editor in it). ` +
+      'Drop the zip of this view downloaded from Alma: Manage Customization Package › Download Package › Current View Customization Package.');
+  }
+  let env;
+  try { env = parseSettings(new TextDecoder('utf-8').decode(files.get('assets/settings.js'))); }
+  catch (e) { return refuse(`The settings in ${file.name} could not be read: ${e.message}`); }
+
+  // Same view as this editor? (the view shown in the title: settings.js next to
+  // the page, or whatever was opened last). Unknown on either side → accept.
+  const zipVid = env.vid || vidFromName(root) || vidFromName(file.name.replace(/\.zip$/i, '').replace(/\s*\(\d+\)$/, ''));
+  const mine = envelope && envelope.vid;
+  if (mine && zipVid && zipVid !== mine) {
+    return refuse(`${file.name} is the package of ${zipVid}, but this editor shows ${mine}. ` +
+      `Drop the zip of ${mine} — or open the settings editor of ${zipVid} (assets/editor/index.html in that view's package).`);
+  }
+
+  // Freshness, as in the maker (see staleWarning): the download date, and the newest file date inside.
+  const dated = entries.filter((f) => f.modified).sort((a, b) => b.modified - a.modified);
+  const newest = dated.length ? { date: dated[0].modified, name: root ? dated[0].name.slice(root.length + 1) : dated[0].name } : null;
+  Object.assign(pkg, { sourceName: file.name, root, entries, newest, done: '',
+    zipDate: file.lastModified ? new Date(file.lastModified) : null });
+
+  if (!env.vid && zipVid) env.vid = zipVid; // older settings.js without a view code
+  load(env);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setStatus(`${file.name} read. Change the settings, then click "Make package".`);
+}
+
+/**
+ * The boxes at the top of the page (package editor, not the maker): before a
+ * package is dropped, the two ways to save; after, "Your package" (+ an old-
+ * download warning); after "Make package", the upload steps.
+ */
+function packagePanels() {
+  const vid = envelope.vid || '<INST>:<VIEW>';
+  const folder = vid.replace(':', '-');
+  if (!hasPackage()) {
+    // Not loaded yet: drop zone for the package route + the settings.js route as an alternative.
+    const zone = el('div', { class: 'drop', tabindex: '0', role: 'button', 'aria-label': 'Choose the package zip' },
+      el('p', {}, el('strong', {}, `Drop the zip of ${vid} downloaded from Alma here`)),
+      el('p', { class: 'desc' }, 'or click to choose it. Do not unzip it. Nothing is sent anywhere.'));
+    const input = el('input', { type: 'file', accept: '.zip,application/zip', hidden: true,
+      onchange: (e) => { if (e.target.files[0]) loadOwnPackage(e.target.files[0]); e.target.value = ''; } });
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+    zone.addEventListener('dragover', (e) => e.preventDefault());
+    zone.addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) loadOwnPackage(e.dataTransfer.files[0]); });
+    const zipOk = !!(window.EcZip && EcZip.supported());
+    return [
+      el('div', { class: 'maker-box' },
+        el('h2', {}, 'Change the settings of this view'),
+        zipOk ? el('ol', { class: 'steps' },
+          el('li', {}, el('strong', {}, 'In Alma, download this view\'s package: '),
+            'open the view ', el('code', {}, vid), ', tab "Manage Customization Package" › "Download Package" › ',
+            '"Download" next to "Current View Customization Package". Always use a fresh download.'),
+          el('li', {}, el('strong', {}, 'Drop that zip below. '), 'Its settings are loaded into this page.'),
+          el('li', {}, el('strong', {}, 'Change the settings, then click "Make package" '),
+            '(bottom right). You get the same zip back with only the settings changed — nothing else in the package is touched.'),
+          el('li', {}, el('strong', {}, 'Upload it in Alma: '), 'same tab, "Upload Package" › "Customization Package". ',
+            'Primo shows the changes after a few minutes (reload the page).'))
+          : el('p', {}, 'This browser cannot handle zip files, so use "Download settings.js" (below).'),
+        zipOk ? zone : null, zipOk ? input : null),
+      el('details', { class: 'help' },
+        el('summary', {}, el('strong', {}, 'Or: download settings.js only, and put it in the package yourself')),
+        el('ol', {},
+          el('li', {}, 'Change the settings below, then click ', el('strong', {}, 'Download settings.js'), '.'),
+          el('li', {}, 'In Alma, download the current customization package of this view (a zip file).'),
+          el('li', {}, 'Unzip it. You get a folder ', el('code', {}, folder), '.'),
+          el('li', {}, 'Replace the file ', el('code', {}, `${folder}/assets/settings.js`), ' with the settings.js you downloaded here.'),
+          el('li', {}, 'Zip the folder ', el('code', {}, folder), ' again (right-click the folder → Send to → Compressed (zipped) folder).'),
+          el('li', {}, 'Upload that zip in Alma as the view\'s customization package. Changes show after a few minutes (reload the page).'))),
+    ];
+  }
+
+  const panels = [];
+  if (pkg.done) {
+    panels.push(el('div', { class: 'maker-box ok' },
+      el('h2', {}, `Done: ${pkg.done} is in your Downloads folder`),
+      el('ol', { class: 'steps' },
+        el('li', {}, 'In Alma, open the view ', el('code', {}, vid), ', tab "Manage Customization Package" › "Upload Package": choose ',
+          el('strong', {}, pkg.done), ' next to "Customization Package" and click "Upload".'),
+        el('li', {}, 'Wait a few minutes, then open the view in Primo and reload the page (Ctrl+F5).'),
+        el('li', {}, 'Something wrong? Upload the zip you downloaded from Alma at the start (', el('strong', {}, pkg.sourceName),
+          ') again — that restores the previous state.')),
+      el('p', { class: 'desc' }, 'Changed your mind about a setting? Change it below and click "Make package" again.')));
+  }
+  panels.push(el('div', { class: 'maker-box' },
+    el('h2', {}, 'Your package'),
+    el('dl', {},
+      el('dt', {}, 'Package from Alma'), el('dd', {}, pkg.sourceName),
+      el('dt', {}, 'View'), el('dd', {}, vid),
+      pkg.zipDate ? el('dt', {}, 'Downloaded') : null,
+      pkg.zipDate ? el('dd', {}, formatDate(pkg.zipDate.toISOString())) : null,
+      pkg.newest ? el('dt', {}, 'Newest file in it') : null,
+      pkg.newest ? el('dd', {}, `${formatDate(pkg.newest.date.toISOString())} (${pkg.newest.name})`) : null,
+      el('dt', {}, 'What changes'), el('dd', {}, `only assets/settings.js — the other ${pkg.entries.length - 1} files stay exactly as they are`)),
+    el('p', { class: 'desc' }, 'Wrong zip? Drop another one with "Open package or settings.js…" (bottom right).')));
+  const stale = staleWarning(pkg);
+  if (stale) panels.push(stale);
+  return panels;
+}
+
+/** "Make package" in the package editor: the dropped zip with only assets/settings.js replaced. */
+async function makeSettingsPackage() {
+  if (errors.size) { setStatus(`Fix the ${errors.size} field(s) marked in red first:\n${[...errors.keys()].join(', ')}`, true); return; }
+  const folder = pkg.root || (envelope.vid || '').replace(':', '-');
+  if (!folder) { setStatus('This package has no view code, so it cannot be named. Download settings.js instead.', true); return; }
+  const text = settingsJsText(settingsOut('settings editor (package)'),
+    'To change them, open the settings editor of this package\n' +
+    '  (assets/editor/index.html), drop the package downloaded from Alma on it,\n' +
+    '  change the settings and click "Make package"; upload the result.');
+  // Files at the top of the zip (no folder) go into the folder Alma expects.
+  const inFolder = (name) => (pkg.root ? name : `${folder}/${name}`);
+  const settingsPath = `${folder}/assets/settings.js`;
+  setStatus('Making the package…');
+  $('#download').disabled = true;
+  try {
+    // Same order, names, bytes and dates as the dropped zip; only settings.js is new.
+    const out = pkg.entries.map((f) => (inFolder(f.name) === settingsPath
+      ? { name: settingsPath, data: text }                                   // the new settings (dated now)
+      : { name: inFolder(f.name), data: f.data, modified: f.modified }));    // untouched
+    const blob = await EcZip.write(out);
+    const name = `${folder}.zip`;
+    const a = el('a', { href: URL.createObjectURL(blob), download: name });
+    document.body.append(a); a.click(); a.remove();
+    pkg.done = name;
+    // What was just packaged is the new "original": the change markers reset.
+    original = clone(values); originalLanguages = clone(languages); originalLibraries = clone(libraries);
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setStatus(`${name} downloaded — upload it in Alma (see the green box at the top).`);
+  } catch (e) {
+    setStatus(`The package could not be made: ${e.message}`, true);
+  } finally {
+    $('#download').disabled = false;
+  }
 }
 
 /* ------------------------------------------------------------- rendering */
@@ -421,23 +672,9 @@ function helpPanel() {
 function render() {
   initPageTabs();
   const main = $('#main');
-  const pkg = (envelope.vid || '<INST>:<VIEW>').replace(':', '-');
   if (KIT) main.replaceChildren(...makerPanels(), languagesPanel());
-  else main.replaceChildren(
-    el('div', { class: 'intro' },
-      el('p', { style: 'margin:0' }, 'Change the settings below, then click ', el('strong', {}, 'Download settings.js'),
-        '. Nothing changes in Primo until the new file is in the package and the package is uploaded again.'),
-    ),
-    el('details', { class: 'help' },
-      el('summary', {}, el('strong', {}, 'How to put the new settings live')),
-      el('ol', {},
-        el('li', {}, 'In Alma, download the current customization package of this view (a zip file).'),
-        el('li', {}, 'Unzip it. You get a folder ', el('code', {}, pkg), '.'),
-        el('li', {}, 'Replace the file ', el('code', {}, `${pkg}/assets/settings.js`), ' with the settings.js you downloaded here.'),
-        el('li', {}, 'Zip the folder ', el('code', {}, pkg), ' again (right-click the folder → Send to → Compressed (zipped) folder).'),
-        el('li', {}, 'Upload that zip in Alma as the view\'s customization package. Changes show after a few minutes (reload the page).'))),
-    languagesPanel(),
-  );
+  // Package editor: the package route (drop zone / "Your package" / done) — see PACKAGE MODE.
+  else main.replaceChildren(...packagePanels(), languagesPanel());
   for (const [key, sub] of Object.entries(schema.properties || {})) {
     const s = resolve(sub);
     if (!(key in values)) continue; // section this view does not have
@@ -1024,7 +1261,7 @@ function changedCount() {
 }
 function refreshStatus() {
   const n = changedCount() + (same(languages, originalLanguages) ? 0 : 1) + librariesChanged();
-  if (KIT) $('#download').textContent = 'Make package';
+  if (KIT || hasPackage()) $('#download').textContent = 'Make package'; // maker, or package editor with a zip loaded
   else $('#download').textContent = n ? `Download settings.js (${n} change${n === 1 ? '' : 's'})` : 'Download settings.js';
   document.querySelectorAll('details.section').forEach((d) => {
     if (!d._changed) return; // the Languages panel has no per-section counter
@@ -1032,8 +1269,10 @@ function refreshStatus() {
     d._changed.hidden = c === 0;
     d._changed.textContent = `${c} changed`;
   });
-  if (errors.size) setStatus(`${errors.size} field${errors.size === 1 ? ' needs' : 's need'} attention before ${KIT ? 'making the package' : 'downloading'}.`, true);
+  if (errors.size) setStatus(`${errors.size} field${errors.size === 1 ? ' needs' : 's need'} attention before ${KIT || hasPackage() ? 'making the package' : 'downloading'}.`, true);
   else if (KIT) setStatus(maker.done && !n ? `${maker.done} downloaded — upload it in Alma.` : 'Check the settings, then click "Make package".');
+  else if (hasPackage()) setStatus(pkg.done && !n ? `${pkg.done} downloaded — upload it in Alma.`
+    : n ? 'Not in a package yet — click "Make package".' : 'No changes yet.');
   else setStatus(n ? 'Not downloaded yet.' : 'No changes yet.');
 }
 function sameSection(key) {
@@ -1065,12 +1304,19 @@ function settingsJsText(out, how) {
     `window.EC_SETTINGS = ${JSON.stringify(out, null, 2)};\n`;
 }
 
+/** The settings.js content (envelope) for the current form; `savedBy` says which route wrote it. */
+function settingsOut(savedBy) {
+  const out = { ...envelope, format: envelope.format || 1, savedAt: new Date().toISOString(), savedBy, languages, values };
+  if (libraries) out.libraries = libraries; // else keep whatever the file had (none)
+  return out;
+}
+
 function download() {
   if (KIT) return makePackage(); // maker mode: the button makes the whole package
   if (!envelope) return;
+  if (hasPackage()) return makeSettingsPackage(); // package editor with a zip from Alma: same zip, new settings.js
   if (errors.size) { setStatus(`Fix the ${errors.size} field(s) marked in red first:\n${[...errors.keys()].join(', ')}`, true); return; }
-  const out = { ...envelope, format: envelope.format || 1, savedAt: new Date().toISOString(), savedBy: 'settings editor', languages, values };
-  if (libraries) out.libraries = libraries; // else keep whatever the file had (none)
+  const out = settingsOut('settings editor');
   const text = settingsJsText(out,
     'To change them, use the settings editor in this\n' +
     '  package — assets/editor/index.html — then replace this file with the one it\n' +
@@ -1192,9 +1438,7 @@ async function loadPackageZip(file) {
 
   // Alma packages hold one folder, <INST>-<VIEW>/. Tolerate zips made of the
   // folder's CONTENT (files at the top) too: then the folder name comes from the view code.
-  const tops = new Set(entries.map((f) => f.name.split('/')[0]));
-  const root = tops.size === 1 && entries.every((f) => f.name.includes('/')) ? [...tops][0] : '';
-  const files = new Map(entries.map((f) => [root ? f.name.slice(root.length + 1) : f.name, f.data]));
+  const { root, files } = splitPackage(entries); // shared with the package editor (PACKAGE MODE)
 
   // How fresh is this zip? (shown in "Your package"; see staleWarning)
   //   newest — the most recent file date stored in the zip (when it was last changed in the package);
@@ -1221,8 +1465,7 @@ async function loadPackageZip(file) {
   }
 
   // View code: settings.js > folder name "INST-VIEW" > zip name "INST-VIEW.zip".
-  const fromName = (n) => { const m = /^([A-Za-z0-9_]+)-([A-Za-z0-9_-]+)$/.exec(n || ''); return m ? `${m[1]}:${m[2]}` : ''; };
-  const vid = (env && VID_RE.test(env.vid || '') && env.vid) || fromName(root) || fromName(file.name.replace(/\.zip$/i, '').replace(/\s*\(\d+\)$/, '')) || '';
+  const vid = (env && VID_RE.test(env.vid || '') && env.vid) || vidFromName(root) || vidFromName(file.name.replace(/\.zip$/i, '').replace(/\s*\(\d+\)$/, '')) || '';
 
   Object.assign(maker, { sourceName: file.name, files, installed, foreignModule: files.has('remoteEntry.js') && !installed,
     replaceConfirmed: false, done: '', newest, zipDate, addStarter: null });
@@ -1295,16 +1538,18 @@ function mergeDefaults(def, have, path) {
  * enough, or no package dropped.
  */
 const STALE_HOURS = 24;
-function staleWarning() {
-  if (!maker.sourceName || !maker.zipDate || maker.done) return null;
-  const hours = (Date.now() - maker.zipDate.getTime()) / 36e5;
+/** `src` = the maker's state (default) or the package editor's `pkg` — both have sourceName, zipDate, done. */
+function staleWarning(src = maker) {
+  if (!src.sourceName || !src.zipDate || src.done) return null;
+  const hours = (Date.now() - src.zipDate.getTime()) / 36e5;
   if (hours < STALE_HOURS) return null;
   const days = Math.floor(hours / 24);
+  const again = src === maker ? '("Start again", bottom right)' : '("Open package or settings.js…", bottom right)';
   return el('div', { class: 'maker-box warn' },
     el('h2', {}, `This zip was downloaded ${days === 1 ? 'yesterday' : `${days} days ago`}`),
-    el('p', {}, `${maker.sourceName} was saved on this computer on ${formatDate(maker.zipDate.toISOString())}. `,
+    el('p', {}, `${src.sourceName} was saved on this computer on ${formatDate(src.zipDate.toISOString())}. `,
       'If anything changed in the package in Alma since then (an image, a page, the settings), the zip you make here would undo it. ',
-      'Unless you are sure nothing changed: download the package from Alma again and drop that one ("Start again", top right).'));
+      `Unless you are sure nothing changed: download the package from Alma again and drop that one ${again}.`));
 }
 
 /**
@@ -1483,7 +1728,7 @@ async function makePackage() {
 $('#advanced').addEventListener('change', applyAdvanced);
 $('#download').addEventListener('click', download);
 $('#open').addEventListener('click', () => (KIT ? makerStart() : $('#file').click())); // maker: "Start again"
-$('#file').addEventListener('change', (e) => { if (e.target.files[0]) readFile(e.target.files[0]); e.target.value = ''; });
+$('#file').addEventListener('change', (e) => { if (e.target.files[0]) openFile(e.target.files[0]); e.target.value = ''; }); // zip or settings.js
 window.addEventListener('beforeunload', (e) => {
   if (KIT ? values && !maker.done : values && (changedCount() || librariesChanged() || !same(languages, originalLanguages))) e.preventDefault();
 });
