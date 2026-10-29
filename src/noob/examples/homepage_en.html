@@ -145,15 +145,21 @@
   <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="guest">
     <h2 class="welcome-title mat-headline-medium" role="heading" aria-level="2">Welcome</h2>
     <span class="welcome-content">Sign in to see your loans and saved records.</span>
+    <!-- ACCOUNT COUNTS for guests: the numbers the visitor had at their last
+         signed-in visit in this browser ("You have: 2 loans · 5 saved
+         records"), so they see them before signing in again. For guests they
+         are plain labels, NOT links: the account pages stay empty until the
+         visitor signs in. Hidden when there is nothing to show.
+         LEAVE THE ELEMENT EMPTY — the kit fills it.
+         Normally the kit adds a "Sign in to see them" button after the
+         numbers (setting "Sign-in link for guests"). This block has its own
+         Sign in button just below, so data-ec-account-counts-signin="off"
+         leaves the kit's button out — one Sign in button, not two. -->
+    <nav class="ec-account-counts" data-ec-account-counts data-ec-account-counts-signin="off"></nav>
+
     <!-- Sign-in button: the library card's overview page (Primo asks the
          visitor to sign in first). -->
     <a href="#" data-ec-nav="account" data-ec-query="section=overview" role="link">Sign in</a>
-
-    <!-- ACCOUNT COUNTS for guests: the numbers the visitor had at their last
-         signed-in visit in this browser ("You have: 2 loans · 5 saved
-         records"), so they see them before signing in again. Hidden when
-         there is nothing to show. LEAVE THE ELEMENT EMPTY — the kit fills it. -->
-    <nav class="ec-account-counts" data-ec-account-counts></nav>
   </div>
 
   <!-- ---- b. SIGNED IN --------------------------------------------------- -->
@@ -174,7 +180,8 @@
     </p>
 
     <!-- ACCOUNT COUNTS for signed-in visitors: live numbers of loans, saved
-         records and saved searches, each a link to that page. Leave empty. -->
+         records and saved searches, each a link to that page. Leave empty.
+         (Signed-in visitors never get the sign-in button.) -->
     <nav class="ec-account-counts" data-ec-account-counts></nav>
   </div>
 
@@ -186,7 +193,9 @@
          - writes "(page 4)" into data-ec-last-search-page when they had
            paged on, and leaves it empty otherwise.
        Everything else in the block is yours. Loans due and account counts can
-       be repeated here, because this block replaces (a) and (b). -->
+       be repeated here, because this block replaces (a) and (b). This block
+       has no Sign in button of its own, so here a guest gets the kit's
+       "Sign in to see them" button after the numbers. -->
   <div class="welcome display-flex flex-column flex-layout-start" data-ec-last-search>
     <h2 class="welcome-title mat-headline-medium" role="heading" aria-level="2">Welcome back</h2>
     <span class="welcome-content">Pick up where you left off:</span>

@@ -125,6 +125,9 @@ CONVIENE SABER
   enlaces con el número de préstamos, registros guardados y búsquedas
   guardadas, y partes que solo ven los usuarios identificados, los
   invitados o quienes están en su propia red.
+  (Los invitados ven las cifras de su última visita como simples
+  etiquetas, con un botón «Inicie sesión para consultarlos»: las páginas
+  de la cuenta solo se rellenan después de iniciar sesión.)
   examples\homepage_en.html las muestra todas, con explicaciones en el
   archivo (ábralo con el Bloc de notas; el ejemplo está en inglés). Los
   archivos de su página de inicio están en su paquete, en assets\homepage\.

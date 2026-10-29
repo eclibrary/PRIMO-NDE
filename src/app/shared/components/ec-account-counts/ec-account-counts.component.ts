@@ -15,8 +15,17 @@
 // GUESTS SEE IT TOO: every time a signed-in patron opens the landing page the
 // fresh counts are written to localStorage (per view). When the visitor comes
 // back signed out, those remembered counts are shown, so the patron sees at
-// once that there is something waiting behind the sign-in. Clicking a link as a
-// guest opens the account page, where NDE asks them to sign in first.
+// once that there is something waiting behind the sign-in.
+// Guests get the counts as plain, NON-CLICKABLE pills (<span>, class
+// ec-account-counts__item--static): as a guest the account pages open EMPTY
+// (NDE shows the guest's session lists, not the patron's), which looked broken
+// (Björn, Oct 2026). Instead, after the pills, ONE sign-in link:
+//     [login] Sign in to see them         (setting accountCounts.signIn)
+// opening the same route as the home pages' own "Sign in" buttons
+// (account?section=overview — NDE asks for sign-in there). Empty label = no
+// link. A container with data-ec-account-counts-signin="off" never gets it —
+// for blocks that already have their own "Sign in" button right next to it
+// (e.g. the guest welcome block), so there are never two.
 // Decision (Björn, Oct 2026): no "as of your last visit" note — counts only
 // change through Find-eR, so the remembered numbers are normally current.
 // (Known exception: a loan returned at the desk or by the book drop lowers the
@@ -41,7 +50,9 @@
 //     data-ec-account-counts-welcome="off" — Find-eR sets that on the signed-in
 //     block, whose heading already says "Welcome back".
 //   - The container gets class `ec-account-counts--show` when at least one
-//     count is above 0 (CSS in homepage.css hides it otherwise).
+//     count is above 0 (hidden otherwise). ALL styles are in
+//     ec-account-counts.component.scss (since Oct 29 2026; before, in the
+//     view's homepage.css and the noob theme).
 //   - Its content is rebuilt from code (createElement/textContent — never
 //     innerHTML), so the HTML file only needs the empty container.
 //   - Put it in every block that can be visible: Find-eR has it in the guest
@@ -72,7 +83,7 @@
 // MOUNT POINT: rendered by EcSharedRootComponent (see shared-mappings.ts).
 // ONLY FIND-eR: switched on in config/views/finder.json (global default off),
 // and only Find-eR's homepage HTML contains the container.
-import { Component, OnDestroy, effect, inject } from '@angular/core';
+import { Component, OnDestroy, ViewEncapsulation, effect, inject } from '@angular/core';
 import { AuthStateService } from '../../auth-state.service';
 import { EC_CONFIG, currentLang, currentVid, localised } from '../../ec-config';
 import { isKiosk } from '../../kiosk';
@@ -113,6 +124,11 @@ interface StoredCounts {
   standalone: true,
   host: { 'data-component-id': 'custom-ec-account-counts' },
   template: '', // headless — see header comment
+  // The pill styles travel with the component (inside the hashed JS, never
+  // stale) and must reach the static landing-page HTML → global, not scoped.
+  // See the header of ec-account-counts.component.scss.
+  styleUrls: ['./ec-account-counts.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class EcAccountCountsComponent implements OnDestroy {
   private readonly auth = inject(AuthStateService);
@@ -165,8 +181,9 @@ export class EcAccountCountsComponent implements OnDestroy {
     });
 
     if (!this.auth.isSignedIn()) {
-      // Guest: show what the last signed-in visit left behind (if anything).
-      this.render(targets, readStored());
+      // Guest: show what the last signed-in visit left behind (if anything),
+      // as non-clickable pills + a sign-in link (see "GUESTS SEE IT TOO").
+      this.render(targets, readStored(), true);
       return;
     }
 
@@ -262,21 +279,38 @@ export class EcAccountCountsComponent implements OnDestroy {
 
   // -------------------------------------------------------------- display
 
-  /** Rebuild the links in every container; `counts` null or all-zero hides them. */
-  private render(targets: NodeListOf<HTMLElement>, counts: StoredCounts | null): void {
+  /**
+   * Rebuild the items in every container; `counts` null or all-zero hides them.
+   * `guest` = the visitor is signed out: items are plain pills (not links) and
+   * a sign-in link follows them — see "GUESTS SEE IT TOO" in the header.
+   */
+  private render(targets: NodeListOf<HTMLElement>, counts: StoredCounts | null, guest = false): void {
     const cfg = CONFIG!;
+    // Guest sign-in link text ('' = no link). Optional chaining: a settings.js
+    // from before Oct 29 2026 has no signIn — the built-in default fills it in
+    // (runtime-settings.ts merges), but stay safe if a config lacks it entirely.
+    const signInText = guest && cfg.signIn ? localised(cfg.signIn.label ?? { en: '' }).trim() : '';
     // Signature of what should be on screen; containers already showing it are
-    // left alone, so the 1.5 s poll does not rebuild the DOM every time.
+    // left alone, so the 1.5 s poll does not rebuild the DOM every time. It
+    // includes the guest state, so signing in or out turns the pills into
+    // links (or back) at once.
     const shown = KEYS.filter((k) => (counts?.[k] ?? 0) > 0);
-    const signature = `${currentLang()}|${localised(cfg.welcomeLabel ?? { en: '' })}|${shown.map((k) => `${k}=${counts![k]}`).join(',')}`;
+    const signature = `${currentLang()}|${guest ? 'guest' : 'user'}|${signInText}|${localised(cfg.welcomeLabel ?? { en: '' })}|${shown.map((k) => `${k}=${counts![k]}`).join(',')}`;
 
     targets.forEach((box) => {
       box.classList.toggle('ec-account-counts--show', shown.length > 0);
+      // Lets page CSS style the guest variant differently if it wants to.
+      box.classList.toggle('ec-account-counts--guest', guest);
       if (box.dataset['ecAccountCountsState'] === signature) return;
       box.dataset['ecAccountCountsState'] = signature;
 
       box.setAttribute('aria-label', localised(cfg.ariaLabel));
-      const links = shown.map((k) => this.buildLink(k, counts![k]!));
+      const links: HTMLElement[] = shown.map((k) => this.buildItem(k, counts![k]!, guest));
+      // Guests: one sign-in link after the pills, unless this container opted
+      // out (data-ec-account-counts-signin="off": its block has its own button).
+      if (links.length > 0 && signInText && box.dataset['ecAccountCountsSignin'] !== 'off') {
+        links.push(this.buildSignIn(signInText));
+      }
 
       // "Welcome back" line above the links (setting accountCounts.welcomeLabel).
       // Only built when there are links, so it appears and disappears with them.
@@ -299,23 +333,33 @@ export class EcAccountCountsComponent implements OnDestroy {
   }
 
   /**
-   * One item:
+   * One item. Signed in — a link:
    *   <a href="#" data-ec-nav="account/loans" class="ec-account-counts__item ec-account-counts__item--loans">
    *     <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
    *     <span class="ec-account-counts__text">2 loans</span>
    *   </a>
    * The click is handled by EcSessionComponent (delegated on <body>, so links
    * created later work too), which keeps the current vid and lang.
+   * Guest — the same content in a plain <span> with the extra class
+   * ec-account-counts__item--static: nothing to click (the account page would
+   * be empty), styled as a pill without hover/pointer.
    */
-  private buildLink(key: CountKey, n: number): HTMLAnchorElement {
+  private buildItem(key: CountKey, n: number, guest: boolean): HTMLElement {
     const cfg = CONFIG!;
     const item = cfg[key];
 
-    const a = document.createElement('a');
-    a.href = '#';
-    a.setAttribute('role', 'link');
-    a.dataset['ecNav'] = item.route;
-    a.className = `ec-account-counts__item ec-account-counts__item--${key}`;
+    let a: HTMLElement;
+    if (guest) {
+      a = document.createElement('span');
+      a.className = `ec-account-counts__item ec-account-counts__item--${key} ec-account-counts__item--static`;
+    } else {
+      const link = document.createElement('a');
+      link.href = '#';
+      link.setAttribute('role', 'link');
+      link.dataset['ecNav'] = item.route;
+      link.className = `ec-account-counts__item ec-account-counts__item--${key}`;
+      a = link;
+    }
 
     const icon = document.createElement('span');
     icon.className = 'material-symbols-outlined';
@@ -325,6 +369,39 @@ export class EcAccountCountsComponent implements OnDestroy {
     const text = document.createElement('span');
     text.className = 'ec-account-counts__text';
     text.textContent = pluralise(localised(item.label), n);
+
+    a.append(icon, text);
+    return a;
+  }
+
+  /**
+   * The guests' sign-in link after the pills:
+   *   <a href="#" data-ec-nav="account" data-ec-query="section=overview" class="ec-account-counts__signin">
+   *     <span class="material-symbols-outlined" aria-hidden="true">login</span>
+   *     <span class="ec-account-counts__text">Sign in to see them</span>
+   *   </a>
+   * Route and query come from accountCounts.signIn (defaults = the route of the
+   * home pages' own "Sign in" buttons). Handled by EcSessionComponent like the
+   * other data-ec-nav links (vid and lang kept).
+   */
+  private buildSignIn(label: string): HTMLAnchorElement {
+    const signIn = CONFIG!.signIn;
+    const a = document.createElement('a');
+    a.href = '#';
+    a.setAttribute('role', 'link');
+    a.dataset['ecNav'] = signIn?.route || 'account';
+    const query = signIn?.query ?? 'section=overview';
+    if (query) a.dataset['ecQuery'] = query;
+    a.className = 'ec-account-counts__signin';
+
+    const icon = document.createElement('span');
+    icon.className = 'material-symbols-outlined';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = 'login';
+
+    const text = document.createElement('span');
+    text.className = 'ec-account-counts__text';
+    text.textContent = label;
 
     a.append(icon, text);
     return a;

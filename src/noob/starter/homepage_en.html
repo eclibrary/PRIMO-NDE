@@ -48,8 +48,10 @@
   <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="guest">
     <h2 class="welcome-title mat-headline-medium" role="heading" aria-level="2">Welcome to [YOUR LIBRARY]</h2>
     <span class="welcome-content">Search our collections above. Sign in to see your loans and saved records.</span>
+    <!-- Counts from the last visit (plain labels for guests); signin="off":
+         this block has its own Sign in button right below. -->
+    <nav class="ec-account-counts" data-ec-account-counts data-ec-account-counts-signin="off"></nav>
     <a href="#" data-ec-nav="account" data-ec-query="section=overview" role="link">Sign in</a>
-    <nav class="ec-account-counts" data-ec-account-counts></nav>
   </div>
 
   <div class="welcome display-flex flex-column flex-layout-start" data-ec-audience="user">

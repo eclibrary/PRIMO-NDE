@@ -609,7 +609,7 @@
       "type": "object",
       "additionalProperties": false,
       "title": "Account counts on the landing page",
-      "description": "Links with the number of loans, saved records and saved searches on the landing page (items at 0 are hidden). Shown to guests too, with the numbers remembered from the last signed-in visit on that browser. Only on views whose landing page contains the data-ec-account-counts markup.",
+      "description": "Links with the number of loans, saved records and saved searches on the landing page (items at 0 are hidden). Shown to guests too, with the numbers remembered from the last signed-in visit on that browser — as plain labels, not links (the account pages are empty until the visitor signs in), followed by a sign-in link (see \"Sign-in link for guests\"). Only on views whose landing page contains the data-ec-account-counts markup.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -689,6 +689,36 @@
           "required": [
             "label",
             "route"
+          ]
+        },
+        "signIn": {
+          "type": "object",
+          "additionalProperties": false,
+          "title": "Sign-in link for guests",
+          "description": "Guests see the remembered counts as plain labels, because the account pages stay empty until they sign in. This link after them starts the sign-in. Empty text = no link. A container with data-ec-account-counts-signin=\"off\" never shows it (for a block that already has its own \"Sign in\" button).",
+          "properties": {
+            "label": {
+              "$ref": "#/definitions/localised",
+              "title": "Text",
+              "description": "e.g. \"Sign in to see them\"."
+            },
+            "route": {
+              "type": "string",
+              "title": "NDE page",
+              "description": "Technical. NDE route the link opens; vid and lang are added automatically. Default account (the library card, which asks for sign-in).",
+              "x-advanced": true
+            },
+            "query": {
+              "type": "string",
+              "title": "Extra parameters",
+              "description": "Technical. Added to the address, e.g. section=overview.",
+              "x-advanced": true
+            }
+          },
+          "required": [
+            "label",
+            "route",
+            "query"
           ]
         },
         "testWithPastLoans": {

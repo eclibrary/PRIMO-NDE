@@ -372,6 +372,24 @@ async function main() {
   fs.renameSync(path.join(BUILD_DIR, 'custom.css'), path.join(BUILD_DIR, 'assets', 'core', 'ec-core.css'));
   // The shell's favicon is not ours to impose.
   fs.rmSync(path.join(BUILD_DIR, 'favicon.ico'), { force: true });
+  //    Cache-busting (Oct 29 2026): ec-core.css keeps its name on every update,
+  //    so browsers would keep an old copy next to new code (unstyled new
+  //    features). src/app/shared/core-styles.ts builds the link as
+  //    `…assets/core/ec-core.css`; append ?v=<kit version> to that string in
+  //    the compiled chunks. The string is unique to that file; a build where it
+  //    is not found only loses the cache-busting, so warn instead of failing.
+  {
+    let stamped = 0;
+    for (const f of listFiles(BUILD_DIR).filter((x) => x.endsWith('.js'))) {
+      const full = path.join(BUILD_DIR, f);
+      const js = fs.readFileSync(full, 'utf8');
+      if (!js.includes('assets/core/ec-core.css')) continue;
+      fs.writeFileSync(full, js.split('assets/core/ec-core.css').join(`assets/core/ec-core.css?v=${version}`));
+      stamped++;
+    }
+    if (stamped) console.log(`[noob] cache-busting: ec-core.css?v=${version} in ${stamped} file(s)`);
+    else console.warn('[noob] cache-busting: "assets/core/ec-core.css" not found in the compiled code — link left without ?v=');
+  }
   fs.writeFileSync(path.join(BUILD_DIR, 'assets', 'core', 'version.js'),
     '/* Marks this customization package as containing the EC Library NDE kit (noob zip).\n' +
     '   Written by the build; the package maker reads it to recognise an installed version. Do not edit. */\n' +

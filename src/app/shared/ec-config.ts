@@ -348,6 +348,14 @@ export interface EcConfigValues {
     loans: EcAccountCountItem;
     favorites: EcAccountCountItem;
     savedSearches: EcAccountCountItem;
+    /**
+     * Guests (Oct 29 2026): the counts are plain pills, not links (the account
+     * pages are empty until sign-in), followed by this sign-in link.
+     * label: link text, empty en = no link. route + query: where it goes
+     * (data-ec-nav / data-ec-query), default account + section=overview, as
+     * the home pages' own "Sign in" buttons. Optional: older configs lack it.
+     */
+    signIn?: { label: Localised; route: string; query: string };
     /** TEST ONLY: count the loan history instead of the active loans. */
     testWithPastLoans: boolean;
     /** localStorage key = prefix + vid. */

@@ -297,6 +297,15 @@
       },
       "route": "account/savedSearches"
     },
+    "signIn": {
+      "label": {
+        "en": "Sign in to see them",
+        "fr": "Connectez-vous pour les consulter",
+        "de": "Anmelden, um sie anzusehen"
+      },
+      "route": "account",
+      "query": "section=overview"
+    },
     "testWithPastLoans": false,
     "storageKeyPrefix": "ec-account-counts:",
     "loansEndpoint": "/primaws/rest/priv/myaccount/loans?type={type}&lang={lang}&inst_code={inst}&patron_id={patronId}&vid={vid}",

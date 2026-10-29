@@ -34,6 +34,8 @@ export function loadCoreStyles(): void {
   const link = document.createElement('link');
   link.id = LINK_ID;
   link.rel = 'stylesheet';
+  // Keep the literal "assets/core/ec-core.css": scripts/build-noob.cjs finds it in
+  // the compiled code and appends ?v=<kit version> (cache-busting on kit updates).
   link.href = `${base.endsWith('/') ? base : base + '/'}assets/core/ec-core.css`;
 
   // The institution's custom.css from THIS package, if NDE has added it already.

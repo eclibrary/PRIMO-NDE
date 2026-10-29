@@ -86,9 +86,12 @@ window.EC_MARKUP_HELP = [
   {
     title: 'Account counts (loans, saved records, saved searches)',
     needs: 'Account counts on the landing page',
-    what: 'Links with the visitor\'s numbers. Guests see the numbers of their last signed-in visit in this browser. Leave the element empty — the kit fills it.',
+    what: 'Links with the visitor\'s numbers. Guests see the numbers of their last signed-in visit in this browser — as plain labels, not links (the account pages are empty until they sign in), followed by a "Sign in to see them" button. Leave the element empty — the kit fills it.',
     code: '<nav class="ec-account-counts" data-ec-account-counts></nav>',
-    notes: ['data-ec-account-counts-welcome="off" on that element leaves out the "Welcome back" line above the links.'],
+    notes: [
+      'data-ec-account-counts-welcome="off" on that element leaves out the "Welcome back" line above the links.',
+      'data-ec-account-counts-signin="off" on that element leaves out the guests\' sign-in button — for a block that already has its own Sign in button.',
+    ],
   },
   {
     title: 'On / outside your own network',

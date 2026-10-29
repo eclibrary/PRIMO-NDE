@@ -125,6 +125,9 @@ BON À SAVOIR
   ligne « Prêts bientôt à rendre », des liens avec le nombre de prêts, de
   notices enregistrées et de recherches enregistrées, et des parties
   réservées aux usagers connectés, aux invités ou à votre propre réseau.
+  (Les invités voient les chiffres de leur dernière visite comme de simples
+  étiquettes, avec un bouton « Connectez-vous pour les consulter » : les
+  pages du compte ne se remplissent qu'après la connexion.)
   examples\homepage_en.html les montre toutes, avec des explications dans le
   fichier (ouvrez-le avec le Bloc-notes ; l'exemple est en anglais). Les
   fichiers de votre page d'accueil sont dans votre paquet, dans

@@ -105,6 +105,9 @@ GOOD TO KNOW
   visitor's last search, a "Loans due soon" line, links with the number of
   loans, saved records and saved searches, and parts shown only to signed-in
   visitors, only to guests, or only on your own network.
+  (Guests see the numbers of their last visit as plain labels with a
+  "Sign in to see them" button: the account pages only fill in after
+  signing in.)
   examples\homepage_en.html shows all of them, with explanations in the file
   (open it with Notepad). Your home page files are in your package, in
   assets\homepage\. The examples folder also has a header (a bar at the top

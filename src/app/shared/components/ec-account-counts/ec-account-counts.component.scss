@@ -1,0 +1,114 @@
+// src/app/shared/components/ec-account-counts/ec-account-counts.component.scss
+//
+// Styles of the account-count pills on the landing page (Oct 29 2026).
+//
+// WHY HERE and not in the view's homepage.css: the component builds its own
+// markup inside <nav data-ec-account-counts>, so its look belongs with it.
+// More importantly, these styles now ship INSIDE the compiled JS (hashed file
+// name, new on every build), so they can never be stale. Before, they lived in
+// src/views/finder/assets/homepage/homepage.css and src/noob/core/theme.scss;
+// a cached homepage.css (browser, or Primo's own caching) next to new code gave
+// unstyled, misaligned guest pills. ViewEncapsulation.None (see the component)
+// makes these rules global, as they must reach the static landing-page HTML.
+//
+// SPECIFICITY: every selector starts with `body` and names the item class, so
+// it beats the OLD rules a stale homepage.css may still carry, e.g.
+//   .main-landing-page .welcome .ec-account-counts a        (0,3,1) !important
+//   … a:hover                                               (0,4,1) !important
+// and NDE's own .welcome link rules (big buttons) — hence `all: unset`.
+//
+// COLOURS: the kit's variables (defined by the noob theme from the Alma Color
+// Theme); EC views do not define the soft ones, so the fallbacks are EC blue.
+//   --ec-blue / --ec-on-blue            solid: the guests' sign-in button
+//   --ec-blue-soft / --ec-on-blue-soft  light tint: the signed-in links
+
+// ---- Container: hidden until the component has something to show ----------
+body .main-landing-page .ec-account-counts {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;          // pills, labels and button on one centre line
+  gap: .5rem;
+  margin: 1rem 0 0;
+}
+body .main-landing-page .ec-account-counts.ec-account-counts--show {
+  display: flex;
+}
+
+// "You have:" line above the pills: a row of its own (flex-basis 100%).
+body .main-landing-page .ec-account-counts .ec-account-counts__welcome {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--ec-blue, #004494);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+// ---- Shared pill shape: links (signed in), labels (guests), sign-in button --
+body .main-landing-page .ec-account-counts .ec-account-counts__item,
+body .main-landing-page .ec-account-counts a.ec-account-counts__item,
+body .main-landing-page .ec-account-counts a.ec-account-counts__signin {
+  all: unset !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;      // icon and text vertically centred
+  gap: .375rem !important;
+  min-height: 2rem !important;          // same height for all three kinds
+  padding: .25rem .8rem .25rem .55rem !important;
+  border-radius: 999px !important;
+  font-size: 1rem !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+// Signed in: light pill, a link to the account page.
+body .main-landing-page .ec-account-counts a.ec-account-counts__item {
+  background-color: var(--ec-blue-soft, #e3ecf8) !important;
+  color: var(--ec-on-blue-soft, var(--ec-blue, #004494)) !important;
+  cursor: pointer !important;
+}
+body .main-landing-page .ec-account-counts a.ec-account-counts__item:hover {
+  background-color: color-mix(in srgb, var(--ec-blue-soft, #e3ecf8) 80%, var(--ec-blue, #004494)) !important;
+}
+
+// Guests: plain label (<span>), muted, nothing to click — the account pages
+// are empty until sign-in.
+body .main-landing-page .ec-account-counts .ec-account-counts__item--static {
+  background-color: #eef1f5 !important;
+  color: #3d4a5c !important;
+  cursor: default !important;
+}
+
+// Guests: the ONE sign-in button after the labels — solid, clearly clickable.
+body .main-landing-page .ec-account-counts a.ec-account-counts__signin {
+  background-color: var(--ec-blue, #004494) !important;
+  color: var(--ec-on-blue, #fff) !important;
+  cursor: pointer !important;
+}
+body .main-landing-page .ec-account-counts a.ec-account-counts__signin:hover {
+  background-color: color-mix(in srgb, var(--ec-blue, #004494) 80%, #000) !important;
+}
+
+// Text underline on hover (links and button only) + keyboard focus ring.
+body .main-landing-page .ec-account-counts a:hover .ec-account-counts__text {
+  text-decoration: underline;
+}
+body .main-landing-page .ec-account-counts a.ec-account-counts__item:focus-visible,
+body .main-landing-page .ec-account-counts a.ec-account-counts__signin:focus-visible {
+  outline: 2px solid var(--ec-blue, #004494) !important;
+  outline-offset: 2px !important;
+}
+
+// Icons: smaller than the global 28px .material-symbols-outlined rule, and
+// without the font's own line box, so they centre with the text.
+body .main-landing-page .ec-account-counts .material-symbols-outlined {
+  font-size: 1.25rem !important;
+  line-height: 1 !important;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0 !important;
+  color: inherit !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
