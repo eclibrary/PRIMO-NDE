@@ -141,16 +141,22 @@ GOOD TO KNOW
   loads the first time the dialog opens. This code RUNS in your Primo:
   paste only code from providers you trust.
 
-- ASK A LIBRARIAN. Your "ask us a question" links (section "Ask a
-  librarian"): list the start of their address under "Ask a librarian
-  links", e.g. https://yourlibrary.libanswers.com/form?queue_id=1234. Every
-  such link in your home page, header, footer or menu then carries the
-  signed-in visitor's name and e-mail (tick which), other values you choose
-  ("Other prefills": a detail from Alma, e.g. address line 2 for a
-  department field, or a parameter of the Primo page, e.g. query), and — with "Add context to the details" — what they
-  were looking at (record title, search terms, link). The form opens filled
-  in, as long as it reads those from its address (LibAnswers forms do: use
-  the form's field names, e.g. pname, pemail, pdetails).
+- ASK A LIBRARIAN (LIBANSWERS). For libraries that answer questions with
+  LibAnswers (a Springshare product). Your "ask us a question" links to the
+  LibAnswers question form (section "Ask a librarian (LibAnswers)"): list
+  the start of their address under "Ask a librarian links", e.g.
+  https://yourlibrary.libanswers.com/form?queue_id=1234. Every such link in
+  your home page, header, footer or menu then carries the signed-in
+  visitor's name and e-mail (tick which), other values you choose ("Other
+  prefills": a detail from Alma, e.g. address line 2 for a department
+  field, or a parameter of the Primo page, e.g. query), and — with "Add
+  context to the details" — what they were looking at (record title, search
+  terms, link). The form opens filled in, as long as it reads those from
+  its address (LibAnswers forms do: use the form's field names, e.g. pname,
+  pemail, pdetails).
+  No LibAnswers? Leave "Ask a librarian links" empty: nothing happens.
+  Another question-form tool only works if its form reads values from its
+  address in the same way.
   Tick "Use dialog" to open the form in a pop-up instead: paste the form's
   embed code in "Widget code" (LibAnswers: Admin > Widgets > your question
   form > embed code). Hide or restyle parts of it with "Custom CSS", e.g.

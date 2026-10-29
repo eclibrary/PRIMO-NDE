@@ -106,8 +106,9 @@ window.EC_MARKUP_HELP = [
   },
   {
     title: 'Ask a librarian links',
-    needs: 'Ask a librarian',
-    what: 'Any ordinary link whose address starts with one of the "Ask a librarian links" in the settings is prefilled (and opens the dialog when "Use dialog" is on). Nothing special to add.',
+    // `needs` = the section title in config/schema.json, word for word (also a translation key).
+    needs: 'Ask a librarian (LibAnswers)',
+    what: 'Any ordinary link to your LibAnswers question form — more precisely, whose address starts with one of the "Ask a librarian links" in the settings — is prefilled (and opens the dialog when "Use dialog" is on). Nothing special to add.',
     code: '<a href="https://yourlibrary.libanswers.com/form?queue_id=1234">Ask a librarian</a>',
     notes: ['data-ec-no-modal on such a link: it opens its page normally, without the dialog.'],
   },

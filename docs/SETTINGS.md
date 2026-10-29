@@ -269,6 +269,13 @@ editor under *Return labels* (right after *Print return label*). The label page
 Section `askALibrarian` (`src/app/shared/components/ec-ask-librarian/`). Links whose address
 starts with one of `triggerUrlPrefixes` are the Ask-a-librarian links.
 
+**Made for LibAnswers (Springshare).** The code itself is generic — URL parameters on the links,
+fields filled by name, closed shadow roots and `document.write` widgets handled — but it is built
+and tested against LibAnswers question forms, and every default and example (`pname`, `pemail`,
+`pdetails`, the widget embed code) is LibAnswers'. Another form tool works only if it reads
+prefill values from its address, or (dialog) has fields with the configured names. The section
+title in the editors says "(LibAnswers)" so libraries without it know to leave it empty.
+
 **Prefill — always, on the links themselves.** Their `href` is rewritten (on load, after every DOM
 change, on sign-in/out) with URL parameters, so the form opens filled in even in a new tab:
 

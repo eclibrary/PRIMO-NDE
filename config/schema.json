@@ -111,8 +111,8 @@
     "askALibrarian": {
       "type": "object",
       "additionalProperties": false,
-      "title": "Ask a librarian",
-      "description": "The \"Ask a librarian\" links: prefilled with the signed-in patron's details and what they were looking at, opening the question form either in a dialog or on its own page.",
+      "title": "Ask a librarian (LibAnswers)",
+      "description": "Links to your library's LibAnswers question form (LibAnswers is a Springshare product): prefilled with the signed-in patron's details and what they were looking at, opening the form either in a dialog or on its own page. Made and tested for LibAnswers. Another question-form tool only works if its form reads values from its web address (prefill parameters) — or, with \"Use dialog\", if its fields have the names given below. No LibAnswers? Leave \"Ask a librarian links\" empty and nothing happens.",
       "properties": {
         "triggerUrlPrefixes": {
           "type": "array",
@@ -121,7 +121,7 @@
             "format": "uri"
           },
           "title": "Ask a librarian links",
-          "description": "Links whose address starts with one of these are the \"Ask a librarian\" links: they get the prefill parameters added (on every page) and, with \"Use dialog\", open the dialog. One per line, e.g. https://yourlibrary.libanswers.com/form?queue_id=1234."
+          "description": "Links whose address starts with one of these are the \"Ask a librarian\" links: they get the prefill parameters added (on every page) and, with \"Use dialog\", open the dialog. One per line: the address of your LibAnswers question form, e.g. https://yourlibrary.libanswers.com/form?queue_id=1234. Empty = the feature does nothing."
         },
         "prefillName": {
           "type": "boolean",

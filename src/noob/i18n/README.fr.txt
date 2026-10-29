@@ -169,9 +169,12 @@ BON À SAVOIR
   fois que la fenêtre s'ouvre. Ce code S'EXÉCUTE dans votre Primo : ne
   collez que du code de fournisseurs de confiance.
 
-- DEMANDER À UN BIBLIOTHÉCAIRE. Vos liens « posez-nous une question »
-  (section « Demander à un bibliothécaire ») : indiquez le début de leur
-  adresse dans « Liens Demander à un bibliothécaire », p. ex.
+- DEMANDER À UN BIBLIOTHÉCAIRE (LIBANSWERS). Pour les bibliothèques qui
+  répondent aux questions avec LibAnswers (un produit de Springshare). Vos
+  liens « posez-nous une question » vers le formulaire de question
+  LibAnswers (section « Demander à un bibliothécaire (LibAnswers) ») :
+  indiquez le début de leur adresse dans « Liens Demander à un
+  bibliothécaire », p. ex.
   https://yourlibrary.libanswers.com/form?queue_id=1234. Chacun de ces liens
   dans votre page d'accueil, en-tête, pied de page ou menu transmet alors le
   nom et l'e-mail de l'usager connecté (cochez lesquels), d'autres valeurs
@@ -182,6 +185,9 @@ BON À SAVOIR
   Le formulaire s'ouvre prérempli, à condition qu'il lise ces valeurs dans
   son adresse (c'est le cas des formulaires LibAnswers : utilisez les noms
   de champs du formulaire, p. ex. pname, pemail, pdetails).
+  Pas de LibAnswers ? Laissez « Liens Demander à un bibliothécaire » vide :
+  rien ne se passe. Un autre outil de formulaire ne fonctionne que si son
+  formulaire lit les valeurs dans son adresse de la même façon.
   Cochez « Utiliser une fenêtre » pour ouvrir plutôt le formulaire dans une
   fenêtre : collez le code d'intégration du formulaire dans « Code du
   widget » (LibAnswers : Admin > Widgets > votre formulaire de question >

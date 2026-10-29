@@ -166,8 +166,11 @@ CONVIENE SABER
   ventana. Este código SE EJECUTA en su Primo: pegue solo código de
   proveedores de confianza.
 
-- PREGUNTE AL BIBLIOTECARIO. Sus enlaces «háganos una pregunta» (sección
-  «Pregunte al bibliotecario»): escriba el principio de su dirección en
+- PREGUNTE AL BIBLIOTECARIO (LIBANSWERS). Para bibliotecas que responden
+  consultas con LibAnswers (un producto de Springshare). Sus enlaces
+  «háganos una pregunta» al formulario de consulta de LibAnswers (sección
+  «Pregunte al bibliotecario (LibAnswers)»): escriba el principio de su
+  dirección en
   «Enlaces Pregunte al bibliotecario», p. ej.
   https://yourlibrary.libanswers.com/form?queue_id=1234. Cada uno de esos
   enlaces en su página de inicio, encabezado, pie de página o menú lleva
@@ -179,6 +182,9 @@ CONVIENE SABER
   búsqueda, enlace). El formulario se abre rellenado, siempre que lea esos
   valores de su dirección (los formularios de LibAnswers lo hacen: use los
   nombres de campo del formulario, p. ej. pname, pemail, pdetails).
+  ¿No tiene LibAnswers? Deje vacío «Enlaces Pregunte al bibliotecario»: no
+  pasa nada. Otra herramienta de formularios solo funciona si su formulario
+  lee los valores de su dirección de la misma manera.
   Marque «Usar ventana» para abrir el formulario en una ventana emergente:
   pegue el código de inserción del formulario en «Código del widget»
   (LibAnswers: Admin > Widgets > su formulario de consulta > embed code).

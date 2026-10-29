@@ -1,6 +1,5 @@
 {
   "$comment": "Spanish interface texts of the noob kit's package maker (EMPEZAR AQUI.html). Key = the English text exactly as in src/assets/editor/*.js|html, config/schema.json and markup-help.js; value = the translation. Keep {placeholders}, **bold** and `code` marks as they are. Alma's own menu names stay in English (\"Manage Customization Package\" …) — that is what staff see in Alma. `npm run build:noob` lists missing and unused entries. Terms: package = paquete, view = vista, settings = ajustes, patron = usuario, dialog = ventana, banner = aviso.",
-
   "Language of this page": "Idioma de esta página",
   "Settings": "Ajustes",
   "HTML features": "Funciones HTML",
@@ -168,7 +167,6 @@
   "\"{name}\" uses an unsupported compression method ({method}).": "«{name}» usa un método de compresión no compatible ({method}).",
   "\"{name}\" could not be unpacked correctly.": "«{name}» no se pudo descomprimir correctamente.",
   "This browser cannot create zip files. Please use a recent Edge, Chrome or Firefox.": "Este navegador no puede crear archivos zip. Use una versión reciente de Edge, Chrome o Firefox.",
-
   "Show something only to guests or only to signed-in visitors": "Mostrar algo solo a los invitados o solo a los usuarios identificados",
   "Add data-ec-audience to any element. It stays hidden until Primo knows whether the visitor is signed in, so it never flickers.": "Añada data-ec-audience a cualquier elemento. Permanece oculto hasta que Primo sabe si el usuario ha iniciado sesión, así que nunca parpadea.",
   "Show something only between two dates": "Mostrar algo solo entre dos fechas",
@@ -199,13 +197,12 @@
   "\"Check connection\" button": "Botón «Comprobar conexión»",
   "A button that checks the network again right now (e.g. after the visitor switched on the VPN): the network parts of the page follow the new result at once. If the visitor is not on the network, a message explains the likely cause and what to do (texts in the Network check settings), with technical details for your helpdesk.": "Un botón que vuelve a comprobar la red en ese momento (p. ej. después de que el usuario active la VPN): las partes de «red» de la página siguen al instante el nuevo resultado. Si el usuario no está en la red, un mensaje explica la causa probable y qué hacer (textos en los ajustes de «Comprobación de red»), con detalles técnicos para su servicio de asistencia.",
   "The result appears right after the button. To show it elsewhere, add an empty <div data-ec-network-status></div> where you want it.": "El resultado aparece justo después del botón. Para mostrarlo en otro sitio, añada un <div data-ec-network-status></div> vacío donde lo quiera.",
-  "Any ordinary link whose address starts with one of the \"Ask a librarian links\" in the settings is prefilled (and opens the dialog when \"Use dialog\" is on). Nothing special to add.": "Cualquier enlace normal cuya dirección empiece por uno de los «Enlaces Pregunte al bibliotecario» de los ajustes se rellena previamente (y abre la ventana si «Usar ventana» está activado). No hay que añadir nada especial.",
+  "Any ordinary link to your LibAnswers question form — more precisely, whose address starts with one of the \"Ask a librarian links\" in the settings — is prefilled (and opens the dialog when \"Use dialog\" is on). Nothing special to add.": "Cualquier enlace normal a su formulario de consulta de LibAnswers — más exactamente, cuya dirección empiece por uno de los «Enlaces Pregunte al bibliotecario» de los ajustes — se rellena previamente (y abre la ventana si «Usar ventana» está activado). No hay que añadir nada especial.",
   "data-ec-no-modal on such a link: it opens its page normally, without the dialog.": "data-ec-no-modal en un enlace así: abre su página normalmente, sin la ventana.",
   "Icons": "Iconos",
   "Any icon from https://fonts.google.com/icons — write its name. aria-hidden when it only decorates text next to it.": "Cualquier icono de https://fonts.google.com/icons — escriba su nombre. aria-hidden cuando solo decora el texto de al lado.",
   "Colours": "Colores",
   "The kit follows the Color Theme picked for the view in Alma. To force your own colours, put this in assets/css/custom.css.": "El kit sigue el tema de color (Color Theme) elegido para la vista en Alma. Para imponer sus propios colores, ponga esto en assets/css/custom.css.",
-
   "Default language": "Idioma por defecto",
   "Used when the current UI language has no entry in a localised value.": "Se usa cuando el idioma actual de la interfaz no tiene valor en un texto traducido.",
   "Signed-in user details": "Datos del usuario identificado",
@@ -236,10 +233,10 @@
   "Router path of the full record page, relative to /nde. Opening a record there marks it as the last viewed one.": "Ruta de la página de registro completo, relativa a /nde. Abrir allí un registro lo marca como el último visto.",
   "'Last viewed' label": "Etiqueta «Último visto»",
   "Shown in the results list on the record the patron opened last; the list also scrolls to it when they return through the landing-page link. Empty English = feature off.": "Se muestra en la lista de resultados en el registro que el usuario abrió por última vez; la lista también se desplaza hasta él cuando vuelve por el enlace de la página de inicio. Inglés vacío = función desactivada.",
-  "Ask a librarian": "Pregunte al bibliotecario",
-  "The \"Ask a librarian\" links: prefilled with the signed-in patron's details and what they were looking at, opening the question form either in a dialog or on its own page.": "Los enlaces «Pregunte al bibliotecario»: rellenados previamente con los datos del usuario identificado y lo que estaba consultando, abren el formulario de consulta en una ventana o en su propia página.",
+  "Ask a librarian (LibAnswers)": "Pregunte al bibliotecario (LibAnswers)",
+  "Links to your library's LibAnswers question form (LibAnswers is a Springshare product): prefilled with the signed-in patron's details and what they were looking at, opening the form either in a dialog or on its own page. Made and tested for LibAnswers. Another question-form tool only works if its form reads values from its web address (prefill parameters) — or, with \"Use dialog\", if its fields have the names given below. No LibAnswers? Leave \"Ask a librarian links\" empty and nothing happens.": "Enlaces al formulario de consulta de LibAnswers de su biblioteca (LibAnswers es un producto de Springshare): rellenados previamente con los datos del usuario identificado y lo que estaba consultando, abren el formulario en una ventana o en su propia página. Diseñado y probado para LibAnswers. Otra herramienta de formularios solo funciona si su formulario lee los valores de su dirección web (parámetros de relleno) — o, con «Usar ventana», si sus campos tienen los nombres indicados abajo. ¿No tiene LibAnswers? Deje vacío «Enlaces Pregunte al bibliotecario» y no pasará nada.",
   "Ask a librarian links": "Enlaces Pregunte al bibliotecario",
-  "Links whose address starts with one of these are the \"Ask a librarian\" links: they get the prefill parameters added (on every page) and, with \"Use dialog\", open the dialog. One per line, e.g. https://yourlibrary.libanswers.com/form?queue_id=1234.": "Los enlaces cuya dirección empieza por una de estas son los enlaces «Pregunte al bibliotecario»: se les añaden los parámetros de relleno (en todas las páginas) y, con «Usar ventana», abren la ventana. Una por línea, p. ej. https://yourlibrary.libanswers.com/form?queue_id=1234.",
+  "Links whose address starts with one of these are the \"Ask a librarian\" links: they get the prefill parameters added (on every page) and, with \"Use dialog\", open the dialog. One per line: the address of your LibAnswers question form, e.g. https://yourlibrary.libanswers.com/form?queue_id=1234. Empty = the feature does nothing.": "Los enlaces cuya dirección empieza por una de estas son los enlaces «Pregunte al bibliotecario»: se les añaden los parámetros de relleno (en todas las páginas) y, con «Usar ventana», abren la ventana. Una por línea: la dirección de su formulario de consulta de LibAnswers, p. ej. https://yourlibrary.libanswers.com/form?queue_id=1234. Vacío = la función no hace nada.",
   "Prefill patron name": "Rellenar el nombre del usuario",
   "Signed-in patrons: their name goes into the field below (from Primo's session).": "Usuarios identificados: su nombre va al campo de abajo (desde la sesión de Primo).",
   "Name field": "Campo del nombre",

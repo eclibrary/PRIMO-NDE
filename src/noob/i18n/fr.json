@@ -1,6 +1,5 @@
 {
   "$comment": "French interface texts of the noob kit's package maker (COMMENCER ICI.html). Key = the English text exactly as in src/assets/editor/*.js|html, config/schema.json and markup-help.js; value = the translation. Keep {placeholders}, **bold** and `code` marks as they are. Alma's own menu names stay in English (\"Manage Customization Package\" …) — that is what staff see in Alma. `npm run build:noob` lists missing and unused entries. Terms: package = paquet, view = vue, settings = paramètres, patron = usager, dialog = fenêtre, banner = bandeau.",
-
   "Language of this page": "Langue de cette page",
   "Settings": "Paramètres",
   "HTML features": "Fonctions HTML",
@@ -168,7 +167,6 @@
   "\"{name}\" uses an unsupported compression method ({method}).": "« {name} » utilise une méthode de compression non prise en charge ({method}).",
   "\"{name}\" could not be unpacked correctly.": "« {name} » n'a pas pu être décompressé correctement.",
   "This browser cannot create zip files. Please use a recent Edge, Chrome or Firefox.": "Ce navigateur ne peut pas créer de fichiers zip. Utilisez une version récente d'Edge, Chrome ou Firefox.",
-
   "Show something only to guests or only to signed-in visitors": "Afficher un contenu seulement aux invités ou seulement aux usagers connectés",
   "Add data-ec-audience to any element. It stays hidden until Primo knows whether the visitor is signed in, so it never flickers.": "Ajoutez data-ec-audience à n'importe quel élément. Il reste masqué tant que Primo ne sait pas si l'usager est connecté, donc il ne clignote jamais.",
   "Show something only between two dates": "Afficher un contenu seulement entre deux dates",
@@ -199,13 +197,12 @@
   "\"Check connection\" button": "Bouton « Vérifier la connexion »",
   "A button that checks the network again right now (e.g. after the visitor switched on the VPN): the network parts of the page follow the new result at once. If the visitor is not on the network, a message explains the likely cause and what to do (texts in the Network check settings), with technical details for your helpdesk.": "Un bouton qui vérifie à nouveau le réseau immédiatement (p. ex. après que l'usager a activé le VPN) : les parties « réseau » de la page suivent aussitôt le nouveau résultat. Si l'usager n'est pas sur le réseau, un message explique la cause probable et quoi faire (textes dans les paramètres « Vérification du réseau »), avec des détails techniques pour votre service d'assistance.",
   "The result appears right after the button. To show it elsewhere, add an empty <div data-ec-network-status></div> where you want it.": "Le résultat s'affiche juste après le bouton. Pour l'afficher ailleurs, ajoutez un <div data-ec-network-status></div> vide à l'endroit voulu.",
-  "Any ordinary link whose address starts with one of the \"Ask a librarian links\" in the settings is prefilled (and opens the dialog when \"Use dialog\" is on). Nothing special to add.": "Tout lien ordinaire dont l'adresse commence par un des « Liens Demander à un bibliothécaire » des paramètres est prérempli (et ouvre la fenêtre quand « Utiliser une fenêtre » est activé). Rien de spécial à ajouter.",
+  "Any ordinary link to your LibAnswers question form — more precisely, whose address starts with one of the \"Ask a librarian links\" in the settings — is prefilled (and opens the dialog when \"Use dialog\" is on). Nothing special to add.": "Tout lien ordinaire vers votre formulaire de question LibAnswers — plus précisément, dont l'adresse commence par un des « Liens Demander à un bibliothécaire » des paramètres — est prérempli (et ouvre la fenêtre quand « Utiliser une fenêtre » est activé). Rien de spécial à ajouter.",
   "data-ec-no-modal on such a link: it opens its page normally, without the dialog.": "data-ec-no-modal sur un tel lien : il ouvre sa page normalement, sans la fenêtre.",
   "Icons": "Icônes",
   "Any icon from https://fonts.google.com/icons — write its name. aria-hidden when it only decorates text next to it.": "N'importe quelle icône de https://fonts.google.com/icons — écrivez son nom. aria-hidden quand elle ne fait que décorer le texte à côté.",
   "Colours": "Couleurs",
   "The kit follows the Color Theme picked for the view in Alma. To force your own colours, put this in assets/css/custom.css.": "Le kit suit le thème de couleurs (Color Theme) choisi pour la vue dans Alma. Pour imposer vos propres couleurs, mettez ceci dans assets/css/custom.css.",
-
   "Default language": "Langue par défaut",
   "Used when the current UI language has no entry in a localised value.": "Utilisée quand la langue d'affichage actuelle n'a pas de valeur dans un texte traduit.",
   "Signed-in user details": "Données de l'usager connecté",
@@ -236,10 +233,10 @@
   "Router path of the full record page, relative to /nde. Opening a record there marks it as the last viewed one.": "Chemin de la page de notice complète, relatif à /nde. Ouvrir une notice à cet endroit la marque comme dernière consultée.",
   "'Last viewed' label": "Étiquette « Dernière consultée »",
   "Shown in the results list on the record the patron opened last; the list also scrolls to it when they return through the landing-page link. Empty English = feature off.": "Affichée dans la liste de résultats sur la notice ouverte en dernier ; la liste défile aussi jusqu'à elle quand l'usager revient par le lien de la page d'accueil. Anglais vide = fonction désactivée.",
-  "Ask a librarian": "Demander à un bibliothécaire",
-  "The \"Ask a librarian\" links: prefilled with the signed-in patron's details and what they were looking at, opening the question form either in a dialog or on its own page.": "Les liens « Demander à un bibliothécaire » : préremplis avec les données de l'usager connecté et ce qu'il consultait, ils ouvrent le formulaire de question soit dans une fenêtre, soit sur sa propre page.",
+  "Ask a librarian (LibAnswers)": "Demander à un bibliothécaire (LibAnswers)",
+  "Links to your library's LibAnswers question form (LibAnswers is a Springshare product): prefilled with the signed-in patron's details and what they were looking at, opening the form either in a dialog or on its own page. Made and tested for LibAnswers. Another question-form tool only works if its form reads values from its web address (prefill parameters) — or, with \"Use dialog\", if its fields have the names given below. No LibAnswers? Leave \"Ask a librarian links\" empty and nothing happens.": "Des liens vers le formulaire de question LibAnswers de votre bibliothèque (LibAnswers est un produit de Springshare) : préremplis avec les données de l'usager connecté et ce qu'il consultait, ils ouvrent le formulaire soit dans une fenêtre, soit sur sa propre page. Conçu et testé pour LibAnswers. Un autre outil de formulaire ne fonctionne que si son formulaire lit les valeurs dans son adresse web (paramètres de préremplissage) — ou, avec « Utiliser une fenêtre », si ses champs portent les noms indiqués ci-dessous. Pas de LibAnswers ? Laissez « Liens Demander à un bibliothécaire » vide : rien ne se passe.",
   "Ask a librarian links": "Liens Demander à un bibliothécaire",
-  "Links whose address starts with one of these are the \"Ask a librarian\" links: they get the prefill parameters added (on every page) and, with \"Use dialog\", open the dialog. One per line, e.g. https://yourlibrary.libanswers.com/form?queue_id=1234.": "Les liens dont l'adresse commence par l'une de celles-ci sont les liens « Demander à un bibliothécaire » : les paramètres de préremplissage y sont ajoutés (sur toutes les pages) et, avec « Utiliser une fenêtre », ils ouvrent la fenêtre. Une par ligne, p. ex. https://yourlibrary.libanswers.com/form?queue_id=1234.",
+  "Links whose address starts with one of these are the \"Ask a librarian\" links: they get the prefill parameters added (on every page) and, with \"Use dialog\", open the dialog. One per line: the address of your LibAnswers question form, e.g. https://yourlibrary.libanswers.com/form?queue_id=1234. Empty = the feature does nothing.": "Les liens dont l'adresse commence par l'une de celles-ci sont les liens « Demander à un bibliothécaire » : les paramètres de préremplissage y sont ajoutés (sur toutes les pages) et, avec « Utiliser une fenêtre », ils ouvrent la fenêtre. Une par ligne : l'adresse de votre formulaire de question LibAnswers, p. ex. https://yourlibrary.libanswers.com/form?queue_id=1234. Vide = la fonction ne fait rien.",
   "Prefill patron name": "Préremplir le nom de l'usager",
   "Signed-in patrons: their name goes into the field below (from Primo's session).": "Usagers connectés : leur nom va dans le champ ci-dessous (depuis la session Primo).",
   "Name field": "Champ du nom",
