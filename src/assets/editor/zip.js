@@ -36,6 +36,20 @@
 (function () {
   'use strict';
 
+  /**
+   * Interface language (noob kit's COMMENCER ICI / EMPEZAR AQUI): window.EC_UI
+   * from maker/ui-<lang>.js maps English texts to translations; without it the
+   * English text is used. Same rule as t() in index.html (the English text is
+   * the key; {name} placeholders are filled from `vars`). Kept local so this
+   * file still works on its own. build-noob.cjs scans this file for t('…').
+   */
+  function t(text, vars) {
+    const strings = (window.EC_UI && window.EC_UI.strings) || {};
+    let s = Object.prototype.hasOwnProperty.call(strings, text) && strings[text] ? strings[text] : text;
+    if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+    return s;
+  }
+
   const SIG_LOCAL = 0x04034b50;   // "PK\3\4"
   const SIG_CENTRAL = 0x02014b50; // "PK\1\2"
   const SIG_END = 0x06054b50;     // "PK\5\6"
@@ -97,7 +111,7 @@
    *   local time); null when the zip has none.
    */
   async function read(input) {
-    if (!supported()) throw new Error('This browser cannot open zip files. Please use a recent Edge, Chrome or Firefox.');
+    if (!supported()) throw new Error(t('This browser cannot open zip files. Please use a recent Edge, Chrome or Firefox.'));
     const buf = input instanceof Blob ? await input.arrayBuffer() : input instanceof Uint8Array ? input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) : input;
     const bytes = new Uint8Array(buf);
     const view = new DataView(buf);
@@ -108,16 +122,16 @@
     for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 22 - 65535); i--) {
       if (view.getUint32(i, true) === SIG_END) { end = i; break; }
     }
-    if (end < 0) throw new Error('This is not a zip file (or it is damaged).');
+    if (end < 0) throw new Error(t('This is not a zip file (or it is damaged).'));
     const count = view.getUint16(end + 10, true);
     let p = view.getUint32(end + 16, true); // offset of the central directory
-    if (count === 0xffff || p === 0xffffffff) throw new Error('This zip uses the Zip64 format, which is not supported.');
+    if (count === 0xffff || p === 0xffffffff) throw new Error(t('This zip uses the Zip64 format, which is not supported.'));
 
     // 2. The central directory: one header per entry, with sizes and where its data is.
     const utf8 = new TextDecoder('utf-8');
     const files = [];
     for (let n = 0; n < count; n++) {
-      if (view.getUint32(p, true) !== SIG_CENTRAL) throw new Error('The zip file is damaged (table of contents).');
+      if (view.getUint32(p, true) !== SIG_CENTRAL) throw new Error(t('The zip file is damaged (table of contents).'));
       const flags = view.getUint16(p + 8, true);
       const dosTime = view.getUint16(p + 12, true);
       const dosDate = view.getUint16(p + 14, true);
@@ -134,19 +148,19 @@
       p += 46 + nameLen + extraLen + commentLen;
 
       if (name.endsWith('/')) continue; // folder entry
-      if (flags & FLAG_ENCRYPTED) throw new Error(`"${name}" is password-protected; the package must not be encrypted.`);
+      if (flags & FLAG_ENCRYPTED) throw new Error(t('"{name}" is password-protected; the package must not be encrypted.', { name }));
 
       // 3. The data sits after the entry's LOCAL header, whose name/extra
       //    lengths can differ from the central copy — read them there.
-      if (view.getUint32(localOffset, true) !== SIG_LOCAL) throw new Error(`The zip file is damaged (entry "${name}").`);
+      if (view.getUint32(localOffset, true) !== SIG_LOCAL) throw new Error(t('The zip file is damaged (entry "{name}").', { name }));
       const start = localOffset + 30 + view.getUint16(localOffset + 26, true) + view.getUint16(localOffset + 28, true);
       const raw = bytes.subarray(start, start + compSize);
 
       let data;
       if (method === 0) data = raw.slice();
       else if (method === 8) data = await inflate(raw);
-      else throw new Error(`"${name}" uses an unsupported compression method (${method}).`);
-      if (data.length !== size) throw new Error(`"${name}" could not be unpacked correctly.`);
+      else throw new Error(t('"{name}" uses an unsupported compression method ({method}).', { name, method }));
+      if (data.length !== size) throw new Error(t('"{name}" could not be unpacked correctly.', { name }));
       files.push({ name, data, modified: fromDos(dosDate, dosTime) });
     }
     return files;
@@ -163,7 +177,7 @@
    * @returns {Promise<Blob>}
    */
   async function write(files) {
-    if (!supported()) throw new Error('This browser cannot create zip files. Please use a recent Edge, Chrome or Firefox.');
+    if (!supported()) throw new Error(t('This browser cannot create zip files. Please use a recent Edge, Chrome or Firefox.'));
     const enc = new TextEncoder();
     const now = dosDateTime(new Date());
     const parts = [];      // local headers + data, in order

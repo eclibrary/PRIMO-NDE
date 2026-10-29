@@ -13,11 +13,17 @@ WHAT YOU NEED
 
 WHAT IS IN THIS FOLDER
   START HERE.html   the package maker — double-click it to open it in your browser
+  COMMENCER ICI.html  the same package maker in French
+  EMPEZAR AQUI.html   the same package maker in Spanish
+                    (same result whichever you use; links at the top right
+                    switch between them)
   maker\            files the package maker needs. Keep this folder next to
                     START HERE.html, and do not change anything in it.
   examples\         an example home page, header and footer (homepage_en.html,
                     header.html, footer.html) — see "YOUR HOME PAGE" below
   README.txt        this text
+  LISEZ-MOI.txt     this text in French
+  LEAME.txt         this text in Spanish
 
 
 INSTALL THE KIT, OR UPDATE IT, OR CHANGE ITS SETTINGS
@@ -206,6 +212,8 @@ GOOD TO KNOW
   each language (an empty line shows the English text). Primo itself needs
   the language switched on for the view in Alma, and NDE needs a home page
   file per language (homepage_fr.html, …).
+  (The language of the package maker itself — START HERE, COMMENCER ICI or
+  EMPEZAR AQUI — changes nothing in the languages of your view.)
 
 - A NEWER KIT. Download the new kit and repeat steps 1 to 4. Your settings
   are kept; new settings appear marked "new", with sensible defaults.

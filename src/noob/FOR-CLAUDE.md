@@ -35,6 +35,14 @@ build step, and they do not need one.
 - The kit is a folder with **START HERE.html** (the "package maker"),
   README.txt, `examples/` and `maker/`. Everything happens in their browser;
   nothing is sent anywhere.
+- The same package maker exists in French (**COMMENCER ICI.html**, with
+  LISEZ-MOI.txt) and Spanish (**EMPEZAR AQUI.html**, with LEAME.txt). Same
+  page, same result; only its interface is translated — section and setting
+  titles then appear in that language (the reference below lists the English
+  titles and the code names, which never change). When the user writes in
+  French or Spanish, point them to that page and translate the titles
+  sensibly, adding the English title in brackets if unsure. Alma's own menu
+  names stay in English on every page.
 - The library's **customization package** is a zip they download from Alma
   (View Configuration › tab "Manage Customization Package" › "Download Package"
   › "Current View Customization Package"). It contains ONE folder named

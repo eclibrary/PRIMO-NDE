@@ -10,7 +10,11 @@
  *   ec-nde-noob-<version>/
  *     START HERE.html   the package maker: drop the package downloaded from Alma,
  *                       adjust the settings, click "Make package", upload the result
+ *     COMMENCER ICI.html  the same page in French  } see UI_LANGUAGES below:
+ *     EMPEZAR AQUI.html   the same page in Spanish } + maker/ui-<lang>.js
  *     README.txt        the same instructions as plain text
+ *     LISEZ-MOI.txt     README in French  (src/noob/i18n/README.fr.txt)
+ *     LEAME.txt         README in Spanish (src/noob/i18n/README.es.txt)
  *     examples/         example files for the library's OWN package files, e.g.
  *                       homepage_en.html using guest/user, network, loans due,
  *                       account counts and "pick up where you left off"
@@ -26,6 +30,8 @@
  *       zip.js          zip reader/writer (src/assets/editor/zip.js)
  *       rich-text.js    WYSIWYG for HTML messages (src/assets/editor/rich-text.js)
  *       markup-help.js  the "HTML features" tab (src/assets/editor/markup-help.js)
+ *       ui-fr.js        interface texts in French / Spanish for COMMENCER ICI.html /
+ *       ui-es.js        EMPEZAR AQUI.html (from src/noob/i18n/<lang>.json)
  *
  * WHAT GOES INTO THEIR PACKAGE ("core", replaced as a whole on every update):
  *   remoteEntry.js and the other compiled .js/.css files at the package root,
@@ -71,6 +77,37 @@ const STARTER_FILES = {
   'assets/header-footer/header.html': 'header.html',
   'assets/header-footer/footer.html': 'footer.html',
 };
+
+/**
+ * INTERFACE LANGUAGES OF THE PACKAGE MAKER (Oct 2026).
+ *
+ * The maker page exists once per language, side by side in the kit; each is
+ * the same src/assets/editor/index.html, the translated ones with one extra
+ * script, maker/ui-<code>.js:
+ *     window.EC_UI = { lang, readme, strings: { "<English>": "<translation>" } }
+ * The English text is the key (see "interface language" in index.html), so
+ * the dictionaries src/noob/i18n/<code>.json are flat maps English → language.
+ * They cover the page's own texts — t('…') / rich('…') in index.html,
+ * t('…') in rich-text.js and zip.js — the schema's titles, help texts and
+ * choice names (sections the kit shows), and the "HTML features" entries.
+ *
+ * Missing or outdated translations never break anything: the page shows the
+ * English text, and the build prints the list (see reportTranslations). To
+ * update a language: add the printed texts to src/noob/i18n/<code>.json.
+ *
+ * Page and README names have no accents on purpose (EMPEZAR AQUI, LEAME):
+ * Windows' built-in unzip has mangled non-ASCII names in zips.
+ * The visitor-facing default texts (settings values, starter and example
+ * pages) are NOT part of this: libraries add those languages in the maker.
+ */
+const I18N_DIR = path.join(ROOT, 'src', 'noob', 'i18n');
+const UI_LANGUAGES = [
+  { code: 'en', name: 'English', page: 'START HERE.html', readme: 'README.txt' },
+  { code: 'fr', name: 'Français', page: 'COMMENCER ICI.html', readme: 'LISEZ-MOI.txt' },
+  { code: 'es', name: 'Español', page: 'EMPEZAR AQUI.html', readme: 'LEAME.txt' },
+];
+/** Files whose t('…') / rich('…') calls are interface texts (scanned by uiTexts). */
+const UI_SOURCE_FILES = ['index.html', 'rich-text.js', 'zip.js'];
 
 /** Schema sections hidden in the maker: their feature is not in the noob core. */
 const HIDDEN_SECTIONS = ['printReturnLabel'];
@@ -232,6 +269,72 @@ function settingsReference(schema, defaults) {
   return parts.join('\n');
 }
 
+/**
+ * Every English interface text the maker can show in the kit, as a Set:
+ *   1. t('…') and rich('…') calls in UI_SOURCE_FILES (comments stripped first,
+ *      so examples in comments do not count). Only single-quoted literals are
+ *      found — the convention documented in index.html;
+ *   2. the schema's title / description / x-patternHint / x-tabEmptyLabel /
+ *      x-enumNames / x-choices labels, for the sections the kit shows (same
+ *      keys as translateSchema() in index.html);
+ *   3. the "HTML features" entries: title, what, needs, notes.
+ */
+function uiTexts(schema, defaults) {
+  const out = new Set();
+  // 1. Page texts.
+  const literal = /\b(?:t|rich)\(\s*'((?:[^'\\]|\\.)*)'/g;
+  for (const f of UI_SOURCE_FILES) {
+    const src = fs.readFileSync(path.join(EDITOR_DIR, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const m of src.matchAll(literal)) out.add(m[1].replace(/\\(.)/g, '$1'));
+  }
+  // 2. Schema texts ($refs followed; each node once).
+  const seen = new Set();
+  const walk = (s) => {
+    if (!s || typeof s !== 'object' || seen.has(s)) return;
+    seen.add(s);
+    if (Array.isArray(s)) { s.forEach(walk); return; }
+    for (const k of ['title', 'description', 'x-patternHint', 'x-tabEmptyLabel']) if (typeof s[k] === 'string' && s[k]) out.add(s[k]);
+    (s['x-enumNames'] || []).forEach((n) => { if (typeof n === 'string' && n) out.add(n); });
+    (s['x-choices'] || []).forEach((c) => { if (c && c.label) out.add(c.label); });
+    for (const [k, v] of Object.entries(s)) {
+      if (k === '$ref') walk(v.replace('#/', '').split('/').reduce((o, kk) => o && o[kk], schema));
+      else if (k !== 'default' && k !== 'enum' && v && typeof v === 'object') walk(v);
+    }
+  };
+  for (const [key, sub] of Object.entries(schema.properties || {})) {
+    if (!HIDDEN_SECTIONS.includes(key) && key in defaults) walk(sub);
+  }
+  // 3. HTML features (markup-help.js is a browser script: run it with a stand-in window).
+  const sandbox = { window: {} };
+  new Function('window', fs.readFileSync(path.join(EDITOR_DIR, 'markup-help.js'), 'utf8'))(sandbox.window);
+  for (const h of sandbox.window.EC_MARKUP_HELP || []) {
+    for (const v of [h.title, h.what, h.needs, ...(h.notes || [])]) if (v) out.add(v);
+  }
+  return out;
+}
+
+/**
+ * The dictionary of one language (src/noob/i18n/<code>.json), checked against
+ * the texts the maker needs. Prints what is missing (shown in English until
+ * translated) and what is no longer used (left over after an English text
+ * changed — harmless, but worth cleaning). Returns only the entries in use.
+ * A "$comment" key in the JSON is ignored.
+ */
+function reportTranslations(lang, needed) {
+  const file = path.join(I18N_DIR, `${lang.code}.json`);
+  const dict = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {};
+  delete dict.$comment;
+  const missing = [...needed].filter((s) => !dict[s]);
+  const unused = Object.keys(dict).filter((s) => !needed.has(s));
+  const rel = path.relative(ROOT, file);
+  if (missing.length) {
+    console.warn(`[noob] ${lang.name}: ${missing.length} text(s) not translated yet — shown in English. Add them to ${rel}:`);
+    for (const s of missing) console.warn(`         ${JSON.stringify(s)}`);
+  } else console.log(`[noob] ${lang.name}: all ${needed.size} interface texts translated.`);
+  if (unused.length) console.log(`[noob] ${lang.name}: ${unused.length} entr${unused.length === 1 ? 'y' : 'ies'} in ${rel} no longer used (English text changed or removed) — may be deleted.`);
+  return Object.fromEntries(Object.entries(dict).filter(([s]) => needed.has(s)));
+}
+
 function zipFolder(folder, zipFile) {
   const archiver = require('archiver');
   return new Promise((resolve, reject) => {
@@ -306,6 +409,8 @@ async function main() {
     schema,
     // English only; the library adds its languages in the maker (see NOOB_LANGUAGES).
     languages: NOOB_LANGUAGES,
+    // The maker page in each interface language (header links "English · Français · Español").
+    uiLanguages: UI_LANGUAGES.map(({ code, name, page }) => ({ code, name, page })),
     defaults,
     hiddenSections: HIDDEN_SECTIONS,
     // Paths the maker REMOVES from a package before adding the core (old core,
@@ -334,13 +439,30 @@ async function main() {
   const editor = fs.readFileSync(path.join(EDITOR_DIR, 'index.html'), 'utf8');
   const block = /<!-- ec:scripts -->[\s\S]*?<!-- \/ec:scripts -->/;
   if (!block.test(editor)) throw new Error('src/assets/editor/index.html lost its <!-- ec:scripts --> markers');
-  fs.writeFileSync(path.join(kitDir, 'START HERE.html'), editor.replace(block,
-    '<!-- ec:scripts (noob kit) -->\n' +
-    '<script src="maker/kit.js"></script>\n' +
-    '<script src="maker/zip.js"></script>\n' +
-    '<script src="maker/rich-text.js"></script>\n' +
-    '<script src="maker/markup-help.js"></script>\n' +
-    '<!-- /ec:scripts -->'));
+  // One page per interface language (UI_LANGUAGES). The translated ones load
+  // maker/ui-<code>.js BEFORE the other scripts, so rich-text.js and zip.js
+  // see window.EC_UI too. <html lang> is set by the page itself (EC_UI.lang).
+  const needed = uiTexts(schema, defaults);
+  for (const lang of UI_LANGUAGES) {
+    let uiScript = '';
+    if (lang.code !== 'en') {
+      const strings = reportTranslations(lang, needed);
+      fs.writeFileSync(path.join(kitDir, 'maker', `ui-${lang.code}.js`),
+        `/* EC Library NDE kit ${version} — interface texts in ${lang.name} for "${lang.page}".\n` +
+        `   Generated by scripts/build-noob.cjs from src/noob/i18n/${lang.code}.json. Do not edit:\n` +
+        `   change the JSON in the repository and build again. */\n` +
+        `window.EC_UI = ${JSON.stringify({ lang: lang.code, readme: lang.readme, strings }, null, 1)};\n`);
+      uiScript = `<script src="maker/ui-${lang.code}.js"></script>\n`;
+    }
+    fs.writeFileSync(path.join(kitDir, lang.page), editor.replace(block,
+      `<!-- ec:scripts (noob kit, ${lang.name}) -->\n` +
+      uiScript +
+      '<script src="maker/kit.js"></script>\n' +
+      '<script src="maker/zip.js"></script>\n' +
+      '<script src="maker/rich-text.js"></script>\n' +
+      '<script src="maker/markup-help.js"></script>\n' +
+      '<!-- /ec:scripts -->'));
+  }
 
   // Examples for the library's own files (home page …): src/noob/examples → examples/.
   // Copied as they are; they are documentation, not part of any package.
@@ -349,6 +471,16 @@ async function main() {
   const readme = fs.readFileSync(README_TEMPLATE, 'utf8').split('{{VERSION}}').join(version);
   // Windows line endings: the README is opened with Notepad by most recipients.
   fs.writeFileSync(path.join(kitDir, 'README.txt'), readme.replace(/\r?\n/g, '\r\n'));
+  // Translated READMEs (src/noob/i18n/README.<code>.txt), same placeholders.
+  // A missing one is skipped with a warning; the English README is always there.
+  for (const lang of UI_LANGUAGES.filter((l) => l.code !== 'en')) {
+    const src = path.join(I18N_DIR, `README.${lang.code}.txt`);
+    if (!fs.existsSync(src)) { console.warn(`[noob] ${path.relative(ROOT, src)} missing — no ${lang.readme} in the kit.`); continue; }
+    // UTF-8 with BOM: Notepad on older Windows versions otherwise guesses the
+    // encoding wrongly and shows "Ã©" instead of "é".
+    const text = fs.readFileSync(src, 'utf8').replace(/^﻿/, '').split('{{VERSION}}').join(version);
+    fs.writeFileSync(path.join(kitDir, lang.readme), '﻿' + text.replace(/\r?\n/g, '\r\n'));
+  }
 
   // Knowledge file for a Claude project (see forClaude): in the kit, and a
   // copy next to the kit zip so it can be shared on its own.
@@ -372,7 +504,7 @@ async function main() {
   console.log(`[noob] Claude knowledge file: examples/FOR-CLAUDE.md in the kit, copy at dist/${name}-FOR-CLAUDE.md`);
 }
 
-module.exports = { noobBuildConfiguration, NOOB_KEY };
+module.exports = { noobBuildConfiguration, NOOB_KEY, uiTexts, UI_LANGUAGES };
 
 if (require.main === module) {
   main().catch((err) => { console.error(`[noob] ${err.message}`); process.exit(1); });

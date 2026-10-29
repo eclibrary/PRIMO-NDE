@@ -26,6 +26,20 @@
 (function () {
   'use strict';
 
+  /**
+   * Interface language (noob kit's COMMENCER ICI / EMPEZAR AQUI): window.EC_UI
+   * from maker/ui-<lang>.js maps English texts to translations; without it the
+   * English text is used. Same rule as t() in index.html (the English text is
+   * the key; {name} placeholders are filled from `vars`). Kept local so this
+   * file still works on its own. build-noob.cjs scans this file for t('…').
+   */
+  function t(text, vars) {
+    const strings = (window.EC_UI && window.EC_UI.strings) || {};
+    let s = Object.prototype.hasOwnProperty.call(strings, text) && strings[text] ? strings[text] : text;
+    if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+    return s;
+  }
+
   /** Allowed elements → allowed attributes. Everything else is unwrapped or dropped. */
   const ALLOWED = { H2: [], H3: [], P: [], BR: [], STRONG: [], EM: [], UL: [], OL: [], LI: [], A: ['href'] };
   /** Equivalent tags normalised to the allowed ones. */
@@ -100,14 +114,14 @@
   }
 
   const BUTTONS = [
-    { cmd: 'formatBlock', arg: 'H2', label: 'H', title: 'Heading', cls: 'h' },
-    { cmd: 'formatBlock', arg: 'P', label: '¶', title: 'Normal text' },
-    { cmd: 'bold', label: 'B', title: 'Bold', cls: 'b' },
-    { cmd: 'italic', label: 'I', title: 'Italic', cls: 'i' },
-    { cmd: 'insertUnorderedList', label: '•', title: 'Bulleted list' },
-    { cmd: 'insertOrderedList', label: '1.', title: 'Numbered list' },
-    { cmd: 'link', label: '🔗', title: 'Link' },
-    { cmd: 'removeFormat', label: '⌫', title: 'Remove formatting' },
+    { cmd: 'formatBlock', arg: 'H2', label: 'H', title: t('Heading'), cls: 'h' },
+    { cmd: 'formatBlock', arg: 'P', label: '¶', title: t('Normal text') },
+    { cmd: 'bold', label: 'B', title: t('Bold'), cls: 'b' },
+    { cmd: 'italic', label: 'I', title: t('Italic'), cls: 'i' },
+    { cmd: 'insertUnorderedList', label: '•', title: t('Bulleted list') },
+    { cmd: 'insertOrderedList', label: '1.', title: t('Numbered list') },
+    { cmd: 'link', label: '🔗', title: t('Link') },
+    { cmd: 'removeFormat', label: '⌫', title: t('Remove formatting') },
   ];
 
   let stylesAdded = false;
@@ -151,7 +165,7 @@
     area.setAttribute('role', 'textbox');
     area.setAttribute('aria-multiline', 'true');
     if (textarea.getAttribute('aria-label')) area.setAttribute('aria-label', textarea.getAttribute('aria-label'));
-    area.dataset.placeholder = opts.placeholder || 'Empty — type the message here';
+    area.dataset.placeholder = opts.placeholder || t('Empty — type the message here');
 
     textarea.classList.add('ec-rte__src');
     textarea.hidden = true;
@@ -171,7 +185,7 @@
         if (sourceMode) return;
         area.focus();
         if (b.cmd === 'link') {
-          const url = prompt('Link address (https://…). Leave empty to remove the link:', 'https://');
+          const url = prompt(t('Link address (https://…). Leave empty to remove the link:'), 'https://');
           if (url === null) return;
           if (url === '' || url === 'https://') document.execCommand('unlink');
           else document.execCommand('createLink', false, url);
@@ -184,7 +198,7 @@
     }
     const sep = document.createElement('span'); sep.className = 'sep'; bar.appendChild(sep);
     const srcBtn = document.createElement('button');
-    srcBtn.type = 'button'; srcBtn.textContent = 'HTML'; srcBtn.title = 'Show / edit the HTML markup';
+    srcBtn.type = 'button'; srcBtn.textContent = 'HTML'; srcBtn.title = t('Show / edit the HTML markup');
     srcBtn.setAttribute('aria-pressed', 'false');
     srcBtn.addEventListener('click', () => {
       sourceMode = !sourceMode;
